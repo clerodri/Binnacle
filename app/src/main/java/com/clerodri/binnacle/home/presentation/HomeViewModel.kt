@@ -1,19 +1,15 @@
 package com.clerodri.binnacle.home.presentation
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor () : ViewModel() {
 
-    // Event channel to send events to The UI
-    private val _eventChannel = Channel<HomeScreenEvent>()
-    internal fun getEventChannel() = _eventChannel.receiveAsFlow()
+//    // Event channel to send events to The UI
+//    private val _eventChannel = Channel<HomeScreenEvent>()
+//    internal fun getEventChannel() = _eventChannel.receiveAsFlow()
 
 
 
@@ -43,11 +39,11 @@ class HomeViewModel @Inject constructor () : ViewModel() {
 //    }
 
     // Send events back to the UI via the event channel
-    private fun sendScreenEvent(event: HomeScreenEvent) {
-        viewModelScope.launch {
-            _eventChannel.send(event)
-        }
-    }
+//    private fun sendScreenEvent(event: HomeScreenEvent) {
+//        viewModelScope.launch {
+//            _eventChannel.send(event)
+//        }
+//    }
 
 
 }

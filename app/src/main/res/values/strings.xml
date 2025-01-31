@@ -19,4 +19,6 @@
     <string name="rondas_label">Rondas</string>
     <string name="login_administrator_label">Administrator</string>
     <string name="guard_title_label">Guardia</string>
+    <string name="add_report">Publicar</string>
+    <string name="start_ronda">Comenzar ronda</string>
 </resources>
