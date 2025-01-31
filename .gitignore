@@ -1,0 +1,65 @@
+### Jetpack Compose / Kotlin / Android Studio .gitignore ###
+
+# Gradle files
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration files
+/local.properties
+.idea/workspace.xml
+.idea/libraries/
+.idea/shelf/
+.idea/modules.xml
+.idea/caches/
+.idea/httpRequests/
+.idea/**
+# Android Studio generated files
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dependency caches
+**/.gradle/
+**/local.properties
+# Ignore secret configuration files
+secrets.properties
+local.defaults.properties
+# Kotlin specific
+*.iml
+*.kotlin_metadata
+*.kotlin_module
+
+# Jetpack Compose preview cache
+.idea/deploymentTargetDropDown.xml
+.idea/kotlinLanguageSettings.xml
+.idea/gradle.xml
+.idea/sonarlint/
+
+# Android Test recordings
+recordings/
+
+# Emulator & device-specific files
+*.keystore
+*.jks
+**/generated/
+
+# Logs
+log/
+*.log
+**/logcat/
+
+# Firebase & Google Services
+/google-services.json
+/firebase/
+crashlytics.properties
+
+# Other Ignore Rules
+*.swp
+*.swo
+*.swn
+*.bak

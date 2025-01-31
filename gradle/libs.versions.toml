@@ -1,0 +1,96 @@
+[versions]
+accompanistPermissions = "0.24.13-rc"
+gradle = "7.0.4"
+gradleVersion = "8.4.2"
+agp = "8.7.3"
+coreSplashscreen = "1.0.1"
+kotlin = "2.1.10"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.10.0"
+composeBom = "2025.01.00"
+# DI
+dagger = "2.54"
+hiltCompiler = "1.2.0"
+
+# Annotations procesing
+googleKsp = "2.0.21-1.0.27"
+
+
+#Retrofit
+mapsCompose = "4.4.1"
+mapsComposeVersion = "4.4.1"
+mapsKtx = "5.0.0"
+mapsUtilsKtx = "5.0.0"
+navigationCompose = "2.8.5"
+playServicesMaps = "19.0.0"
+retrofit = "2.10.0"
+gson = "2.10.1"
+
+kotlinxSerializationJson = "1.8.0"
+maps = "3.1.0-beta"
+secretsGradlePlugin = "2.0.1"
+playServicesLocation = "21.3.0"
+
+
+[libraries]
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
+gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+gradle-v842 = { module = "com.android.tools.build:gradle", version.ref = "gradleVersion" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+#Dagger HIlt
+dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger" }
+dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger" }
+dagger-hilt-compiler = { module="androidx.hilt:hilt-compiler", version.ref="hiltCompiler"}
+hilt-navigation-compose ={module="androidx.hilt:hilt-navigation-compose", version.ref="hiltCompiler"}
+
+#icons
+androidx-material-icons-extended = {  group = "androidx.compose.material", name = "material-icons-extended"}
+
+#Retrofit
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-compose-utils = { module = "com.google.maps.android:maps-compose-utils", version.ref = "mapsComposeVersion" }
+maps-compose-widgets = { module = "com.google.maps.android:maps-compose-widgets", version.ref = "mapsComposeVersion" }
+maps-ktx = { module = "com.google.maps.android:maps-ktx", version.ref = "mapsKtx" }
+maps-utils-ktx = { module = "com.google.maps.android:maps-utils-ktx", version.ref = "mapsUtilsKtx" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+gson = {module="com.google.code.gson:gson", version.ref="gson"}
+gson-converter={module="com.squareup.retrofit2:converter-gson", version.ref="retrofit"}
+
+
+#NavigationCompose
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+kotlinx-serialization-json-v180 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+maps = { group = "com.google.android.libraries.maps", name = "maps", version.ref = "maps" }
+secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+
+##
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-ksp = { id = "com.google.devtools.ksp", version.ref = "googleKsp" }
+hilt-android-gradle={id="com.google.dagger.hilt.android", version.ref="dagger"}
+jetbrainsKotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

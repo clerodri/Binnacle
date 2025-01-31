@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">BINNACLE</string>
+    <string name="title_guard">Hey there,</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="cedula">Cedula</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="remember_password">Recordar contraseña</string>
+    <string name="login">Iniciar Sesion</string>
+    <string name="version_app">v1.0.0</string>
+    <string name="or">Or</string>
+    <string name="iniciar_sesion">Iniciar Sesion</string>
+    <string name="eres_administrador">"Administrador? "</string>
+    <string name="login_admin_text">" Login Admin"</string>
+    <string name="rondas">Rondas</string>
+    <string name="checkin_label">Check-In</string>
+    <string name="report_label">Report</string>
+    <string name="rondas_label">Rondas</string>
+    <string name="login_administrator_label">Administrator</string>
+    <string name="guard_title_label">Guardia</string>
+</resources>

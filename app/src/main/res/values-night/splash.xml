@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SplashScreen.ComposeSplash" parent="Theme.SplashScreen.IconBackground">
+
+        <item name="windowSplashScreenBackground">#906929</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/header3</item>
+        <item name="windowSplashScreenIconBackgroundColor">#000000</item>"
+        <item name="postSplashScreenTheme">@style/Theme.Binnacle</item>
+
+    </style>
+
+</resources>
