@@ -13,7 +13,7 @@
     <string name="iniciar_sesion">Iniciar Sesion</string>
     <string name="eres_administrador">"Administrador? "</string>
     <string name="login_admin_text">" Login Admin"</string>
-    <string name="rondas">Rondas</string>
+    <string name="rondas">Rutas</string>
     <string name="checkin_label">Check-In</string>
     <string name="report_label">Report</string>
     <string name="rondas_label">Rondas</string>
