@@ -12,3 +12,6 @@ object LoginAdmin
 
 @Serializable
 object  HomeScreen
+
+@Serializable
+object  ReportScreen

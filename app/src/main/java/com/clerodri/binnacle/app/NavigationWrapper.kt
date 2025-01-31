@@ -5,11 +5,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.clerodri.binnacle.auth.presentation.admin.AdminViewModel
-import com.clerodri.binnacle.auth.presentation.guard.GuardViewModel
 import com.clerodri.binnacle.auth.presentation.admin.LoginAdminScreen
+import com.clerodri.binnacle.auth.presentation.guard.GuardViewModel
 import com.clerodri.binnacle.auth.presentation.guard.LoginGuardScreen
 import com.clerodri.binnacle.home.presentation.HomeScreen
 import com.clerodri.binnacle.location.presentation.LocationViewModel
+import com.clerodri.binnacle.report.AddReportScreen
 
 @Composable
 fun NavigationWrapper(
@@ -19,7 +20,7 @@ fun NavigationWrapper(
     locationViewModel: LocationViewModel
 ) {
 
-    NavHost(navController = navController, startDestination = LoginGuard) {
+    NavHost(navController = navController, startDestination = HomeScreen) {
         composable<LoginGuard> {
             LoginGuardScreen(
                 viewModel = guardViewModel,
@@ -41,7 +42,11 @@ fun NavigationWrapper(
             )
         }
         composable<HomeScreen> {
-            HomeScreen(locationViewModel)
+            HomeScreen(locationViewModel, addReport = { navController.navigate(ReportScreen) })
+        }
+
+        composable<ReportScreen> {
+            AddReportScreen()
         }
     }
 }
