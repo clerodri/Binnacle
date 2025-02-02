@@ -21,4 +21,8 @@
     <string name="guard_title_label">Guardia</string>
     <string name="add_report">Publicar</string>
     <string name="start_ronda">Comenzar ronda</string>
+    <string name="listo_text">Siguiente</string>
+    <string name="press_comenzar_to_start_ronda">Presione INICIAR para comenzar una ronda</string>
+    <string name="btn_finalizar_text">FINALIZAR</string>
+    <string name="btn_start_text">INICIAR</string>
 </resources>

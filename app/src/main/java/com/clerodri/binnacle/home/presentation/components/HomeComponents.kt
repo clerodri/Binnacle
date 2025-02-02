@@ -2,12 +2,10 @@ package com.clerodri.binnacle.home.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -36,10 +34,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -149,7 +143,16 @@ fun ArrowIndicator() {
 }
 
 @Composable
-fun HomeTimerComponent(modifier: Modifier, onStart: () -> Unit) {
+fun HomeTimerComponent(
+    modifier: Modifier,
+    isStarted: Boolean,
+    isRoundBtnEnabled: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit
+) {
+    val buttonText = if (isStarted) stringResource(R.string.btn_finalizar_text)
+    else stringResource(R.string.btn_start_text)
+
     Row(
         modifier = modifier.padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -157,8 +160,9 @@ fun HomeTimerComponent(modifier: Modifier, onStart: () -> Unit) {
     ) {
         Row {
             Icon(
-                modifier = Modifier.padding(8.dp)
-                                    .size(40.dp),
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(40.dp),
                 painter = painterResource(id = R.drawable.ic_timer),
                 contentDescription = null
             )
@@ -177,15 +181,19 @@ fun HomeTimerComponent(modifier: Modifier, onStart: () -> Unit) {
             )
         }
 
-        StartButtonComponent(stringResource(R.string.start_ronda), false) {
-        }
+        StartButtonComponent(
+            buttonText, isRoundBtnEnabled = isRoundBtnEnabled,
+            isStarted = isStarted,
+            onStart = { onStart() },
+            onStop = { onStop() }
+        )
 
     }
 
 }
 
 @Composable
-fun HomeDividerTextComponent( modifier: Modifier) {
+fun HomeDividerTextComponent(modifier: Modifier) {
     Row(
         modifier.padding(top = 80.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -213,16 +221,25 @@ fun HomeDividerTextComponent( modifier: Modifier) {
 }
 
 @Composable
-fun StartButtonComponent(value: String, enable: Boolean, onStart: () -> Unit) {
-    var isEnable by remember { mutableStateOf(true) }
-    var onStart by remember { mutableStateOf(true) }
-    val label = if (onStart) "Comenzar" else "Finalizar"
+fun StartButtonComponent(
+    value: String,
+    isRoundBtnEnabled: Boolean,
+    isStarted: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit
+) {
     ElevatedButton(
         modifier = Modifier
-            .width(170.dp)
+            .width(175.dp)
             .heightIn(50.dp),
-        onClick = { onStart = !onStart },
-        enabled = isEnable,
+        onClick = {
+            if (isStarted) {
+                onStop()
+            } else {
+                onStart()
+            }
+        },
+        enabled = isRoundBtnEnabled,
         colors = ButtonColors(
             containerColor = BackGroundAppColor,
             contentColor = Color.White,
@@ -238,7 +255,7 @@ fun StartButtonComponent(value: String, enable: Boolean, onStart: () -> Unit) {
         )
         Spacer(Modifier.width(8.dp))
         Text(
-            text = label,
+            text = value,
             fontSize = 18.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold
@@ -287,23 +304,13 @@ fun TestingButton(modifier: Modifier = Modifier) {
     }
 }
 
-//@Preview
-//@Composable
-//fun HomeTitleComponentPreview(){
-////    HomeTitleComponent(Modifier.fillMaxWidth(),
-////        painter = painterResource(id = R.drawable.ic_user)
-////    )
-//
-//}
 
 @Composable
-fun HeadingTextComponent(value: String, isActive: Boolean) {
+fun HeadingTextComponent(modifier: Modifier = Modifier, value: String, isActive: Boolean) {
 
-//        Icon(imageVector = Icons.Outlined.Place , contentDescription = null,
-//            modifier = Modifier.size(30.dp), tint = BackGroundAppColor)
     Text(
         text = value,
-        modifier = Modifier.heightIn(),
+        modifier = modifier.heightIn(),
         style = TextStyle(
             fontSize = 30.sp,
             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Light,

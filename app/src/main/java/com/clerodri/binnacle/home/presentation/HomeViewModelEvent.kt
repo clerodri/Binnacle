@@ -8,4 +8,5 @@ sealed class HomeViewModelEvent {
     data object  MakeReport: HomeViewModelEvent()
     data object  StartRound: HomeViewModelEvent()
     data object  StopRound: HomeViewModelEvent()
+    data object  UpdateIndex: HomeViewModelEvent()
 }
