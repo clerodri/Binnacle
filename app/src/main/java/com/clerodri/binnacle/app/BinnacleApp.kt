@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.clerodri.binnacle.auth.presentation.admin.AdminViewModel
 import com.clerodri.binnacle.auth.presentation.guard.GuardViewModel
+import com.clerodri.binnacle.home.presentation.HomeViewModel
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 
 
@@ -15,12 +16,19 @@ import com.clerodri.binnacle.location.presentation.LocationViewModel
 fun BinnacleApp(
     guardViewModel: GuardViewModel,
     adminViewModel: AdminViewModel,
+    homeViewModel: HomeViewModel,
     locationViewModel: LocationViewModel
 ) {
     val navController = rememberNavController()
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
-        NavigationWrapper(navController, guardViewModel, adminViewModel, locationViewModel)
+        NavigationWrapper(
+            navController,
+            guardViewModel,
+            adminViewModel,
+            homeViewModel,
+            locationViewModel
+        )
     }
 }

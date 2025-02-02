@@ -3,9 +3,10 @@ package com.clerodri.binnacle.home.presentation
 /**
  * Sealed class representing the state of the home view.
  */
-sealed class HomeScreenViewState{
 
-    data object  Loading: HomeScreenViewState()
-
-
-}
+data class HomeScreenViewState(
+    val currentIndex: Int = 0,
+    val isStarted: Boolean = false,
+    val isLoading: Boolean = false,
+    val isRoundBtnEnabled: Boolean = true,
+)

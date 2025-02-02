@@ -9,6 +9,7 @@ import com.clerodri.binnacle.auth.presentation.admin.LoginAdminScreen
 import com.clerodri.binnacle.auth.presentation.guard.GuardViewModel
 import com.clerodri.binnacle.auth.presentation.guard.LoginGuardScreen
 import com.clerodri.binnacle.home.presentation.HomeScreen
+import com.clerodri.binnacle.home.presentation.HomeViewModel
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import com.clerodri.binnacle.report.AddReportScreen
 
@@ -17,6 +18,7 @@ fun NavigationWrapper(
     navController: NavHostController,
     guardViewModel: GuardViewModel,
     adminViewModel: AdminViewModel,
+    homeViewModel: HomeViewModel,
     locationViewModel: LocationViewModel
 ) {
 
@@ -42,7 +44,10 @@ fun NavigationWrapper(
             )
         }
         composable<HomeScreen> {
-            HomeScreen(locationViewModel, addReport = { navController.navigate(ReportScreen) })
+            HomeScreen(
+                locationViewModel, addReport = { navController.navigate(ReportScreen) },
+                homeViewModel = homeViewModel
+            )
         }
 
         composable<ReportScreen> {

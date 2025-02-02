@@ -18,20 +18,32 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DoubleArrow
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +53,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.home.domain.HomeType
 import com.clerodri.binnacle.home.domain.Route
@@ -53,6 +70,8 @@ import com.clerodri.binnacle.home.presentation.components.HomeTimerComponent
 import com.clerodri.binnacle.home.presentation.components.HomeTopBar
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
+import com.clerodri.binnacle.ui.theme.Primary
+import com.clerodri.binnacle.ui.theme.Secondary
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
@@ -60,7 +79,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
-    viewModel: LocationViewModel,
+    locationViewModel: LocationViewModel,
+    homeViewModel: HomeViewModel,
     addReport: () -> Unit,
 ) {
     val locationPermissions = rememberMultiplePermissionsState(
@@ -70,25 +90,30 @@ fun HomeScreen(
         )
     )
     Scaffold { padding ->
-        Screen(modifier = Modifier.padding(padding), viewModel, addReport)
+        Screen(modifier = Modifier.padding(padding), locationViewModel,homeViewModel, addReport)
     }
     LaunchedEffect(true) {
         locationPermissions.launchMultiplePermissionRequest()
     }
     LaunchedEffect(true) {
-        viewModel.getCurrentLocation()
+        locationViewModel.getCurrentLocation()
     }
 
 }
 
 
 @Composable
-fun Screen(modifier: Modifier = Modifier, viewModel: LocationViewModel, addReport: () -> Unit) {
+fun Screen(modifier: Modifier = Modifier,
+           locationViewModel: LocationViewModel,
+           homeViewModel: HomeViewModel,
+           addReport: () -> Unit) {
+    val state by homeViewModel.state.collectAsState()
+
+    val routes by homeViewModel.routes.collectAsState()
 
     var selectedHomeNav by rememberSaveable {
         mutableStateOf(HomeType.Home)
     }
-    var showFab by remember { mutableStateOf(true) }
     Scaffold(
         topBar = {
             HomeTopBar(modifier = modifier.fillMaxWidth())
@@ -99,7 +124,7 @@ fun Screen(modifier: Modifier = Modifier, viewModel: LocationViewModel, addRepor
             }
         },
         floatingActionButton = {
-            HomeAddReport(showFab) {
+            HomeAddReport(state.isStarted) {
                 addReport()
             }
         }
@@ -109,13 +134,20 @@ fun Screen(modifier: Modifier = Modifier, viewModel: LocationViewModel, addRepor
                 .fillMaxSize()
                 .padding(top = paddingValue.calculateTopPadding())
         ) {
-            HomeTimerComponent(modifier = Modifier.fillMaxWidth()) {
-
-            }
+            HomeTimerComponent(
+                modifier = Modifier.fillMaxWidth(),
+                isStarted = state.isStarted, isRoundBtnEnabled = state.isRoundBtnEnabled,
+                onStart =   {homeViewModel.onEvent(HomeViewModelEvent.StartRound)},
+                onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) }
+            )
             HomeDividerTextComponent(Modifier.fillMaxWidth())
-            HomeScreenContent(contentPadding = paddingValue) {
-
-            }
+            HomeScreenContent(
+                contentPadding = paddingValue,
+                isStarted = state.isStarted,
+                currentIndex = state.currentIndex,
+                routes = routes,
+                updateIndex = { homeViewModel.onEvent(HomeViewModelEvent.UpdateIndex)},
+            )
         }
 
 
@@ -125,28 +157,25 @@ fun Screen(modifier: Modifier = Modifier, viewModel: LocationViewModel, addRepor
 @Composable
 fun HomeScreenContent(
     contentPadding: PaddingValues,
-    onStart: () -> Unit
+    isStarted:Boolean,
+    routes : List<Route>,
+    currentIndex: Int,
+    updateIndex: ()->Unit,
 ) {
-    val items = listOf(
-        Route("1", "SOLAR 14 FAM.HOOLIGAN"),
-        Route("3", "SOLAR Y FAM.HIGGINS"),
-        Route("5", "SOLAR 51"),
-        Route("6", "CANCHA DE TENNIS")
-    ).sortedBy { it.id.toInt() }
-    var currentIndex by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = contentPadding.calculateTopPadding()),
-//        verticalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-//        HomeTimerComponent(modifier = Modifier.fillMaxWidth()) {
-//            onStart()
-//        }
-//        HomeDividerTextComponent()
+        if (!isStarted){
+            Text(stringResource(R.string.press_comenzar_to_start_ronda),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.error)
+        }
 
-        items.forEachIndexed { index, item ->
+        routes.forEachIndexed { index, item ->
             AnimatedVisibility(
                 visible = index >= currentIndex && index <= currentIndex + 1,
                 enter = fadeIn(
@@ -162,24 +191,21 @@ fun HomeScreenContent(
                     )
                 ) + slideOutVertically(),
             ) {
-                Row(modifier = Modifier.fillMaxWidth(),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
-                    if (index == currentIndex) {
-                        Icon(
-                            modifier = Modifier.size(50.dp),
-                            imageVector = Icons.Default.Check, contentDescription = null
-                        )
-                    }
                     RouteItem(
+                        index = index,
                         item = item,
-                        isActive = index == currentIndex,
+                        isActive = index == currentIndex && isStarted,
                         showArrow = index != currentIndex,
+                        isLastItem = currentIndex == routes.size - 1,
                         onNextClick = {
-                            if (currentIndex < items.size - 1) {
-                                currentIndex++
+                            if (currentIndex < routes.size - 1) {
+                                updateIndex()
                             }
                         }
                     )
@@ -191,8 +217,62 @@ fun HomeScreenContent(
     }
 }
 
-
 @Composable
+fun RouteItem(
+    index: Int,
+    item: Route,
+    isActive: Boolean,
+    showArrow: Boolean,
+    isLastItem:Boolean,
+    onNextClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (showArrow) {
+            ArrowIndicator()
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .background(Color.Transparent),
+            horizontalArrangement = Arrangement.spacedBy(100.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .heightIn(100.dp)
+                    .border(
+                        1.dp,
+                        color = if (isActive) BackGroundAppColor.copy(0.3f) else Color.Transparent.copy(
+                            0.2f
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .background(
+                        if (isActive) BackGroundAppColor.copy(0.3f) else Color.Transparent.copy(0.1f),
+                        shape = RoundedCornerShape(20.dp)
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                RouteContent(
+                    index = index,
+                    item = item,
+                    isActive = isActive,
+                    isLastItem = isLastItem,
+                    onNextClick = onNextClick
+                )
+            }
+        }
+
+    }
+
+}
+
+
+/*@Composable
 fun RouteItem(
     item: Route,
     isActive: Boolean,
@@ -227,18 +307,16 @@ fun RouteItem(
             RouteContent(item = item, isActive = isActive, onNextClick = onNextClick)
         }
     }
-}
+}*/
 
 @Composable
 fun RouteContent(
+    index: Int,
     item: Route,
     isActive: Boolean,
+    isLastItem : Boolean,
     onNextClick: () -> Unit
 ) {
-//    Column(
-//        horizontalAlignment = Alignment.Start,
-//        verticalArrangement = Arrangement.Center)
-//    {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -247,62 +325,45 @@ fun RouteContent(
         verticalAlignment = Alignment.CenterVertically
 
     ) {
-//            if (isActive) {
-//                Text(
-//                    modifier = Modifier.padding(16.dp),
-//                    textAlign = TextAlign.Start,
-//                    fontSize = 18.sp,
-//                    fontStyle = FontStyle.Italic,
-//                    color = MaterialTheme.colorScheme.onSurface,
-//                    text = "Actual"
-//                )
-//            }
-        Icon(
-            modifier = Modifier.size(40.dp),
-            imageVector = Icons.Filled.DoubleArrow,
-            contentDescription = null,
-            tint = Color.Black
-        )
+        if (isActive && !isLastItem) {
+            ElevatedButton(
+                onClick = { onNextClick() },
+                colors = ButtonColors(
+                    containerColor = Color.White,
+                    contentColor = BackGroundAppColor,
+                    disabledContainerColor = Secondary.copy(0.8f),
+                    disabledContentColor = Color.Gray.copy(0.6f)
+                )
+            ) {
+                Text(
+                    stringResource(R.string.listo_text),
+                    fontSize = 16.sp,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .width(100.dp)
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "# ${(index + 1)}",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isActive) BackGroundAppColor else Color.Transparent.copy(0.1f)
+            )
+        }
         HeadingTextComponent(
             value = item.name,
-            isActive = isActive
+            isActive = isActive,
+            modifier = Modifier.weight(1f)
         )
-
-//            Text(
-//                text = item.name,
-//                modifier = Modifier
-//                    .padding(16.dp)
-//                    .align(Alignment.CenterVertically),
-//                fontSize = 26.sp,
-//                fontStyle = FontStyle.Italic,
-//                color = Color.Gray.copy(0.6f),
-//                fontFamily = FontFamily.Monospace
-//            )
-//        }
-
-//        if (isActive) {
-//            ElevatedButton(
-//                onClick = { onNextClick() },
-//                colors = ButtonColors(
-//                    containerColor = Secondary,
-//                    contentColor = Color.White,
-//                    disabledContainerColor = Secondary.copy(0.8f),
-//                    disabledContentColor = Color.Gray.copy(0.6f)
-//                )
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Outlined.Done, contentDescription = null,
-//                )
-//                Spacer(Modifier.width(10.dp))
-//                Text(
-//                    text = "Siguiente",
-//                    fontSize = 12.sp,
-//                    fontWeight = FontWeight.Bold
-//                )
-//            }
-//        }
     }
 }
+
 
 @Composable
 private fun HomeAddReport(showFab: Boolean, addReport: () -> Unit) {
