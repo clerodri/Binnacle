@@ -1,4 +1,4 @@
-package com.clerodri.binnacle.utilities
+package com.clerodri.binnacle.util
 
 import android.location.Location
 import androidx.compose.foundation.background

@@ -9,4 +9,6 @@ data class HomeScreenViewState(
     val isStarted: Boolean = false,
     val isLoading: Boolean = false,
     val isRoundBtnEnabled: Boolean = true,
+    val timer:String = "00:00:00",
+    val elapsedSeconds: Int = 0
 )
