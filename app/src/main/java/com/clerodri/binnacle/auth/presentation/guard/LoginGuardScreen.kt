@@ -14,6 +14,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +44,7 @@ fun LoginGuardScreen(
     navigateToLoginAdmin: () -> Unit,
     navigateToHome: () -> Unit
 ) {
+    val state  by viewModel.state.collectAsState()
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -63,7 +66,7 @@ fun LoginGuardScreen(
                     .background(WhiteColor)
             ) {
                 LoginGuardContent(
-                    viewModel.state,
+                    state,
                     navigateToLoginAdmin = {
                         viewModel.onEvent(GuardViewModelEvent.ClearFields)
                         navigateToLoginAdmin()
@@ -82,7 +85,10 @@ fun LoginGuardScreen(
         viewModel.getGuardChannel().collect { event ->
             when (event) {
                 LoginScreenEvent.Failure -> Log.d("RR", "Screen Guard Failure")
-                LoginScreenEvent.Success -> navigateToHome()
+                LoginScreenEvent.Success -> {
+                    navigateToHome()
+                    viewModel.onEvent(GuardViewModelEvent.ClearFields)
+                }
             }
         }
     }

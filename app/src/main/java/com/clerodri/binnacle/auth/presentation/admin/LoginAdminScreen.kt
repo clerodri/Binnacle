@@ -78,6 +78,7 @@ fun LoginAdminScreen(
             when (event) {
                 LoginScreenEvent.Failure -> Log.d("RR", "Screen Admin Failure")
                 LoginScreenEvent.Success -> {
+                    viewModel.onAction(AdminViewModelEvent.ClearFields)
                     navigateToHome()
                 }
             }
