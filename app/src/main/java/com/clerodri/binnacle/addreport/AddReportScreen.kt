@@ -1,8 +1,6 @@
 package com.clerodri.binnacle.addreport
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,8 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.PhoneCallback
-import androidx.compose.material.icons.automirrored.filled.PhoneMissed
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -39,7 +34,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.auth.presentation.components.componentShapes
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
@@ -65,7 +59,10 @@ fun AddReportScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton (onClick = {onBack()  }, modifier = Modifier.padding(bottom = 50.dp, end = 8.dp)) {
+            FloatingActionButton(
+                onClick = { onBack() },
+                modifier = Modifier.padding(bottom = 50.dp, end = 8.dp)
+            ) {
                 Icon(Icons.Filled.Done, stringResource(id = R.string.save_report))
             }
         }
@@ -114,7 +111,9 @@ private fun AddReportContent(
             )
             OutlinedTextField(
                 value = title,
-                modifier = Modifier.fillMaxWidth().clip(componentShapes.small),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(componentShapes.small),
                 onValueChange = onTitleChanged,
                 placeholder = {
                     Text(
@@ -133,7 +132,8 @@ private fun AddReportContent(
                 placeholder = { Text(stringResource(id = R.string.description_hint)) },
                 modifier = Modifier
                     .height(350.dp)
-                    .fillMaxWidth().clip(componentShapes.small),
+                    .fillMaxWidth()
+                    .clip(componentShapes.small),
                 colors = textFieldColors
             )
         }
@@ -148,8 +148,12 @@ fun AddReportTopAppBar(@StringRes title: Int, onBack: () -> Unit) {
         title = { Text(text = stringResource(title)) },
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
-                    modifier = Modifier.padding(start = 8.dp).size(40.dp),)
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(40.dp),
+                )
             }
         },
         actions = {
@@ -157,8 +161,11 @@ fun AddReportTopAppBar(@StringRes title: Int, onBack: () -> Unit) {
                 Icon(
                     imageVector = Icons.Filled.CameraAlt,
                     contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp).size(40.dp),
-                    tint = BackGroundAppColor)
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(40.dp),
+                    tint = BackGroundAppColor
+                )
             }
 
         },

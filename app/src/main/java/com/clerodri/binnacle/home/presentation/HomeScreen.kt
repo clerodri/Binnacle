@@ -1,6 +1,7 @@
 package com.clerodri.binnacle.home.presentation
 
 import android.Manifest
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -26,7 +27,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ElevatedButton
@@ -38,6 +38,8 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,6 +48,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,6 +77,7 @@ import com.clerodri.binnacle.ui.theme.Primary
 import com.clerodri.binnacle.ui.theme.Secondary
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -81,6 +86,7 @@ fun HomeScreen(
     locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
     addReport: () -> Unit,
+    onLogOut: () -> Unit
 ) {
     val locationPermissions = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -88,8 +94,23 @@ fun HomeScreen(
             Manifest.permission.ACCESS_FINE_LOCATION
         )
     )
-    Scaffold { padding ->
-        Screen(modifier = Modifier.padding(top = padding.calculateTopPadding()), locationViewModel, homeViewModel, addReport)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    BackHandler(enabled = true) {
+
+    }
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp))
+        }
+    ) { padding ->
+        Screen(
+            modifier = Modifier.padding(top = padding.calculateTopPadding()),
+            locationViewModel = locationViewModel,
+            homeViewModel = homeViewModel,
+            addReport = addReport,
+            onLogOut = onLogOut
+        )
     }
     LaunchedEffect(true) {
         locationPermissions.launchMultiplePermissionRequest()
@@ -97,6 +118,18 @@ fun HomeScreen(
     LaunchedEffect(true) {
         locationViewModel.getCurrentLocation()
     }
+    LaunchedEffect(Unit) {
+        homeViewModel.getEventChannel().collect { event ->
+            when (event) {
+                is HomeUiEvent.ShowSnackbar -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(event.message)
+                    }
+                }
+            }
+        }
+    }
+
 
 }
 
@@ -106,7 +139,8 @@ private fun Screen(
     modifier: Modifier = Modifier,
     locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
-    addReport: () -> Unit
+    addReport: () -> Unit,
+    onLogOut: () -> Unit
 ) {
     val state by homeViewModel.state.collectAsState()
 
@@ -120,9 +154,17 @@ private fun Screen(
             HomeTopBar(modifier = modifier.fillMaxWidth())
         },
         bottomBar = {
-            HomeBottomBar(selectedHomeNav) {
-                selectedHomeNav = it
-            }
+            HomeBottomBar(
+                selectedHomeNav,
+                onItemSelected = { selectedHomeNav = it },
+                onLogOut = {
+                    if (state.isStarted) {
+                        homeViewModel.onEvent(HomeViewModelEvent.OnLogOut)
+                    } else {
+                        onLogOut()
+                    }
+                }
+            )
         },
         floatingActionButton = {
             //state.isStarted
@@ -162,7 +204,7 @@ private fun HeaderHome(
     modifier: Modifier,
     isStarted: Boolean,
     isRoundBtnEnabled: Boolean,
-    timer:String,
+    timer: String,
     onStart: () -> Unit,
     onStop: () -> Unit
 ) {
@@ -174,7 +216,7 @@ private fun HeaderHome(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-       TimerHomeComponent(timer = timer)
+        TimerHomeComponent(timer = timer)
 
         StartButtonComponent(
             buttonText, isRoundBtnEnabled = isRoundBtnEnabled,
@@ -204,7 +246,7 @@ private fun HomeScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        val info = if(!isStarted) stringResource(R.string.press_comenzar_to_start_ronda)
+        val info = if (!isStarted) stringResource(R.string.press_comenzar_to_start_ronda)
         else stringResource(R.string.complete_all_rounds_for_finish_round)
 
         Text(
@@ -432,10 +474,11 @@ private fun HomeTopBar(modifier: Modifier) {
 //                    .padding(start = 12.dp, end = 8.dp).size(40.dp)
 //            )
             Icon(
-                imageVector = Icons.Outlined.VerifiedUser ,
+                imageVector = Icons.Outlined.VerifiedUser,
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(start = 12.dp, end = 8.dp).size(30.dp)
+                    .padding(start = 12.dp, end = 8.dp)
+                    .size(30.dp)
 
             )
         }
@@ -460,9 +503,13 @@ private fun HomeAddReport(showFab: Boolean, addReport: () -> Unit) {
 }
 
 
-
 @Composable
-fun HomeBottomBar(selectedScreen: HomeType, onItemSelected: (HomeType) -> Unit) {
+fun HomeBottomBar(
+    selectedScreen: HomeType,
+    onItemSelected: (HomeType) -> Unit,
+    onLogOut: () -> Unit
+
+) {
     NavigationBar(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -474,12 +521,19 @@ fun HomeBottomBar(selectedScreen: HomeType, onItemSelected: (HomeType) -> Unit) 
             ),
         containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) {
+
         HomeType.entries.forEach { item ->
             val selected = selectedScreen == item
 
             NavigationBarItem(
                 selected = selected,
-                onClick = { onItemSelected(item) },
+                onClick = {
+                    if (item == HomeType.LogOut) {
+                        onLogOut()
+                    } else {
+                        onItemSelected(item)
+                    }
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Primary,
                     unselectedIconColor = Color.Gray.copy(0.6f)

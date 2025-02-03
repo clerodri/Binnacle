@@ -8,15 +8,19 @@ import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.auth.presentation.LoginScreenEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class GuardViewModel @Inject constructor() : ViewModel() {
 
-    // hold the state of guard screen
-    var state by mutableStateOf(GuardScreenState.GuardState())
-        private set
+
+    private val _state = MutableStateFlow(GuardScreenState.GuardState())
+    val state: StateFlow<GuardScreenState.GuardState> = _state.asStateFlow()
 
     // channel for send events to guard screen
     private val _guardChannel = Channel<LoginScreenEvent>()
@@ -27,55 +31,63 @@ class GuardViewModel @Inject constructor() : ViewModel() {
         when (event) {
             GuardViewModelEvent.LoginGuard -> login()
             is GuardViewModelEvent.UpdateIdentifier -> {
-                state = state.copy(
-                    loginEnable = isValidIdentifier(event.identifier),
-                    identifier = event.identifier,
-                    identifierError = if (!isValidIdentifier(event.identifier)) "Debe ingresar 10 números" else null
-                )
+                _state.update {
+                    it.copy(
+                        loginEnable = isValidIdentifier(event.identifier),
+                        identifier = event.identifier,
+                        identifierError = if (!isValidIdentifier(event.identifier)) "Debe ingresar 10 números" else null
+                    )
+                }
             }
 
             GuardViewModelEvent.ClearFields -> {
-                state = state.copy(
-                    identifier = "",
-                    identifierError = null
-                )
+                _state.update {
+                    it.copy(
+                        identifier = "",
+                        identifierError = null,
+                        loginEnable = false
+                    )
+
+                }
             }
         }
     }
 
-
     private fun login() {
+
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
             delay(1000)
             sendScreenEvent(LoginScreenEvent.Success)
-            state = state.copy(isLoading = false)
+            _state.update { it.copy(isLoading = false) }
+        }
 
-            /*       when(val result = loginUseCase.login(state.identifier))
-                   {
-                       is Result.Failure ->{
-                           _authChannel .send(AuthEvents.Failure)
-                           when (result.error) {
-                               DataError.Network.GUARD_NOT_FOUND -> {
-                                   Log.d("RR", "GUARD_NOT_FOUND ")
-                               }
-                               DataError.Network.REQUEST_TIMEOUT -> {
-                                   Log.d("RR", "REQUEST_TIMEOUT ")
-                               }
-                               DataError.Network.NO_INTERNET -> {
-                                   Log.d("RR", "NO_INTERNET ")
-                               }
+
+
+        /*       when(val result = loginUseCase.login(state.identifier))
+               {
+                   is Result.Failure ->{
+                       _authChannel .send(AuthEvents.Failure)
+                       when (result.error) {
+                           DataError.Network.GUARD_NOT_FOUND -> {
+                               Log.d("RR", "GUARD_NOT_FOUND ")
+                           }
+                           DataError.Network.REQUEST_TIMEOUT -> {
+                               Log.d("RR", "REQUEST_TIMEOUT ")
+                           }
+                           DataError.Network.NO_INTERNET -> {
+                               Log.d("RR", "NO_INTERNET ")
                            }
                        }
-                       is Result.Success -> {
-                           Log.d("RR", "Success ${result.data}")
-                           _authChannel .send(AuthEvents.Success)
-                       }
                    }
+                   is Result.Success -> {
+                       Log.d("RR", "Success ${result.data}")
+                       _authChannel .send(AuthEvents.Success)
+                   }
+               }
 
-                    state = state.copy(isLoading = false)*/
+                state = state.copy(isLoading = false)*/
 
-        }
     }
 
 

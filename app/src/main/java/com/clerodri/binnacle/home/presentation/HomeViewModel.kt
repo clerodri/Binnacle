@@ -9,11 +9,13 @@ import com.clerodri.binnacle.home.domain.Route
 import com.clerodri.binnacle.util.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,8 +27,9 @@ class HomeViewModel @Inject constructor(
     private val preferences = DataStoreManager(application)
 
     //    // Event channel to send events to The UI
-//    private val _eventChannel = Channel<HomeScreenEvent>()
-//    internal fun getEventChannel() = _eventChannel.receiveAsFlow()
+    private val _eventChannel = Channel<HomeUiEvent>()
+    internal fun getEventChannel() = _eventChannel.receiveAsFlow()
+
     private val _state = MutableStateFlow(HomeScreenViewState())
     val state: StateFlow<HomeScreenViewState> = _state.asStateFlow()
 
@@ -118,6 +121,12 @@ class HomeViewModel @Inject constructor(
                 }
                 saveState()
             }
+
+            HomeViewModelEvent.OnLogOut -> {
+               if(_state.value.isStarted){
+                   sendScreenEvent(event = HomeUiEvent.ShowSnackbar("Debe Finalizar la RONDA actual"))
+               }
+            }
         }
     }
 
@@ -182,11 +191,11 @@ class HomeViewModel @Inject constructor(
 //    }
 
     // Send events back to the UI via the event channel
-//    private fun sendScreenEvent(event: HomeScreenEvent) {
-//        viewModelScope.launch {
-//            _eventChannel.send(event)
-//        }
-//    }
+    private fun sendScreenEvent(event: HomeUiEvent) {
+        viewModelScope.launch {
+            _eventChannel.send(event)
+        }
+    }
 
 
 }

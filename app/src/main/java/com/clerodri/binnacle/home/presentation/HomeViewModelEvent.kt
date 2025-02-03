@@ -5,6 +5,7 @@ package com.clerodri.binnacle.home.presentation
 sealed class HomeViewModelEvent {
     data object  OnCheckIn: HomeViewModelEvent()
     data object  OnCheckOut: HomeViewModelEvent()
+    data object  OnLogOut: HomeViewModelEvent()
     data object  MakeReport: HomeViewModelEvent()
     data object  StartRound: HomeViewModelEvent()
     data object  StopRound: HomeViewModelEvent()

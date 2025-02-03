@@ -20,16 +20,23 @@ fun NavigationWrapper(
     guardViewModel: GuardViewModel,
     adminViewModel: AdminViewModel,
     homeViewModel: HomeViewModel,
-    addReportViewModel : AddReportViewModel,
+    addReportViewModel: AddReportViewModel,
     locationViewModel: LocationViewModel
 ) {
 
-    NavHost(navController = navController, startDestination = HomeScreen) {
+    NavHost(navController = navController, startDestination = LoginGuard) {
         composable<LoginGuard> {
             LoginGuardScreen(
                 viewModel = guardViewModel,
                 navigateToLoginAdmin = { navController.navigate(LoginAdmin) },
-                navigateToHome = { navController.navigate(HomeScreen) },
+                navigateToHome = {
+                    navController.navigate(HomeScreen) {
+                        popUpTo<LoginGuard> {
+                            inclusive = false
+                        }
+                    }
+
+                },
             )
         }
         composable<LoginAdmin> {
@@ -48,14 +55,21 @@ fun NavigationWrapper(
         composable<HomeScreen> {
             HomeScreen(
                 locationViewModel, addReport = { navController.navigate(ReportScreen) },
-                homeViewModel = homeViewModel
+                homeViewModel = homeViewModel,
+                onLogOut = {
+                    navController.navigate(LoginGuard) {
+                        popUpTo<LoginGuard> {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
 
         composable<ReportScreen> {
             AddReportScreen(
                 addReportViewModel = addReportViewModel,
-            ){
+            ) {
                 navController.popBackStack()
             }
         }
