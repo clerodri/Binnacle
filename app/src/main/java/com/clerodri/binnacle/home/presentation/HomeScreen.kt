@@ -16,47 +16,41 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DoubleArrow
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clerodri.binnacle.R
@@ -66,11 +60,10 @@ import com.clerodri.binnacle.home.presentation.components.ArrowIndicator
 import com.clerodri.binnacle.home.presentation.components.HeadingTextComponent
 import com.clerodri.binnacle.home.presentation.components.HomeBottomBar
 import com.clerodri.binnacle.home.presentation.components.HomeDividerTextComponent
-import com.clerodri.binnacle.home.presentation.components.HomeTimerComponent
-import com.clerodri.binnacle.home.presentation.components.HomeTopBar
+import com.clerodri.binnacle.home.presentation.components.StartButtonComponent
+import com.clerodri.binnacle.home.presentation.components.TimerHomeComponent
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
-import com.clerodri.binnacle.ui.theme.Primary
 import com.clerodri.binnacle.ui.theme.Secondary
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -90,7 +83,7 @@ fun HomeScreen(
         )
     )
     Scaffold { padding ->
-        Screen(modifier = Modifier.padding(padding), locationViewModel,homeViewModel, addReport)
+        Screen(modifier = Modifier.padding(padding), locationViewModel, homeViewModel, addReport)
     }
     LaunchedEffect(true) {
         locationPermissions.launchMultiplePermissionRequest()
@@ -103,10 +96,12 @@ fun HomeScreen(
 
 
 @Composable
-fun Screen(modifier: Modifier = Modifier,
-           locationViewModel: LocationViewModel,
-           homeViewModel: HomeViewModel,
-           addReport: () -> Unit) {
+private fun Screen(
+    modifier: Modifier = Modifier,
+    locationViewModel: LocationViewModel,
+    homeViewModel: HomeViewModel,
+    addReport: () -> Unit
+) {
     val state by homeViewModel.state.collectAsState()
 
     val routes by homeViewModel.routes.collectAsState()
@@ -134,19 +129,19 @@ fun Screen(modifier: Modifier = Modifier,
                 .fillMaxSize()
                 .padding(top = paddingValue.calculateTopPadding())
         ) {
-            HomeTimerComponent(
+            HeaderHome(
                 modifier = Modifier.fillMaxWidth(),
                 isStarted = state.isStarted, isRoundBtnEnabled = state.isRoundBtnEnabled,
-                onStart =   {homeViewModel.onEvent(HomeViewModelEvent.StartRound)},
+                onStart = { homeViewModel.onEvent(HomeViewModelEvent.StartRound) },
                 onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) }
             )
-            HomeDividerTextComponent(Modifier.fillMaxWidth())
+
             HomeScreenContent(
                 contentPadding = paddingValue,
                 isStarted = state.isStarted,
                 currentIndex = state.currentIndex,
                 routes = routes,
-                updateIndex = { homeViewModel.onEvent(HomeViewModelEvent.UpdateIndex)},
+                updateIndex = { homeViewModel.onEvent(HomeViewModelEvent.UpdateIndex) },
             )
         }
 
@@ -155,12 +150,42 @@ fun Screen(modifier: Modifier = Modifier,
 }
 
 @Composable
-fun HomeScreenContent(
+private fun HeaderHome(
+    modifier: Modifier,
+    isStarted: Boolean,
+    isRoundBtnEnabled: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit
+) {
+    val buttonText = if (isStarted) stringResource(R.string.btn_finalizar_text)
+    else stringResource(R.string.btn_start_text)
+
+    Row(
+        modifier = modifier.padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+       TimerHomeComponent()
+
+        StartButtonComponent(
+            buttonText, isRoundBtnEnabled = isRoundBtnEnabled,
+            isStarted = isStarted,
+            onStart = { onStart() },
+            onStop = { onStop() }
+        )
+
+    }
+    HomeDividerTextComponent(modifier)
+}
+
+
+@Composable
+private fun HomeScreenContent(
     contentPadding: PaddingValues,
-    isStarted:Boolean,
-    routes : List<Route>,
+    isStarted: Boolean,
+    routes: List<Route>,
     currentIndex: Int,
-    updateIndex: ()->Unit,
+    updateIndex: () -> Unit,
 ) {
 
     Column(
@@ -169,10 +194,12 @@ fun HomeScreenContent(
             .padding(top = contentPadding.calculateTopPadding()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (!isStarted){
-            Text(stringResource(R.string.press_comenzar_to_start_ronda),
+        if (!isStarted) {
+            Text(
+                stringResource(R.string.press_comenzar_to_start_ronda),
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.error)
+                color = MaterialTheme.colorScheme.error
+            )
         }
 
         routes.forEachIndexed { index, item ->
@@ -218,12 +245,12 @@ fun HomeScreenContent(
 }
 
 @Composable
-fun RouteItem(
+private fun RouteItem(
     index: Int,
     item: Route,
     isActive: Boolean,
     showArrow: Boolean,
-    isLastItem:Boolean,
+    isLastItem: Boolean,
     onNextClick: () -> Unit
 ) {
     Column(
@@ -310,11 +337,11 @@ fun RouteItem(
 }*/
 
 @Composable
-fun RouteContent(
+private fun RouteContent(
     index: Int,
     item: Route,
     isActive: Boolean,
-    isLastItem : Boolean,
+    isLastItem: Boolean,
     onNextClick: () -> Unit
 ) {
     Row(
@@ -362,6 +389,42 @@ fun RouteContent(
             modifier = Modifier.weight(1f)
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HomeTopBar(modifier: Modifier) {
+    TopAppBar(
+        modifier = modifier
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(100.dp)),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
+        ),
+
+        windowInsets = WindowInsets(top = 0.dp),
+        title = {
+
+            Text(
+                text = "Ronaldo Rodriguez - Laguna Dorada",
+                color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.titleLarge,
+                fontStyle = FontStyle.Italic
+            )
+
+
+        },
+        navigationIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_user),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 12.dp, end = 8.dp)
+            )
+        }
+    )
+
 }
 
 

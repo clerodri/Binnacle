@@ -94,41 +94,6 @@ fun HomeBottomBar(selectedScreen: HomeType, onItemSelected: (HomeType) -> Unit) 
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeTopBar(modifier: Modifier) {
-    TopAppBar(
-        modifier = modifier
-            .padding(horizontal = 20.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(100.dp)),
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
-        ),
-
-        windowInsets = WindowInsets(top = 0.dp),
-        title = {
-
-            Text(
-                text = "Ronaldo Rodriguez - Laguna Dorada",
-                color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
-                fontSize = 18.sp,
-                style = MaterialTheme.typography.titleLarge,
-                fontStyle = FontStyle.Italic
-            )
-
-
-        },
-        navigationIcon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_user),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(start = 12.dp, end = 8.dp)
-            )
-        }
-    )
-
-}
 
 @Composable
 fun ArrowIndicator() {
@@ -142,54 +107,31 @@ fun ArrowIndicator() {
     Spacer(modifier = Modifier.height(40.dp))
 }
 
+
 @Composable
-fun HomeTimerComponent(
-    modifier: Modifier,
-    isStarted: Boolean,
-    isRoundBtnEnabled: Boolean,
-    onStart: () -> Unit,
-    onStop: () -> Unit
-) {
-    val buttonText = if (isStarted) stringResource(R.string.btn_finalizar_text)
-    else stringResource(R.string.btn_start_text)
-
-    Row(
-        modifier = modifier.padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row {
-            Icon(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .size(40.dp),
-                painter = painterResource(id = R.drawable.ic_timer),
-                contentDescription = null
-            )
-            Text(
-                text = "00:00:00",
-                modifier = Modifier
-                    .heightIn()
-                    .align(Alignment.CenterVertically),
-                style = TextStyle(
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Normal
-                ),
-                color = Color.Black,
-                textAlign = TextAlign.Start
-            )
-        }
-
-        StartButtonComponent(
-            buttonText, isRoundBtnEnabled = isRoundBtnEnabled,
-            isStarted = isStarted,
-            onStart = { onStart() },
-            onStop = { onStop() }
+ fun TimerHomeComponent() {
+    Row {
+        Icon(
+            modifier = Modifier
+                .padding(8.dp)
+                .size(40.dp),
+            painter = painterResource(id = R.drawable.ic_timer),
+            contentDescription = null
         )
-
+        Text(
+            text = "00:00:00",
+            modifier = Modifier
+                .heightIn()
+                .align(Alignment.CenterVertically),
+            style = TextStyle(
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Normal
+            ),
+            color = Color.Black,
+            textAlign = TextAlign.Start
+        )
     }
-
 }
 
 @Composable
