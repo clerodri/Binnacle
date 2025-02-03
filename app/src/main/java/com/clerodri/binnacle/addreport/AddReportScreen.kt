@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -33,6 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.auth.presentation.components.componentShapes
@@ -123,6 +126,11 @@ private fun AddReportContent(
                 },
                 textStyle = MaterialTheme.typography.headlineSmall
                     .copy(fontWeight = FontWeight.Bold),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
                 maxLines = 1,
                 colors = textFieldColors
             )
@@ -134,7 +142,10 @@ private fun AddReportContent(
                     .height(350.dp)
                     .fillMaxWidth()
                     .clip(componentShapes.small),
-                colors = textFieldColors
+                colors = textFieldColors,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                ),
             )
         }
     }

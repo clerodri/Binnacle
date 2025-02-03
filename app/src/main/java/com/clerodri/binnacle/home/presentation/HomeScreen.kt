@@ -17,18 +17,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -37,10 +45,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -129,8 +140,6 @@ fun HomeScreen(
             }
         }
     }
-
-
 }
 
 
@@ -503,6 +512,7 @@ private fun HomeAddReport(showFab: Boolean, addReport: () -> Unit) {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeBottomBar(
     selectedScreen: HomeType,
@@ -510,6 +520,7 @@ fun HomeBottomBar(
     onLogOut: () -> Unit
 
 ) {
+    var openDialog by remember { mutableStateOf(false) }
     NavigationBar(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -528,11 +539,16 @@ fun HomeBottomBar(
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    if (item == HomeType.LogOut) {
-                        onLogOut()
-                    } else {
-                        onItemSelected(item)
+                    when(item){
+                        HomeType.Check -> {
+                            openDialog = true
+                        }
+                        HomeType.LogOut -> {
+                            onLogOut()
+                        }
+                        else -> onItemSelected(item)
                     }
+
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Primary,
@@ -550,8 +566,60 @@ fun HomeBottomBar(
                 }
             )
         }
-
     }
+    if(openDialog){
+        CheckInDialogComponent(
+            onCancel = { openDialog= false },
+            onConfirm = { openDialog= false },
+            onDismissRequest = { openDialog = false }
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun CheckInDialogComponent( onCancel: () -> Unit, onConfirm: () -> Unit, onDismissRequest: () -> Unit) {
+    BasicAlertDialog(
+        onDismissRequest = { onDismissRequest()  },
+        content = {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(12.dp),
+                tonalElevation = AlertDialogDefaults.TonalElevation
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(stringResource(R.string.check_in_confirmacion), fontWeight = FontWeight.Bold, fontSize = 25.sp, color = BackGroundAppColor)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(stringResource(R.string.check_in_confirmation_text), color = MaterialTheme.colorScheme.error)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        OutlinedButton(onClick = { onCancel() }, modifier = Modifier.padding(end = 10.dp),
+                            ) {
+                            Text(stringResource(R.string.check_in_cancelar), color = Color.Gray.copy(0.8f))
+                        }
+                        Button(
+                            onClick = {onConfirm()}
+                            , colors = ButtonDefaults.buttonColors(
+                                containerColor = BackGroundAppColor
+
+                            )
+                        ) {
+                            Text(stringResource(R.string.check_in_text))
+                        }
+                    }
+                }
+            }
+        }
+
+    )
 }
 
 

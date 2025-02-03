@@ -24,7 +24,7 @@ fun NavigationWrapper(
     locationViewModel: LocationViewModel
 ) {
 
-    NavHost(navController = navController, startDestination = LoginGuard) {
+    NavHost(navController = navController, startDestination = HomeScreen) {
         composable<LoginGuard> {
             LoginGuardScreen(
                 viewModel = guardViewModel,
