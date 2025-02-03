@@ -1,4 +1,4 @@
-package com.clerodri.binnacle.utilities
+package com.clerodri.binnacle.util
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,10 +15,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.core.components.HeadingTextComponent
-import com.clerodri.binnacle.core.components.NormalTextComponent
 
 @Composable
-fun Test(){
+fun LoginTestScreen(){
     Surface(
         color = Color.White,
         modifier = Modifier
@@ -26,9 +25,9 @@ fun Test(){
             .background(Color.White)
             .padding(28.dp),
 
-    ) {
+    )    {
        Column(modifier = Modifier.fillMaxSize()) {
-           NormalTextComponent( value = stringResource(id = R.string.title_guard))
+//           NormalTextComponent( value = stringResource(id = R.string.title_guard))
            HeadingTextComponent(value = stringResource(id = R.string.app_name))
            Spacer(modifier = Modifier.height(20.dp))
 //           CedulaFieldComponent(labelValue = stringResource(id = R.string.cedula),
@@ -41,7 +40,7 @@ fun Test(){
 //               labelValue = stringResource(id = R.string.password),
 //               painterResource = painterResource(id = R.drawable.ic_password)
 //           )
-           Spacer(modifier = Modifier.height(80.dp))
+//           Spacer(modifier = Modifier.height(80.dp))
 //           ButtonComponent(value = stringResource(id = R.string.login))
 //           CheckBoxComponent(value = stringResource(R.string.remember_password))
        }
@@ -51,7 +50,7 @@ fun Test(){
 
 @Preview
 @Composable
-fun  DefaultPreview(){
-    Test()
+fun  LoginTestScreenTPreview(){
+    LoginTestScreen()
 
 }

@@ -2,8 +2,10 @@ package com.clerodri.binnacle.home.domain
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.clerodri.binnacle.R
@@ -20,5 +22,10 @@ enum class HomeType(
     Check(title = R.string.checkin_label,
         selectedIcon = Icons.Filled.VerifiedUser,
         unselectedIcon = Icons.Outlined.VerifiedUser
+    ),
+    LogOut(title = R.string.logout_label,
+        selectedIcon = Icons.Filled.Logout,
+        unselectedIcon = Icons.Outlined.Logout
     )
+
 }

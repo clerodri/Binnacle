@@ -15,6 +15,7 @@
     <string name="login_admin_text">" Login Admin"</string>
     <string name="rondas">Rutas</string>
     <string name="checkin_label">Check-In</string>
+    <string name="logout_label">Cerrar Sesion</string>
     <string name="report_label">Report</string>
     <string name="rondas_label">Rondas</string>
     <string name="login_administrator_label">Administrator</string>
@@ -23,6 +24,12 @@
     <string name="start_ronda">Comenzar ronda</string>
     <string name="listo_text">Siguiente</string>
     <string name="press_comenzar_to_start_ronda">Presione INICIAR para comenzar una ronda</string>
+    <string name="complete_all_rounds_for_finish_round">Complete todas las RUTAS para finalizar la ronda</string>
     <string name="btn_finalizar_text">FINALIZAR</string>
     <string name="btn_start_text">INICIAR</string>
+    <string name="title_hint">Titulo</string>
+    <string name="description_hint">Detalle\n</string>
+    <string name="menu_back">Regresar</string>
+    <string name="report_screen_name">Reporte</string>
+    <string name="save_report">Guardar</string>
 </resources>

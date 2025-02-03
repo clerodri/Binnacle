@@ -55,45 +55,6 @@ import com.clerodri.binnacle.ui.theme.Primary
 import com.clerodri.binnacle.ui.theme.TextColor
 
 
-@Composable
-fun HomeBottomBar(selectedScreen: HomeType, onItemSelected: (HomeType) -> Unit) {
-    NavigationBar(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-            .shadow(
-                elevation = 20.dp,
-                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-
-            ),
-        containerColor = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        HomeType.entries.forEach { item ->
-            val selected = selectedScreen == item
-
-            NavigationBarItem(
-                selected = selected,
-                onClick = { onItemSelected(item) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Primary,
-                    unselectedIconColor = Color.Gray.copy(0.6f)
-                ),
-                label = {
-                    Text(text = stringResource(id = item.title))
-                },
-                alwaysShowLabel = true,
-                icon = {
-                    Icon(
-                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = stringResource(id = item.title)
-                    )
-                }
-            )
-        }
-
-    }
-}
-
 
 @Composable
 fun ArrowIndicator() {
@@ -109,7 +70,7 @@ fun ArrowIndicator() {
 
 
 @Composable
- fun TimerHomeComponent() {
+ fun TimerHomeComponent(timer:String) {
     Row {
         Icon(
             modifier = Modifier
@@ -119,7 +80,7 @@ fun ArrowIndicator() {
             contentDescription = null
         )
         Text(
-            text = "00:00:00",
+            text = timer,
             modifier = Modifier
                 .heightIn()
                 .align(Alignment.CenterVertically),
@@ -254,7 +215,7 @@ fun HeadingTextComponent(modifier: Modifier = Modifier, value: String, isActive:
         text = value,
         modifier = modifier.heightIn(),
         style = TextStyle(
-            fontSize = 30.sp,
+            fontSize = 20.sp,
             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Light,
             fontStyle = FontStyle.Normal
         ),

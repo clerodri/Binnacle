@@ -1,5 +1,6 @@
 [versions]
 accompanistPermissions = "0.24.13-rc"
+
 gradle = "7.0.4"
 gradleVersion = "8.4.2"
 agp = "8.7.3"
@@ -36,9 +37,12 @@ maps = "3.1.0-beta"
 secretsGradlePlugin = "2.0.1"
 playServicesLocation = "21.3.0"
 
+#datastore
+datastorePreferences = "1.1.2"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
+
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gradle-v842 = { module = "com.android.tools.build:gradle", version.ref = "gradleVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -78,6 +82,9 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 gson = {module="com.google.code.gson:gson", version.ref="gson"}
 gson-converter={module="com.squareup.retrofit2:converter-gson", version.ref="retrofit"}
 
+
+#Data store
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 
 #NavigationCompose
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }

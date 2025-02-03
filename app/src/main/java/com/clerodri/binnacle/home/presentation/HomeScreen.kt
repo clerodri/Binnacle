@@ -21,16 +21,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -45,8 +51,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -58,12 +64,12 @@ import com.clerodri.binnacle.home.domain.HomeType
 import com.clerodri.binnacle.home.domain.Route
 import com.clerodri.binnacle.home.presentation.components.ArrowIndicator
 import com.clerodri.binnacle.home.presentation.components.HeadingTextComponent
-import com.clerodri.binnacle.home.presentation.components.HomeBottomBar
 import com.clerodri.binnacle.home.presentation.components.HomeDividerTextComponent
 import com.clerodri.binnacle.home.presentation.components.StartButtonComponent
 import com.clerodri.binnacle.home.presentation.components.TimerHomeComponent
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
+import com.clerodri.binnacle.ui.theme.Primary
 import com.clerodri.binnacle.ui.theme.Secondary
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -83,7 +89,7 @@ fun HomeScreen(
         )
     )
     Scaffold { padding ->
-        Screen(modifier = Modifier.padding(padding), locationViewModel, homeViewModel, addReport)
+        Screen(modifier = Modifier.padding(top = padding.calculateTopPadding()), locationViewModel, homeViewModel, addReport)
     }
     LaunchedEffect(true) {
         locationPermissions.launchMultiplePermissionRequest()
@@ -119,7 +125,8 @@ private fun Screen(
             }
         },
         floatingActionButton = {
-            HomeAddReport(state.isStarted) {
+            //state.isStarted
+            HomeAddReport(true) {
                 addReport()
             }
         }
@@ -133,7 +140,8 @@ private fun Screen(
                 modifier = Modifier.fillMaxWidth(),
                 isStarted = state.isStarted, isRoundBtnEnabled = state.isRoundBtnEnabled,
                 onStart = { homeViewModel.onEvent(HomeViewModelEvent.StartRound) },
-                onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) }
+                onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) },
+                timer = state.timer
             )
 
             HomeScreenContent(
@@ -154,6 +162,7 @@ private fun HeaderHome(
     modifier: Modifier,
     isStarted: Boolean,
     isRoundBtnEnabled: Boolean,
+    timer:String,
     onStart: () -> Unit,
     onStop: () -> Unit
 ) {
@@ -165,7 +174,7 @@ private fun HeaderHome(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-       TimerHomeComponent()
+       TimerHomeComponent(timer = timer)
 
         StartButtonComponent(
             buttonText, isRoundBtnEnabled = isRoundBtnEnabled,
@@ -194,13 +203,15 @@ private fun HomeScreenContent(
             .padding(top = contentPadding.calculateTopPadding()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (!isStarted) {
-            Text(
-                stringResource(R.string.press_comenzar_to_start_ronda),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
+
+        val info = if(!isStarted) stringResource(R.string.press_comenzar_to_start_ronda)
+        else stringResource(R.string.complete_all_rounds_for_finish_round)
+
+        Text(
+            info,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.error
+        )
 
         routes.forEachIndexed { index, item ->
             AnimatedVisibility(
@@ -396,19 +407,17 @@ private fun RouteContent(
 private fun HomeTopBar(modifier: Modifier) {
     TopAppBar(
         modifier = modifier
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .padding(horizontal = 20.dp, vertical = 10.dp)
             .clip(RoundedCornerShape(100.dp)),
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
         ),
-
-        windowInsets = WindowInsets(top = 0.dp),
+        windowInsets = WindowInsets(0.dp),
         title = {
-
             Text(
                 text = "Ronaldo Rodriguez - Laguna Dorada",
                 color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
-                fontSize = 18.sp,
+                fontSize = 25.sp,
                 style = MaterialTheme.typography.titleLarge,
                 fontStyle = FontStyle.Italic
             )
@@ -416,11 +425,18 @@ private fun HomeTopBar(modifier: Modifier) {
 
         },
         navigationIcon = {
+//            Icon(
+//                painter = painterResource(id = R.drawable.),
+//                contentDescription = null,
+//                modifier = Modifier
+//                    .padding(start = 12.dp, end = 8.dp).size(40.dp)
+//            )
             Icon(
-                painter = painterResource(id = R.drawable.ic_user),
+                imageVector = Icons.Outlined.VerifiedUser ,
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(start = 12.dp, end = 8.dp)
+                    .padding(start = 12.dp, end = 8.dp).size(30.dp)
+
             )
         }
     )
@@ -444,5 +460,44 @@ private fun HomeAddReport(showFab: Boolean, addReport: () -> Unit) {
 }
 
 
+
+@Composable
+fun HomeBottomBar(selectedScreen: HomeType, onItemSelected: (HomeType) -> Unit) {
+    NavigationBar(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            .shadow(
+                elevation = 20.dp,
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+
+            ),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        HomeType.entries.forEach { item ->
+            val selected = selectedScreen == item
+
+            NavigationBarItem(
+                selected = selected,
+                onClick = { onItemSelected(item) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Primary,
+                    unselectedIconColor = Color.Gray.copy(0.6f)
+                ),
+                label = {
+                    Text(text = stringResource(id = item.title))
+                },
+                alwaysShowLabel = true,
+                icon = {
+                    Icon(
+                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = stringResource(id = item.title)
+                    )
+                }
+            )
+        }
+
+    }
+}
 
 

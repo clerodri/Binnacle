@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.clerodri.binnacle.utilities
+package com.clerodri.binnacle.util
 
 /**
  * A generic class that holds a loading signal or the result of an async operation.
