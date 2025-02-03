@@ -1,43 +1,24 @@
 package com.clerodri.binnacle.home.presentation.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,15 +26,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clerodri.binnacle.R
-import com.clerodri.binnacle.home.domain.HomeType
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
-import com.clerodri.binnacle.ui.theme.Primary
 import com.clerodri.binnacle.ui.theme.TextColor
-
 
 
 @Composable
@@ -70,7 +47,7 @@ fun ArrowIndicator() {
 
 
 @Composable
- fun TimerHomeComponent(timer:String) {
+fun TimerHomeComponent(timer: String) {
     Row {
         Icon(
             modifier = Modifier
@@ -163,47 +140,6 @@ fun StartButtonComponent(
             color = Color.White,
             fontWeight = FontWeight.Bold
         )
-    }
-}
-
-
-@Preview
-@Composable
-fun TestingButton(modifier: Modifier = Modifier) {
-    Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = {}
-            ) {
-                Text("Comenzar Ronda")
-            }
-            ElevatedButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Outlined.PlayArrow, contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Comenzar Ronda")
-            }
-            FilledTonalButton(onClick = {}) {
-                Text("Comenzar Ronda")
-            }
-            OutlinedButton(onClick = {}) {
-                Text("Comenzar Ronda")
-            }
-
-            TextButton(onClick = {}) {
-                Text("Comenzar Ronda")
-            }
-
-
-        }
     }
 }
 
