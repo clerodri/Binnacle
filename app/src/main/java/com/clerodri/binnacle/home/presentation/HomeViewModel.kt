@@ -25,6 +25,7 @@ class HomeViewModel @Inject constructor () : ViewModel() {
     private val _routes = MutableStateFlow<List<Route>>(emptyList())
     val routes: StateFlow<List<Route>> = _routes.asStateFlow()
 
+    //state for TIMER component
 
     init {
         //here you must load data from repository or other source
@@ -67,6 +68,7 @@ class HomeViewModel @Inject constructor () : ViewModel() {
                 _state.update {
                     it.copy(  currentIndex = 0, isStarted = false)
                 }
+                // api call - POST request with ronda data.
             }
 
             HomeViewModelEvent.UpdateIndex -> {
