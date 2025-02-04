@@ -40,4 +40,6 @@
     <string name="check_in_text">Check-In</string>
     <string name="check_out_text">Check-Out</string>
     <string name="checkout">CheckOut</string>
+    <string name="guard_not_found_txt">Guardia no existe</string>
+    <string name="str">str</string>
 </resources>

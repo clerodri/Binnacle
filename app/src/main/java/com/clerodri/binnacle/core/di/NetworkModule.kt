@@ -2,12 +2,13 @@ package com.clerodri.binnacle.core.di
 
 import android.content.Context
 import com.clerodri.binnacle.auth.data.AuthRepositoryImpl
-import com.clerodri.binnacle.auth.data.network.AuthInterceptor
-import com.clerodri.binnacle.auth.data.network.LoginClient
-import com.clerodri.binnacle.auth.data.network.LoginService
-import com.clerodri.binnacle.auth.domain.model.IdentificationGuardValidator
+import com.clerodri.binnacle.auth.data.datasource.local.LocalDataSource
+import com.clerodri.binnacle.auth.data.datasource.network.AuthInterceptor
+import com.clerodri.binnacle.auth.data.datasource.network.LoginClient
+import com.clerodri.binnacle.auth.data.datasource.network.LoginService
+import com.clerodri.binnacle.auth.domain.model.IdentificationValidator
 import com.clerodri.binnacle.auth.domain.repository.AuthRepository
-import com.clerodri.binnacle.util.AuthPreferences
+import com.clerodri.binnacle.auth.data.storage.UserInformation
 import com.clerodri.binnacle.util.DataStoreManager
 import dagger.Module
 import dagger.Provides
@@ -27,14 +28,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providesAuthInterceptor(authPreferences: AuthPreferences): AuthInterceptor {
-        return AuthInterceptor(authPreferences)
+    fun providesAuthInterceptor(userInformation: UserInformation): AuthInterceptor {
+        return AuthInterceptor(userInformation)
     }
 
     @Provides
     @Singleton
-    fun provideAuthPreferences(@ApplicationContext context: Context): AuthPreferences {
-        return AuthPreferences(context)
+    fun provideAuthPreferences(@ApplicationContext context: Context): UserInformation {
+        return UserInformation(context)
     }
 
     @Provides
@@ -67,13 +68,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRepository(api: LoginService): AuthRepository {
-        return AuthRepositoryImpl(api)
+    fun provideRepository(api: LoginService, localDataSource: LocalDataSource): AuthRepository {
+        return AuthRepositoryImpl(api, localDataSource)
     }
 
     @Provides
     @Singleton
-    fun provideIdentificationValidator(): IdentificationGuardValidator {
-        return IdentificationGuardValidator()
+    fun provideIdentificationValidator(): IdentificationValidator {
+        return IdentificationValidator()
     }
 }

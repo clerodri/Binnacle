@@ -1,9 +1,12 @@
 package com.clerodri.binnacle.app
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.clerodri.binnacle.addreport.AddReportScreen
 import com.clerodri.binnacle.addreport.AddReportViewModel
 import com.clerodri.binnacle.auth.presentation.admin.AdminViewModel
@@ -53,6 +56,8 @@ fun NavigationWrapper(
             )
         }
         composable<HomeScreen> {
+
+
             HomeScreen(
                 locationViewModel, addReport = { navController.navigate(ReportScreen) },
                 homeViewModel = homeViewModel,
@@ -64,6 +69,8 @@ fun NavigationWrapper(
                     }
                 }
             )
+
+
         }
 
         composable<ReportScreen> {

@@ -10,12 +10,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +40,7 @@ import com.clerodri.binnacle.auth.presentation.components.TitleApp
 import com.clerodri.binnacle.auth.presentation.components.TitleGuard
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
 import com.clerodri.binnacle.ui.theme.WhiteColor
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -44,13 +49,17 @@ fun LoginGuardScreen(
     navigateToLoginAdmin: () -> Unit,
     navigateToHome: () -> Unit
 ) {
-    val state  by viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    val state by viewModel.state.collectAsState()
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .background(BackGroundAppColor),
         color = BackGroundAppColor
     ) {
+        SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp))
         Column(Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(80.dp))
             TitleApp(
@@ -84,10 +93,16 @@ fun LoginGuardScreen(
     LaunchedEffect(Unit) {
         viewModel.getGuardChannel().collect { event ->
             when (event) {
-                LoginScreenEvent.Failure -> Log.d("RR", "Screen Guard Failure")
                 LoginScreenEvent.Success -> {
                     navigateToHome()
-                    viewModel.onEvent(GuardViewModelEvent.ClearFields)
+//                    viewModel.onEvent(GuardViewModelEvent.ClearFields)
+                }
+
+                is LoginScreenEvent.Failure -> {
+                    Log.d("RR", "Screen Guard Failure")
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(event.message)
+                    }
                 }
             }
         }

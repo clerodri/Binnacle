@@ -76,10 +76,13 @@ fun LoginAdminScreen(
     LaunchedEffect(true) {
         viewModel.getEventChannel().collect { event ->
             when (event) {
-                LoginScreenEvent.Failure -> Log.d("RR", "Screen Admin Failure")
                 LoginScreenEvent.Success -> {
                     viewModel.onAction(AdminViewModelEvent.ClearFields)
                     navigateToHome()
+                }
+
+                is LoginScreenEvent.Failure -> {
+                    Log.d("RR", "Screen Admin Failure")
                 }
             }
         }

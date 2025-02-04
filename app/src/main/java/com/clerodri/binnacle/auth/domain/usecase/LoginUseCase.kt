@@ -12,7 +12,7 @@ class LoginUseCase @Inject constructor(
 
 
 
-    suspend operator  fun invoke(identification: String): Result<Guard, DataError.Network> {
+    suspend operator  fun invoke(identification: String): Result<Unit, DataError.Network> {
         return repository.login(identification)
     }
 

@@ -1,15 +1,13 @@
 package com.clerodri.binnacle.home.presentation
 
 import android.annotation.SuppressLint
-import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.clerodri.binnacle.auth.data.storage.UserData
+import com.clerodri.binnacle.auth.domain.usecase.UserUseCase
 import com.clerodri.binnacle.home.domain.Route
-import com.clerodri.binnacle.util.AuthPreferences
 import com.clerodri.binnacle.util.DataStoreManager
-import com.clerodri.binnacle.util.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -26,15 +24,17 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val preferences: DataStoreManager,
-    private val authPreferences: AuthPreferences
+    private val userUseCase: UserUseCase,
 ) : ViewModel() {
 
-//    private val authPreferences = AuthPreferences(application)
+
     private val _userData = MutableStateFlow<UserData?>(null)
     val userData: StateFlow<UserData?> = _userData.asStateFlow()
+
     //    // Event channel to send events to The UI
     private val _eventChannel = Channel<HomeUiEvent>()
     internal fun getEventChannel() = _eventChannel.receiveAsFlow()
+
 
     private val _state = MutableStateFlow(HomeScreenViewState())
     val state: StateFlow<HomeScreenViewState> = _state.asStateFlow()
@@ -54,7 +54,7 @@ class HomeViewModel @Inject constructor(
     private fun loadUserData() {
         Log.d("loadUserData", "loadUserData called ")
         viewModelScope.launch {
-            authPreferences.userData.collectLatest  { data ->
+            userUseCase.getUserData().collectLatest { data ->
                 Log.d("RR", "loadUserData called $data")
                 _userData.value = data
             }
@@ -64,7 +64,6 @@ class HomeViewModel @Inject constructor(
 
     private fun loadSavedState() {
         Log.d("HomeViewModel", "loadSavedState called")
-
         viewModelScope.launch {
             preferences.homeScreenState.collectLatest { savedState ->
                 _state.value = savedState
@@ -83,11 +82,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun clearUserData(){
-        viewModelScope.launch {
-            authPreferences.clearUserData()
-        }
-    }
+
     private fun fetchRoutes() {
         viewModelScope.launch {
             try {
@@ -155,6 +150,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun clearUserData() {
+        viewModelScope.launch {
+            userUseCase.clearUserData()
+        }
+    }
+
     fun resetCheck() {
         _state.update {
             it.copy(isCheckedIn = false, isCheckedOut = false, enableCheck = true)
@@ -212,9 +213,8 @@ class HomeViewModel @Inject constructor(
                 elapsedSeconds = 0
             )
         }
-        viewModelScope.launch {
-            saveState()
-        }
+        saveState()
+
 
     }
 
@@ -232,9 +232,6 @@ class HomeViewModel @Inject constructor(
         return String.format("%02d:%02d:%02d", hours, minutes, secs)
     }
 
-//    private fun onZoomAll() {  <- example
-//        sendScreenEvent(MountainsScreenEvent.OnZoomAll)
-//    }
 
     // Send events back to the UI via the event channel
     private fun sendScreenEvent(event: HomeUiEvent) {

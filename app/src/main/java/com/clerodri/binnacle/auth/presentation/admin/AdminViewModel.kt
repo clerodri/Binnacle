@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clerodri.binnacle.auth.domain.model.IdentificationGuardValidator
 import com.clerodri.binnacle.auth.domain.usecase.LoginUseCase
 import com.clerodri.binnacle.auth.presentation.LoginScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel

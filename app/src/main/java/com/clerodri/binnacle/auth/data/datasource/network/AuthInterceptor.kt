@@ -1,13 +1,12 @@
-package com.clerodri.binnacle.auth.data.network
+package com.clerodri.binnacle.auth.data.datasource.network
 
-import com.clerodri.binnacle.util.AuthPreferences
-import kotlinx.coroutines.flow.first
+import com.clerodri.binnacle.auth.data.storage.UserInformation
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
 
 class AuthInterceptor(
-    private val authPreferences: AuthPreferences
+    private val userInformation: UserInformation
 ) : Interceptor {
 
 
