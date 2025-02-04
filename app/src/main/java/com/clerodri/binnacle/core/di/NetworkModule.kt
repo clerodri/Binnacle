@@ -6,10 +6,13 @@ import com.clerodri.binnacle.auth.data.datasource.local.LocalDataSource
 import com.clerodri.binnacle.auth.data.datasource.network.AuthInterceptor
 import com.clerodri.binnacle.auth.data.datasource.network.LoginClient
 import com.clerodri.binnacle.auth.data.datasource.network.LoginService
+import com.clerodri.binnacle.auth.data.storage.UserInformation
 import com.clerodri.binnacle.auth.domain.model.IdentificationValidator
 import com.clerodri.binnacle.auth.domain.repository.AuthRepository
-import com.clerodri.binnacle.auth.data.storage.UserInformation
-import com.clerodri.binnacle.util.DataStoreManager
+import com.clerodri.binnacle.home.data.HomeRepositoryImpl
+import com.clerodri.binnacle.home.data.datasource.local.HomeDataSource
+import com.clerodri.binnacle.home.data.storage.HomeInformation
+import com.clerodri.binnacle.home.domain.repository.HomeRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,8 +43,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideDataStoreManager(@ApplicationContext context: Context): DataStoreManager {
-        return DataStoreManager(context)
+    fun provideDataStoreManager(@ApplicationContext context: Context): HomeInformation {
+        return HomeInformation(context)
     }
 
 
@@ -68,8 +71,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRepository(api: LoginService, localDataSource: LocalDataSource): AuthRepository {
+    fun provideAuthRepository(api: LoginService, localDataSource: LocalDataSource): AuthRepository {
         return AuthRepositoryImpl(api, localDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHomeRepository(homeDataSource: HomeDataSource): HomeRepository {
+        return HomeRepositoryImpl(homeDataSource)
     }
 
     @Provides

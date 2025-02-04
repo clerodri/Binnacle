@@ -1,4 +1,4 @@
-package com.clerodri.binnacle.home.domain
+package com.clerodri.binnacle.home.domain.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home

@@ -1,6 +1,6 @@
-package com.clerodri.binnacle.home.data.network
+package com.clerodri.binnacle.home.data.datasource.network
 
-import com.clerodri.binnacle.home.data.network.dto.LocalityResponse
+import com.clerodri.binnacle.home.data.datasource.network.dto.LocalityResponse
 import retrofit2.Response
 import retrofit2.http.GET
 

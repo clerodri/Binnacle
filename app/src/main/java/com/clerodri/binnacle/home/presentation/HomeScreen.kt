@@ -73,8 +73,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clerodri.binnacle.R
-import com.clerodri.binnacle.home.domain.HomeType
-import com.clerodri.binnacle.home.domain.Route
+import com.clerodri.binnacle.home.domain.model.HomeType
+import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.home.presentation.components.ArrowIndicator
 import com.clerodri.binnacle.home.presentation.components.HeadingTextComponent
 import com.clerodri.binnacle.home.presentation.components.HomeDividerTextComponent
