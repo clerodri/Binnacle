@@ -31,7 +31,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.outlined.VerifiedUser
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -51,7 +50,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -152,6 +150,7 @@ private fun Screen(
     onLogOut: () -> Unit
 ) {
     val state by homeViewModel.state.collectAsState()
+    val user by homeViewModel.userData.collectAsState()
 
     val routes by homeViewModel.routes.collectAsState()
 
@@ -160,18 +159,29 @@ private fun Screen(
     }
     Scaffold(
         topBar = {
-            HomeTopBar(modifier = modifier.fillMaxWidth())
+            HomeTopBar(
+                modifier = modifier.fillMaxWidth(),
+                fullname = user?.fullname,
+                localityId = user?.localityId
+            )
         },
         bottomBar = {
             HomeBottomBar(
+                isCheckIn = state.isCheckedIn,
+                isEnable = state.enableCheck,
                 selectedHomeNav,
                 onItemSelected = { selectedHomeNav = it },
                 onLogOut = {
                     if (state.isStarted) {
-                        homeViewModel.onEvent(HomeViewModelEvent.OnLogOut)
+                        homeViewModel.onEvent(HomeViewModelEvent.OnLogOutRequested)
                     } else {
+                        homeViewModel.resetCheck()
+                        homeViewModel.clearUserData()
                         onLogOut()
                     }
+                },
+                onCheck = {
+                    homeViewModel.onEvent(HomeViewModelEvent.OnCheck)
                 }
             )
         },
@@ -203,8 +213,6 @@ private fun Screen(
                 updateIndex = { homeViewModel.onEvent(HomeViewModelEvent.UpdateIndex) },
             )
         }
-
-
     }
 }
 
@@ -455,7 +463,7 @@ private fun RouteContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeTopBar(modifier: Modifier) {
+private fun HomeTopBar(modifier: Modifier, fullname: String?, localityId: String?) {
     TopAppBar(
         modifier = modifier
             .padding(horizontal = 20.dp, vertical = 10.dp)
@@ -466,7 +474,7 @@ private fun HomeTopBar(modifier: Modifier) {
         windowInsets = WindowInsets(0.dp),
         title = {
             Text(
-                text = "Ronaldo Rodriguez - Laguna Dorada",
+                text = "${fullname?.uppercase()} - $localityId",
                 color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
                 fontSize = 25.sp,
                 style = MaterialTheme.typography.titleLarge,
@@ -512,13 +520,14 @@ private fun HomeAddReport(showFab: Boolean, addReport: () -> Unit) {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeBottomBar(
+    isCheckIn: Boolean,
+    isEnable: Boolean,
     selectedScreen: HomeType,
     onItemSelected: (HomeType) -> Unit,
-    onLogOut: () -> Unit
-
+    onLogOut: () -> Unit,
+    onCheck: () -> Unit
 ) {
     var openDialog by remember { mutableStateOf(false) }
     NavigationBar(
@@ -539,13 +548,15 @@ fun HomeBottomBar(
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    when(item){
+                    when (item) {
                         HomeType.Check -> {
                             openDialog = true
                         }
+
                         HomeType.LogOut -> {
                             onLogOut()
                         }
+
                         else -> onItemSelected(item)
                     }
 
@@ -555,7 +566,15 @@ fun HomeBottomBar(
                     unselectedIconColor = Color.Gray.copy(0.6f)
                 ),
                 label = {
-                    Text(text = stringResource(id = item.title))
+                    Text(
+                        text = if (item == HomeType.Check && isCheckIn) stringResource(R.string.checkout)
+                        else stringResource(id = item.title)
+                    )
+                },
+                enabled = when (item) {
+                    HomeType.Home -> true
+                    HomeType.Check -> isEnable
+                    HomeType.LogOut -> true
                 },
                 alwaysShowLabel = true,
                 icon = {
@@ -567,10 +586,14 @@ fun HomeBottomBar(
             )
         }
     }
-    if(openDialog){
+    if (openDialog) {
         CheckInDialogComponent(
-            onCancel = { openDialog= false },
-            onConfirm = { openDialog= false },
+            isCheckIn = isCheckIn,
+            onCancel = { openDialog = false },
+            onConfirm = {
+                onCheck()
+                openDialog = false
+            },
             onDismissRequest = { openDialog = false }
         )
     }
@@ -578,9 +601,14 @@ fun HomeBottomBar(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun CheckInDialogComponent( onCancel: () -> Unit, onConfirm: () -> Unit, onDismissRequest: () -> Unit) {
+private fun CheckInDialogComponent(
+    isCheckIn: Boolean,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
     BasicAlertDialog(
-        onDismissRequest = { onDismissRequest()  },
+        onDismissRequest = { onDismissRequest() },
         content = {
             Surface(
                 modifier = Modifier
@@ -593,26 +621,44 @@ private fun CheckInDialogComponent( onCancel: () -> Unit, onConfirm: () -> Unit,
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(stringResource(R.string.check_in_confirmacion), fontWeight = FontWeight.Bold, fontSize = 25.sp, color = BackGroundAppColor)
+                    Text(
+                        text = if (isCheckIn) stringResource(R.string.check_out_confirmacion)
+                        else stringResource(R.string.check_in_confirmacion),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 25.sp,
+                        color = BackGroundAppColor
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(stringResource(R.string.check_in_confirmation_text), color = MaterialTheme.colorScheme.error)
+                    Text(
+                        text = if (isCheckIn) stringResource(R.string.check_out_confirmation_text)
+                        else stringResource(R.string.check_in_confirmation_text),
+                        color = MaterialTheme.colorScheme.error
+                    )
 
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        OutlinedButton(onClick = { onCancel() }, modifier = Modifier.padding(end = 10.dp),
-                            ) {
-                            Text(stringResource(R.string.check_in_cancelar), color = Color.Gray.copy(0.8f))
+                        OutlinedButton(
+                            onClick = { onCancel() }, modifier = Modifier.padding(end = 10.dp),
+                        ) {
+                            Text(
+                                stringResource(R.string.check_cancel),
+                                color = Color.Gray.copy(0.8f)
+                            )
                         }
                         Button(
-                            onClick = {onConfirm()}
-                            , colors = ButtonDefaults.buttonColors(
+                            onClick = { onConfirm() }, colors = ButtonDefaults.buttonColors(
                                 containerColor = BackGroundAppColor
 
                             )
                         ) {
-                            Text(stringResource(R.string.check_in_text))
+                            Text(
+                                text = if (isCheckIn) stringResource(R.string.check_out_text)
+                                else stringResource(R.string.check_in_text),
+                            )
                         }
                     }
                 }

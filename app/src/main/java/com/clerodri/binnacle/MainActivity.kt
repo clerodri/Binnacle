@@ -17,19 +17,25 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    private val adminViewModel: AdminViewModel by viewModels()
+    private val guardViewModel: GuardViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val locationViewModel: LocationViewModel by viewModels()
+    private val addReportViewModel: AddReportViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        val adminViewModel: AdminViewModel by viewModels()
-        val guardViewModel: GuardViewModel by viewModels()
-//        val homeViewModel: HomeViewModel by viewModels()
-        val homeViewModel: HomeViewModel by viewModels()
-        val locationViewModel: LocationViewModel by viewModels()
-        val addReportViewModel : AddReportViewModel by viewModels()
+
         enableEdgeToEdge()
 
         setContent {
-            BinnacleApp(guardViewModel, adminViewModel, homeViewModel, addReportViewModel, locationViewModel)
+            BinnacleApp(
+                guardViewModel,
+                adminViewModel,
+                homeViewModel,
+                addReportViewModel,
+                locationViewModel
+            )
         }
     }
 }

@@ -33,7 +33,11 @@
     <string name="report_screen_name">Reporte</string>
     <string name="save_report">Guardar</string>
     <string name="check_in_confirmacion">Check-In Confirmacion</string>
+    <string name="check_out_confirmacion">Check-Out Confirmacion</string>
     <string name="check_in_confirmation_text">Esta seguro de registrar su Check-In?</string>
-    <string name="check_in_cancelar">Cancelar</string>
+    <string name="check_out_confirmation_text">Esta seguro de registrar su Check-Out?</string>
+    <string name="check_cancel">Cancelar</string>
     <string name="check_in_text">Check-In</string>
+    <string name="check_out_text">Check-Out</string>
+    <string name="checkout">CheckOut</string>
 </resources>

@@ -5,8 +5,11 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clerodri.binnacle.home.domain.Route
+import com.clerodri.binnacle.util.AuthPreferences
 import com.clerodri.binnacle.util.DataStoreManager
+import com.clerodri.binnacle.util.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -22,10 +25,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    application: Application
+    private val preferences: DataStoreManager,
+    private val authPreferences: AuthPreferences
 ) : ViewModel() {
-    private val preferences = DataStoreManager(application)
 
+//    private val authPreferences = AuthPreferences(application)
+    private val _userData = MutableStateFlow<UserData?>(null)
+    val userData: StateFlow<UserData?> = _userData.asStateFlow()
     //    // Event channel to send events to The UI
     private val _eventChannel = Channel<HomeUiEvent>()
     internal fun getEventChannel() = _eventChannel.receiveAsFlow()
@@ -40,9 +46,21 @@ class HomeViewModel @Inject constructor(
 
 
     init {
+        loadUserData()
         loadSavedState()
         fetchRoutes()
     }
+
+    private fun loadUserData() {
+        Log.d("loadUserData", "loadUserData called ")
+        viewModelScope.launch {
+            authPreferences.userData.collectLatest  { data ->
+                Log.d("RR", "loadUserData called $data")
+                _userData.value = data
+            }
+        }
+    }
+
 
     private fun loadSavedState() {
         Log.d("HomeViewModel", "loadSavedState called")
@@ -65,7 +83,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-
+    fun clearUserData(){
+        viewModelScope.launch {
+            authPreferences.clearUserData()
+        }
+    }
     private fun fetchRoutes() {
         viewModelScope.launch {
             try {
@@ -86,16 +108,15 @@ class HomeViewModel @Inject constructor(
     // Handle user events
     fun onEvent(event: HomeViewModelEvent) {
         when (event) {
-            HomeViewModelEvent.OnCheckIn -> {
+            HomeViewModelEvent.OnCheck -> {
                 // onZoomAll()  <- example
-            }
+                Log.d("HomeViewModel", "OnCheckIn")
 
-            HomeViewModelEvent.MakeReport -> {
-
-            }
-
-            HomeViewModelEvent.OnCheckOut -> {
-
+                if (_state.value.isCheckedIn) {
+                    checkOut()
+                } else {
+                    checkIn()
+                }
             }
 
             HomeViewModelEvent.StartRound -> {
@@ -122,12 +143,37 @@ class HomeViewModel @Inject constructor(
                 saveState()
             }
 
-            HomeViewModelEvent.OnLogOut -> {
-               if(_state.value.isStarted){
-                   sendScreenEvent(event = HomeUiEvent.ShowSnackbar("Debe Finalizar la RONDA actual"))
-               }
+            HomeViewModelEvent.OnLogOutRequested -> {
+                if (_state.value.isStarted) {
+                    sendScreenEvent(event = HomeUiEvent.ShowSnackbar("Debe Finalizar la RONDA actual"))
+                }
+            }
+
+            HomeViewModelEvent.OnCheckOut -> {
+                _state.update { it.copy(isCheckedOut = true) }
             }
         }
+    }
+
+    fun resetCheck() {
+        _state.update {
+            it.copy(isCheckedIn = false, isCheckedOut = false, enableCheck = true)
+        }
+        saveState()
+    }
+
+    private fun checkOut() {
+        _state.update {
+            it.copy(isCheckedIn = true, isCheckedOut = true, enableCheck = false)
+        }
+        saveState()
+    }
+
+    private fun checkIn() {
+        _state.update {
+            it.copy(isCheckedIn = true)
+        }
+        saveState()
     }
 
 

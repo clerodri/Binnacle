@@ -81,7 +81,7 @@ fun LoginGuardScreen(
 
 
     // Recibe los eventos del viewmodel
-    LaunchedEffect(true) {
+    LaunchedEffect(Unit) {
         viewModel.getGuardChannel().collect { event ->
             when (event) {
                 LoginScreenEvent.Failure -> Log.d("RR", "Screen Guard Failure")
