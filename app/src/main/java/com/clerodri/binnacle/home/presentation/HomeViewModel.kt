@@ -6,8 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.auth.data.storage.UserData
 import com.clerodri.binnacle.auth.domain.usecase.UserUseCase
-import com.clerodri.binnacle.home.domain.Route
-import com.clerodri.binnacle.util.DataStoreManager
+import com.clerodri.binnacle.home.domain.model.Home
+import com.clerodri.binnacle.home.domain.model.Route
+import com.clerodri.binnacle.home.domain.usecase.HomeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -23,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val preferences: DataStoreManager,
+    private val homeUseCase: HomeUseCase,
     private val userUseCase: UserUseCase,
 ) : ViewModel() {
 
@@ -47,7 +48,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadUserData()
-        loadSavedState()
+        loadHomeData()
         fetchRoutes()
     }
 
@@ -62,13 +63,20 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    private fun loadSavedState() {
+    private fun loadHomeData() {
         Log.d("HomeViewModel", "loadSavedState called")
         viewModelScope.launch {
-            preferences.homeScreenState.collectLatest { savedState ->
-                _state.value = savedState
+            homeUseCase.getHomeData().collectLatest { savedState ->
+                _state.update {
+                    it.copy(
+                        currentIndex = savedState?.currentIndex!!,
+                        isStarted = savedState.isStarted,
+                        isRoundBtnEnabled = savedState.isRoundBtnEnabled,
+                        timer = savedState.timer
+                    )
+                }
 
-                if (savedState.isStarted && savedState.elapsedSeconds > 0 && timerJob == null) {
+                if (savedState?.isStarted!! && savedState.elapsedSeconds > 0 && timerJob == null) {
                     Log.d(
                         "HomeViewModel",
                         "Resuming timer from ${savedState.elapsedSeconds} seconds"
@@ -135,7 +143,7 @@ class HomeViewModel @Inject constructor(
                 _state.update {
                     it.copy(currentIndex = it.currentIndex + 1)
                 }
-                saveState()
+                saveHomeData()
             }
 
             HomeViewModelEvent.OnLogOutRequested -> {
@@ -160,21 +168,21 @@ class HomeViewModel @Inject constructor(
         _state.update {
             it.copy(isCheckedIn = false, isCheckedOut = false, enableCheck = true)
         }
-        saveState()
+        saveHomeData()
     }
 
     private fun checkOut() {
         _state.update {
             it.copy(isCheckedIn = true, isCheckedOut = true, enableCheck = false)
         }
-        saveState()
+        saveHomeData()
     }
 
     private fun checkIn() {
         _state.update {
             it.copy(isCheckedIn = true)
         }
-        saveState()
+        saveHomeData()
     }
 
 
@@ -196,7 +204,7 @@ class HomeViewModel @Inject constructor(
                 _state.update {
                     it.copy(timer = formatTime(currentTime), elapsedSeconds = currentTime)
                 }
-                saveState()
+                saveHomeData()
             }
         }
     }
@@ -213,14 +221,24 @@ class HomeViewModel @Inject constructor(
                 elapsedSeconds = 0
             )
         }
-        saveState()
+        saveHomeData()
 
 
     }
 
-    private fun saveState() {
+    private fun saveHomeData() {
         viewModelScope.launch {
-            preferences.saveState(_state.value)
+            homeUseCase.saveHomeData(
+                Home(
+                    currentIndex = _state.value.currentIndex,
+                    isStarted = _state.value.isStarted,
+                    isRoundBtnEnabled = _state.value.isRoundBtnEnabled,
+                    timer = _state.value.timer,
+                    elapsedSeconds = _state.value.elapsedSeconds,
+                    isCheckedIn = _state.value.isCheckedIn,
+                    enableCheck = _state.value.enableCheck,
+                )
+            )
         }
     }
 
