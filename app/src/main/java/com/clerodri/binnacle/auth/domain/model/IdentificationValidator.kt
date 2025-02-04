@@ -3,7 +3,7 @@ package com.clerodri.binnacle.auth.domain.model
 import com.clerodri.binnacle.auth.domain.IdentificationError
 import com.clerodri.binnacle.auth.domain.Result
 
-class IdentificationGuardValidator {
+class IdentificationValidator {
 
 
     fun validateIdentification(identification: String): Result<Unit, IdentificationError> {

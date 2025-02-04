@@ -1,7 +1,7 @@
-package com.clerodri.binnacle.auth.data.network
+package com.clerodri.binnacle.auth.data.datasource.network
 
 import android.util.Log
-import com.clerodri.binnacle.auth.data.network.dto.LoginResponse
+import com.clerodri.binnacle.auth.data.datasource.network.dto.LoginResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException

@@ -1,4 +1,4 @@
-package com.clerodri.binnacle.auth.data.network.dto
+package com.clerodri.binnacle.auth.data.datasource.network.dto
 
 data class LoginResponse(
     val id:String,

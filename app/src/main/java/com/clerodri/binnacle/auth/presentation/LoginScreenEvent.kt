@@ -6,5 +6,5 @@ package com.clerodri.binnacle.auth.presentation
  */
 sealed  interface LoginScreenEvent {
     data object  Success: LoginScreenEvent
-    data object  Failure: LoginScreenEvent
+    data class  Failure(val message:String): LoginScreenEvent
 }

@@ -1,6 +1,6 @@
-package com.clerodri.binnacle.auth.data.network
+package com.clerodri.binnacle.auth.data.datasource.network
 
-import com.clerodri.binnacle.auth.data.network.dto.LoginResponse
+import com.clerodri.binnacle.auth.data.datasource.network.dto.LoginResponse
 import kotlinx.serialization.Serializable
 import retrofit2.Response
 import retrofit2.http.Body
