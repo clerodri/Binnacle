@@ -13,4 +13,10 @@ sealed class GuardScreenState {
         var isAdminScreen: Boolean = false,
         var isLoading: Boolean = false,
     )
+//    data class GuardAuthState(
+//        var accessToken: String? = null,
+//        var refreshToken:String?=null,
+//        var fullname:String? = null,
+//        val localityId: String? = null
+//    )
 }

@@ -1,4 +1,4 @@
-package com.clerodri.binnacle.di
+package com.clerodri.binnacle.core.di
 
 import android.app.Application
 import com.clerodri.binnacle.location.data.DefaultLocationTracker
