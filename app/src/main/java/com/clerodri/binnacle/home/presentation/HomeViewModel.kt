@@ -9,6 +9,7 @@ import com.clerodri.binnacle.auth.domain.usecase.UserUseCase
 import com.clerodri.binnacle.home.domain.model.Home
 import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.home.domain.usecase.HomeUseCase
+import com.clerodri.binnacle.home.domain.usecase.LocalityUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -26,6 +27,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val homeUseCase: HomeUseCase,
     private val userUseCase: UserUseCase,
+    private val localityUseCase: LocalityUseCase
 ) : ViewModel() {
 
 
@@ -49,7 +51,6 @@ class HomeViewModel @Inject constructor(
     init {
         loadUserData()
         loadHomeData()
-        fetchRoutes()
     }
 
     private fun loadUserData() {
@@ -58,6 +59,16 @@ class HomeViewModel @Inject constructor(
             userUseCase.getUserData().collectLatest { data ->
                 Log.d("RR", "loadUserData called $data")
                 _userData.value = data
+                if (data != null) {
+                    val locality = localityUseCase.invoke(data.localityId.toInt())
+                    Log.d("RR", "loadUserData locality called $locality")
+                    _userData.update {
+                        it?.copy(localityId = locality?.name!!)
+                    }
+                    _routes.value = locality?.routes?.sortedBy { it.id }!!
+                }
+
+
             }
         }
     }
@@ -91,22 +102,6 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    private fun fetchRoutes() {
-        viewModelScope.launch {
-            try {
-                val items = listOf(
-                    Route("1", "SOLAR 14 FAM.HOOLIGAN"),
-                    Route("3", "SOLAR Y FAM.HIGGINS"),
-                    Route("5", "SOLAR 51"),
-                    Route("6", "CANCHA DE TENNIS")
-                )
-                _routes.value = items.sortedBy { it.id.toInt() }
-
-            } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error fetching routes: ${e.message}")
-            }
-        }
-    }
 
     // Handle user events
     fun onEvent(event: HomeViewModelEvent) {
@@ -161,6 +156,7 @@ class HomeViewModel @Inject constructor(
     fun clearUserData() {
         viewModelScope.launch {
             userUseCase.clearUserData()
+            homeUseCase.clearHomeData()
         }
     }
 
@@ -193,7 +189,7 @@ class HomeViewModel @Inject constructor(
         }
         Log.d("HomeViewModel", "startTimer called")
         _state.update {
-            it.copy(isStarted = true, isRoundBtnEnabled = false, elapsedSeconds = resumeFrom)
+            it.copy(isStarted = true, isRoundBtnEnabled = _routes.value.size == 1, elapsedSeconds = resumeFrom)
         }
 
         timerJob = viewModelScope.launch {
