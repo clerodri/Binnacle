@@ -3,7 +3,6 @@ package com.clerodri.binnacle.core.di
 import android.content.Context
 import com.clerodri.binnacle.auth.data.AuthRepositoryImpl
 import com.clerodri.binnacle.auth.data.datasource.local.LocalDataSource
-import com.clerodri.binnacle.auth.data.datasource.network.AuthInterceptor
 import com.clerodri.binnacle.auth.data.datasource.network.LoginClient
 import com.clerodri.binnacle.auth.data.datasource.network.LoginService
 import com.clerodri.binnacle.auth.data.storage.UserInformation
@@ -11,6 +10,8 @@ import com.clerodri.binnacle.auth.domain.model.IdentificationValidator
 import com.clerodri.binnacle.auth.domain.repository.AuthRepository
 import com.clerodri.binnacle.home.data.HomeRepositoryImpl
 import com.clerodri.binnacle.home.data.datasource.local.HomeDataSource
+import com.clerodri.binnacle.home.data.datasource.network.HomeClient
+import com.clerodri.binnacle.home.data.datasource.network.HomeService
 import com.clerodri.binnacle.home.data.storage.HomeInformation
 import com.clerodri.binnacle.home.domain.repository.HomeRepository
 import dagger.Module
@@ -23,16 +24,32 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
+
+
+
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://192.168.100.70:8080/api/v1/"
+    private const val BASE_URL = "http://192.168.100.70:8080/"
+
+
+
 
     @Provides
     @Singleton
-    fun providesAuthInterceptor(userInformation: UserInformation): AuthInterceptor {
-        return AuthInterceptor(userInformation)
+    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .build()
+    }
+
+
+
+    @Provides
+    @Singleton
+    fun providesAuthInterceptor(localDataSource: LocalDataSource): AuthInterceptor {
+        return AuthInterceptor(localDataSource)
     }
 
     @Provides
@@ -56,29 +73,38 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(authInterceptor: AuthInterceptor): Retrofit {
-        val client = OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
-            .build()
+    fun provideHomeClient(retrofit: Retrofit): HomeClient {
+        return retrofit.create(HomeClient::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
 
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(client)
+            .client(okHttpClient)
             .build()
 
     }
 
     @Provides
     @Singleton
-    fun provideAuthRepository(api: LoginService, localDataSource: LocalDataSource): AuthRepository {
+    fun provideAuthRepository(
+        api: LoginService,
+        localDataSource: LocalDataSource
+    ): AuthRepository {
         return AuthRepositoryImpl(api, localDataSource)
     }
 
     @Provides
     @Singleton
-    fun provideHomeRepository(homeDataSource: HomeDataSource): HomeRepository {
-        return HomeRepositoryImpl(homeDataSource)
+    fun provideHomeRepository(
+        homeDataSource: HomeDataSource,
+        homeService: HomeService
+    ): HomeRepository {
+        return HomeRepositoryImpl(homeDataSource, homeService)
     }
 
     @Provides

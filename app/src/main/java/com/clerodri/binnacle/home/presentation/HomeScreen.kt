@@ -369,43 +369,6 @@ private fun RouteItem(
 }
 
 
-/*@Composable
-fun RouteItem(
-    item: Route,
-    isActive: Boolean,
-    showArrow: Boolean,
-    onNextClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (showArrow) {
-            ArrowIndicator()
-        }
-
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 50.dp)
-                .heightIn(100.dp)
-                .fillMaxWidth()
-                .border(
-                    1.dp,
-                    color = BackGroundAppColor.copy(0.6f),
-                    shape = RoundedCornerShape(20.dp)
-                )
-                .background(
-                    if (isActive) BackGroundAppColor.copy(0.3f) else Color.Transparent.copy(0.2f),
-                    shape = RoundedCornerShape(20.dp)
-                ),
-            contentAlignment = Alignment.Center,
-
-            ) {
-            RouteContent(item = item, isActive = isActive, onNextClick = onNextClick)
-        }
-    }
-}*/
-
 @Composable
 private fun RouteContent(
     index: Int,

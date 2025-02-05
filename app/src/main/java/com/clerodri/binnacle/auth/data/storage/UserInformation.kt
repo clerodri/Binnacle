@@ -3,6 +3,7 @@ package com.clerodri.binnacle.auth.data.storage
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -62,12 +63,6 @@ class UserInformation @Inject constructor(
     suspend fun clearUserData() {
         context.authDataStore.edit { preferences ->
             preferences.clear()
-//            preferences.remove(ACCESS_TOKEN)
-//            preferences.remove(REFRESH_TOKEN)
-//            preferences.remove(LOCALITY)
-//            preferences.remove(FULL_NAME)
-//            preferences.remove(USER_ID)
-//            preferences.remove(USER_IS_AUTHENTICATED)
         }
     }
 }
