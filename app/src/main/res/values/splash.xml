@@ -3,8 +3,8 @@
     <style name="Theme.SplashScreen.ComposeSplash" parent="Theme.SplashScreen.IconBackground">
 
         <item name="windowSplashScreenBackground">#2973B2</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/main_icon_round</item>
-        <item name="windowSplashScreenIconBackgroundColor">#C7D8DC</item>"
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/main_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">#2973B2</item>"
         <item name="postSplashScreenTheme">@style/Theme.Binnacle</item>
 
     </style>

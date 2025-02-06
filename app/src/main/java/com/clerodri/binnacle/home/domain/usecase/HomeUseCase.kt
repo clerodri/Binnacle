@@ -12,4 +12,11 @@ class HomeUseCase @Inject constructor(private val repository: HomeRepository) {
     suspend fun saveHomeData(home: Home) = repository.saveHomeData(home)
 
     suspend fun clearHomeData() = repository.clearHomeData()
+
+
+    suspend fun makeCheckIn(id:Int?) = repository.makeCheckIn(id!!)
+
+    suspend fun makeCheckOut(id:Int?) = repository.makeCheckOut(id!!)
+
+    suspend fun validateCheckStatus(id:Int) = repository.validateCheckIn(id)
 }

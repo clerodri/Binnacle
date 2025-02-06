@@ -7,5 +7,6 @@ data class Home(
     val timer: String,
     val elapsedSeconds: Int,
     val isCheckedIn: Boolean,
+    val isCheckedOut: Boolean,
     val enableCheck: Boolean
 )
