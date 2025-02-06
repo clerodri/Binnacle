@@ -151,7 +151,7 @@ private fun Screen(
 ) {
     val state by homeViewModel.state.collectAsState()
     val user by homeViewModel.userData.collectAsState()
-
+//    val checkInState by homeViewModel.checkInState.collectAsState()
     val routes by homeViewModel.routes.collectAsState()
 
     var selectedHomeNav by rememberSaveable {

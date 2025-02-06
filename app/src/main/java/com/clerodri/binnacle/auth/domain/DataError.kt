@@ -6,4 +6,8 @@ sealed interface DataError: Error {
         REQUEST_TIMEOUT,
         NO_INTERNET
     }
+
+    enum class Check: DataError {
+        CONFLICT,
+    }
 }

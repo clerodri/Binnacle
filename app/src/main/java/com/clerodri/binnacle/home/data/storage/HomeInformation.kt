@@ -25,6 +25,7 @@ class HomeInformation @Inject constructor(private val context: Context) {
         private val TIMER_KEY = stringPreferencesKey("timer")
         private val ELAPSED_SECONDS_KEY = intPreferencesKey("elapsed_seconds")
         private val IS_CHECK_IN_KEY = booleanPreferencesKey("is_check_in")
+        private val IS_CHECK_OUT_KEY = booleanPreferencesKey("is_check_out")
         private val IS_CHECK_BTN_KEY = booleanPreferencesKey("is_check_btn_enable")
     }
 
@@ -36,6 +37,7 @@ class HomeInformation @Inject constructor(private val context: Context) {
             timer = preferences[TIMER_KEY] ?: "00:00:00",
             elapsedSeconds = preferences[ELAPSED_SECONDS_KEY] ?: 0,
             isCheckedIn = preferences[IS_CHECK_IN_KEY] ?: false,
+            isCheckedOut = preferences[IS_CHECK_OUT_KEY] ?: false,
             enableCheck = preferences[IS_CHECK_BTN_KEY] ?: true
         )
     }
@@ -49,6 +51,7 @@ class HomeInformation @Inject constructor(private val context: Context) {
             preferences[TIMER_KEY] = home.timer
             preferences[ELAPSED_SECONDS_KEY] = home.elapsedSeconds
             preferences[IS_CHECK_IN_KEY] = home.isCheckedIn
+            preferences[IS_CHECK_OUT_KEY] = home.isCheckedOut
             preferences[IS_CHECK_BTN_KEY] = home.enableCheck
         }
     }

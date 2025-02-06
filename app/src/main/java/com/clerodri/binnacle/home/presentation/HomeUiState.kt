@@ -4,7 +4,7 @@ package com.clerodri.binnacle.home.presentation
  * Sealed class representing the state of the home view.
  */
 
-data class HomeScreenViewState(
+data class HomeUiState(
     val currentIndex: Int = 0,
     val isStarted: Boolean = false,
 //    val isLoading: Boolean = false,
@@ -15,3 +15,11 @@ data class HomeScreenViewState(
     val isCheckedOut: Boolean = false,
     val enableCheck:Boolean = true,
 )
+
+
+
+//data class CheckInViewState(
+//    val checkInStatus: String = "",
+////    val isCheckedIn: Boolean = false,
+////    val isCheckedOut: Boolean = false,
+//)

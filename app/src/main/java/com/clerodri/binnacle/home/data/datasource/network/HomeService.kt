@@ -1,6 +1,10 @@
 package com.clerodri.binnacle.home.data.datasource.network
 
 import android.util.Log
+import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInDto
+import com.clerodri.binnacle.home.data.datasource.network.dto.CheckOutDto
+import com.clerodri.binnacle.home.domain.model.CheckIn
+import com.clerodri.binnacle.home.domain.model.CheckStatus
 import com.clerodri.binnacle.home.domain.model.Locality
 import com.clerodri.binnacle.home.domain.model.Route
 import kotlinx.coroutines.Dispatchers
@@ -23,5 +27,28 @@ class HomeService @Inject constructor(
             response?.let { Locality(it.id, response.name, routes) }!!
         }
 
+    }
+
+
+    suspend fun makeCheckIn(id: Int): CheckIn {
+        return withContext(Dispatchers.IO) {
+            val response = homeClient.makeCheckIn(CheckInDto(id, "test", "test")).body()
+            Log.d("RR", "HomeService makeCheckIn called $response")
+            CheckIn(response?.checkInTime, response?.status)
+        }
+    }
+
+    suspend fun validateCheckStatus(id: Int): CheckStatus {
+        return withContext(Dispatchers.IO) {
+            val response = homeClient.validateCheckStatus(id).body()
+            Log.d("RR", "HomeService validateCheckStatus called $response")
+            response!!
+        }
+    }
+
+    suspend fun makeCheckOut(id: Int) {
+        withContext(Dispatchers.IO) {
+            homeClient.makeCheckOut(CheckOutDto(id))
+        }
     }
 }
