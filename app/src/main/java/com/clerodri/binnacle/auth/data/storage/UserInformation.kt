@@ -1,11 +1,13 @@
 package com.clerodri.binnacle.auth.data.storage
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.clerodri.binnacle.auth.domain.model.UserData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,14 +26,14 @@ class UserInformation @Inject constructor(
         private val ACCESS_TOKEN = stringPreferencesKey("accessToken")
         private val REFRESH_TOKEN = stringPreferencesKey("refreshToken")
         private val FULL_NAME = stringPreferencesKey("fullname")
-        private val LOCALITY = stringPreferencesKey("localityId")
-        private val USER_ID = stringPreferencesKey("id")
+        private val LOCALITY_ID = intPreferencesKey("localityId")
+        private val USER_ID = intPreferencesKey("id")
         private val USER_IS_AUTHENTICATED = booleanPreferencesKey("isAuthenticated")
     }
 
     val userData: Flow<UserData?> = context.authDataStore.data.map { preferences ->
         val id = preferences[USER_ID]
-        val localityId = preferences[LOCALITY]
+        val localityId = preferences[LOCALITY_ID]
         val fullname = preferences[FULL_NAME]
         val accessToken = preferences[ACCESS_TOKEN]
         val refreshToken = preferences[REFRESH_TOKEN]
@@ -41,7 +43,7 @@ class UserInformation @Inject constructor(
             && refreshToken != null
         ) {
             UserData(
-                id, fullname,localityId, accessToken, refreshToken, isAuthenticated
+                id, fullname, localityId, accessToken, refreshToken, isAuthenticated
             )
         } else {
             null
@@ -50,11 +52,11 @@ class UserInformation @Inject constructor(
 
     suspend fun saveUserData(user: UserData) {
         context.authDataStore.edit { pref ->
-            pref[ACCESS_TOKEN] = user.accessToken
-            pref[REFRESH_TOKEN] = user.refreshToken
-            pref[FULL_NAME] = user.fullname
-            pref[LOCALITY] = user.localityId
-            pref[USER_ID] = user.id
+            pref[ACCESS_TOKEN] = user.accessToken!!
+            pref[REFRESH_TOKEN] = user.refreshToken!!
+            pref[FULL_NAME] = user.fullname!!
+            pref[LOCALITY_ID] = user.localityId!!
+            pref[USER_ID] = user.id!!
             pref[USER_IS_AUTHENTICATED] = user.isAuthenticated
 
         }
@@ -62,16 +64,12 @@ class UserInformation @Inject constructor(
 
     suspend fun clearUserData() {
         context.authDataStore.edit { preferences ->
+            Log.d("OO", "UserInformation clearUserData")
+
             preferences.clear()
+
+            Log.d("OO", "UserInformation $preferences" )
         }
     }
 }
 
-data class UserData(
-    val id: String,
-    val fullname: String,
-    val localityId: String,
-    val accessToken: String,
-    val refreshToken: String,
-    val isAuthenticated: Boolean
-)

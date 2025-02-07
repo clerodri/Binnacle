@@ -1,5 +1,6 @@
 package com.clerodri.binnacle.util
 
+import android.annotation.SuppressLint
 import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +59,16 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+
+
+@SuppressLint("DefaultLocale")
+ fun formatTime(seconds: Int): String {
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    val secs = seconds % 60
+    return String.format("%02d:%02d:%02d", hours, minutes, secs)
+}
+
 
 @Composable
 fun IdentifierField(identifier:String, identifierError:String?, onIdentifierChange: (String) -> Unit){

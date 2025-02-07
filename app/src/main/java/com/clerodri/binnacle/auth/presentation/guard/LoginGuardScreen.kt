@@ -38,6 +38,7 @@ import com.clerodri.binnacle.auth.presentation.components.DividerTextComponent
 import com.clerodri.binnacle.auth.presentation.components.LogoApp
 import com.clerodri.binnacle.auth.presentation.components.TitleApp
 import com.clerodri.binnacle.auth.presentation.components.TitleGuard
+import com.clerodri.binnacle.core.components.SnackBarComponent
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
 import com.clerodri.binnacle.ui.theme.WhiteColor
 import kotlinx.coroutines.launch
@@ -59,7 +60,7 @@ fun LoginGuardScreen(
             .background(BackGroundAppColor),
         color = BackGroundAppColor
     ) {
-        SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp))
+
         Column(Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(80.dp))
             TitleApp(
@@ -83,9 +84,12 @@ fun LoginGuardScreen(
                     onClickLogin = { viewModel.onEvent(GuardViewModelEvent.LoginGuard) },
                     onIdentifierChange = { viewModel.onEvent(GuardViewModelEvent.UpdateIdentifier(it)) }
                 )
+
             }
 
+
         }
+        SnackBarComponent(snackbarHostState, modifier = Modifier.padding(top = 20.dp))
     }
 
 
@@ -94,6 +98,7 @@ fun LoginGuardScreen(
         viewModel.getGuardChannel().collect { event ->
             when (event) {
                 LoginScreenEvent.Success -> {
+                    Log.d("OO", "Navigating to Home...")
                     navigateToHome()
 //                    viewModel.onEvent(GuardViewModelEvent.ClearFields)
                 }

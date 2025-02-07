@@ -42,4 +42,5 @@
     <string name="checkout">CheckOut</string>
     <string name="guard_not_found_txt">Guardia no existe</string>
     <string name="str">str</string>
+    <string name="dialog_aceptar_txt">Aceptar</string>
 </resources>
