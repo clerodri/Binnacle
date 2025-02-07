@@ -4,9 +4,9 @@ package com.clerodri.binnacle.auth.data
 import android.util.Log
 import com.clerodri.binnacle.auth.data.datasource.local.LocalDataSource
 import com.clerodri.binnacle.auth.data.datasource.network.LoginService
-import com.clerodri.binnacle.auth.data.storage.UserData
 import com.clerodri.binnacle.auth.domain.DataError
 import com.clerodri.binnacle.auth.domain.Result
+import com.clerodri.binnacle.auth.domain.model.UserData
 import com.clerodri.binnacle.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
@@ -56,6 +56,7 @@ internal class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearUserData() {
+        Log.d("OO", "Auth repository clearUserData")
         localDataSource.clearUserData()
     }
 }

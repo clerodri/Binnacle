@@ -92,6 +92,12 @@ dependencies {
     //Data store
     implementation(libs.androidx.datastore.preferences)
 
+    //Animaticon for navigaction
+
+    implementation(libs.accompanist.navigation.animation)
+
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

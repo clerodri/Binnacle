@@ -1,5 +1,6 @@
 package com.clerodri.binnacle.auth.presentation.guard
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.auth.domain.DataError
@@ -11,10 +12,13 @@ import com.clerodri.binnacle.auth.domain.usecase.UserUseCase
 import com.clerodri.binnacle.auth.presentation.LoginScreenEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,6 +31,8 @@ class GuardViewModel @Inject constructor(
     private val identificationValidator: IdentificationValidator
 ) : ViewModel() {
 
+    private val _isAuthenticated = MutableStateFlow(false)
+    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
 
     private val _state = MutableStateFlow(GuardScreenState.GuardState())
     val state: StateFlow<GuardScreenState.GuardState> = _state.asStateFlow()
@@ -37,15 +43,14 @@ class GuardViewModel @Inject constructor(
     internal fun getGuardChannel() = _guardChannel.receiveAsFlow()
 
     init {
-        checkAuthentication()
+           checkAuthentication()
     }
 
     private fun checkAuthentication() {
         viewModelScope.launch {
             userUseCase.getUserData().collectLatest { user ->
-                if (user != null && user.isAuthenticated) {
-                    sendScreenEvent(LoginScreenEvent.Success)
-                }
+                val authStatus = user?.isAuthenticated == true
+                _isAuthenticated.value = authStatus
             }
         }
 
@@ -81,6 +86,11 @@ class GuardViewModel @Inject constructor(
 
                 }
             }
+
+            GuardViewModelEvent.LogOut -> {
+
+               _isAuthenticated.value = false
+            }
         }
     }
 
@@ -110,18 +120,21 @@ class GuardViewModel @Inject constructor(
 
     private fun login() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.value = _state.value.copy(isLoading = true)
+            delay(500)
             when (val result = loginUseCase(_state.value.identifier)) {
                 is Result.Failure -> {
                     handleLoginFailure(result.error)
+                    _state.value = _state.value.copy(isLoading = true)
                 }
 
                 is Result.Success -> {
                     sendScreenEvent(LoginScreenEvent.Success)
-                    _state.update { it.copy(isLoading = false) }
-
                 }
             }
+            delay(500)
+            _state.value =
+                _state.value.copy(isLoading = false, identifier = "", identifierError = null)
         }
     }
 
@@ -129,7 +142,7 @@ class GuardViewModel @Inject constructor(
     private fun handleLoginFailure(error: DataError.Network) {
         when (error) {
             DataError.Network.GUARD_NOT_FOUND -> {
-                sendScreenEvent(event = LoginScreenEvent.Failure("Guardia no encontrado"))
+                sendScreenEvent(event = LoginScreenEvent.Failure("Guardia no existe"))
             }
 
             DataError.Network.REQUEST_TIMEOUT -> {

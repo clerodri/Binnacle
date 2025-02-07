@@ -1,17 +1,25 @@
 package com.clerodri.binnacle.core.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -118,3 +126,30 @@ fun NormalTextComponent(value: String) {
         textAlign = TextAlign.Center
     )
 }
+
+
+@Composable
+ fun SnackBarComponent(snackbarHostState: SnackbarHostState, modifier: Modifier = Modifier) {
+    SnackbarHost(snackbarHostState, modifier =modifier ) { data ->
+        Snackbar(
+            containerColor = Color.Red,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.padding(10.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Icon(imageVector = Icons.Filled.Warning, contentDescription = "")
+                Text(
+                    text = data.visuals.message,
+                    modifier = Modifier.padding(10.dp),
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+        }
+    }
+}
+
