@@ -1,9 +1,11 @@
 package com.clerodri.binnacle.home.data.storage
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.clerodri.binnacle.home.domain.model.Home
@@ -21,24 +23,18 @@ class HomeInformation @Inject constructor(private val context: Context) {
     companion object {
         private val CURRENT_INDEX_KEY = intPreferencesKey("current_index")
         private val IS_STARTED_KEY = booleanPreferencesKey("is_started")
-        private val IS_ROUND_BTN_ENABLED_KEY = booleanPreferencesKey("is_round_btn_enabled")
-        private val TIMER_KEY = stringPreferencesKey("timer")
         private val ELAPSED_SECONDS_KEY = intPreferencesKey("elapsed_seconds")
-        private val IS_CHECK_IN_KEY = booleanPreferencesKey("is_check_in")
-        private val IS_CHECK_OUT_KEY = booleanPreferencesKey("is_check_out")
-        private val IS_CHECK_BTN_KEY = booleanPreferencesKey("is_check_btn_enable")
+        private val ROUND_ID = intPreferencesKey("round_id")
+        private val CHECK_IN_ID = intPreferencesKey("check_id")
     }
 
     val homeData: Flow<Home> = context.homeStore.data.map { preferences ->
         Home(
             currentIndex = preferences[CURRENT_INDEX_KEY] ?: 0,
             isStarted = preferences[IS_STARTED_KEY] ?: false,
-            isRoundBtnEnabled = preferences[IS_ROUND_BTN_ENABLED_KEY] ?: true,
-            timer = preferences[TIMER_KEY] ?: "00:00:00",
-            elapsedSeconds = preferences[ELAPSED_SECONDS_KEY] ?: 0,
-            isCheckedIn = preferences[IS_CHECK_IN_KEY] ?: false,
-            isCheckedOut = preferences[IS_CHECK_OUT_KEY] ?: false,
-            enableCheck = preferences[IS_CHECK_BTN_KEY] ?: true
+            elapsedSeconds = preferences[ELAPSED_SECONDS_KEY]?.toLong() ?: 0,
+            roundId = preferences[ROUND_ID] ?: 0,
+            checkId = preferences[CHECK_IN_ID] ?: 0
         )
     }
 
@@ -47,17 +43,16 @@ class HomeInformation @Inject constructor(private val context: Context) {
         context.homeStore.edit { preferences ->
             preferences[CURRENT_INDEX_KEY] = home.currentIndex
             preferences[IS_STARTED_KEY] = home.isStarted
-            preferences[IS_ROUND_BTN_ENABLED_KEY] = home.isRoundBtnEnabled
-            preferences[TIMER_KEY] = home.timer
-            preferences[ELAPSED_SECONDS_KEY] = home.elapsedSeconds
-            preferences[IS_CHECK_IN_KEY] = home.isCheckedIn
-            preferences[IS_CHECK_OUT_KEY] = home.isCheckedOut
-            preferences[IS_CHECK_BTN_KEY] = home.enableCheck
+            preferences[ELAPSED_SECONDS_KEY] = home.elapsedSeconds.toInt()
+            preferences[ROUND_ID] = home.roundId
+            preferences[CHECK_IN_ID] = home.checkId
         }
     }
 
     suspend fun clearHomeState() {
+
         context.homeStore.edit {
+            Log.d("clearHomeState", "MESSAGE CLEARON")
             it.clear()
         }
     }

@@ -4,9 +4,10 @@ package com.clerodri.binnacle.home.presentation
  */
 sealed class HomeViewModelEvent {
     data object  OnCheck: HomeViewModelEvent()
-    data object  OnCheckOut: HomeViewModelEvent()
     data object  OnLogOutRequested: HomeViewModelEvent()
     data object  StartRound: HomeViewModelEvent()
     data object  StopRound: HomeViewModelEvent()
     data object  UpdateIndex: HomeViewModelEvent()
+    data object  OnLogOut: HomeViewModelEvent()
+    data object  OnDestroy: HomeViewModelEvent()
 }

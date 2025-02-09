@@ -1,13 +1,17 @@
 package com.clerodri.binnacle.core.di
 
 import android.content.Context
-import com.clerodri.binnacle.auth.data.AuthRepositoryImpl
-import com.clerodri.binnacle.auth.data.datasource.local.LocalDataSource
-import com.clerodri.binnacle.auth.data.datasource.network.LoginClient
-import com.clerodri.binnacle.auth.data.datasource.network.LoginService
-import com.clerodri.binnacle.auth.data.storage.UserInformation
-import com.clerodri.binnacle.auth.domain.model.IdentificationValidator
-import com.clerodri.binnacle.auth.domain.repository.AuthRepository
+import com.clerodri.binnacle.addreport.data.ReportRepositoryImpl
+import com.clerodri.binnacle.addreport.data.datasource.network.ReportClient
+import com.clerodri.binnacle.addreport.data.datasource.network.ReportService
+import com.clerodri.binnacle.addreport.domain.ReportRepository
+import com.clerodri.binnacle.authentication.data.AuthRepositoryImpl
+import com.clerodri.binnacle.authentication.data.datasource.local.LocalDataSource
+import com.clerodri.binnacle.authentication.data.datasource.network.LoginClient
+import com.clerodri.binnacle.authentication.data.datasource.network.LoginService
+import com.clerodri.binnacle.authentication.data.storage.UserInformation
+import com.clerodri.binnacle.authentication.domain.model.IdentificationValidator
+import com.clerodri.binnacle.authentication.domain.repository.AuthRepository
 import com.clerodri.binnacle.home.data.HomeRepositoryImpl
 import com.clerodri.binnacle.home.data.datasource.local.HomeDataSource
 import com.clerodri.binnacle.home.data.datasource.network.HomeClient
@@ -25,15 +29,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 
-
-
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
     private const val BASE_URL = "http://192.168.100.70:8080/"
-
-
 
 
     @Provides
@@ -43,7 +43,6 @@ object NetworkModule {
             .addInterceptor(authInterceptor)
             .build()
     }
-
 
 
     @Provides
@@ -79,6 +78,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideReportClient(retrofit: Retrofit): ReportClient {
+        return retrofit.create(ReportClient::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
 
         return Retrofit.Builder()
@@ -106,6 +111,15 @@ object NetworkModule {
     ): HomeRepository {
         return HomeRepositoryImpl(homeDataSource, homeService)
     }
+
+    @Provides
+    @Singleton
+    fun provideReportRepository(
+        reportService: ReportService
+    ): ReportRepository {
+        return ReportRepositoryImpl(reportService)
+    }
+
 
     @Provides
     @Singleton

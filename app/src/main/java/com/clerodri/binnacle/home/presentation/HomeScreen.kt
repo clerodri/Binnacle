@@ -42,11 +42,11 @@ import com.clerodri.binnacle.core.components.BigSpinner
 import com.clerodri.binnacle.core.components.SnackBarComponent
 import com.clerodri.binnacle.home.domain.model.HomeType
 import com.clerodri.binnacle.home.domain.model.Route
-import com.clerodri.binnacle.home.presentation.components.HeaderHome
-import com.clerodri.binnacle.home.presentation.components.HomeAddReport
+import com.clerodri.binnacle.home.presentation.components.AddReportButton
 import com.clerodri.binnacle.home.presentation.components.HomeBottomBar
 import com.clerodri.binnacle.home.presentation.components.HomeTopBar
 import com.clerodri.binnacle.home.presentation.components.RouteItem
+import com.clerodri.binnacle.home.presentation.components.Timer
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
-    addReport: () -> Unit,
+    navigateToReportScreen: (Int, Int, Int) -> Unit,
     onLogOut: () -> Unit
 ) {
     val locationPermissions = rememberMultiplePermissionsState(
@@ -79,11 +79,12 @@ fun HomeScreen(
             SnackBarComponent(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp))
         }
     ) { padding ->
+
         Screen(
             modifier = Modifier.padding(top = padding.calculateTopPadding()),
             locationViewModel = locationViewModel,
             homeViewModel = homeViewModel,
-            addReport = addReport
+            navigateToReportScreen = navigateToReportScreen
         )
     }
     LaunchedEffect(true) {
@@ -102,10 +103,11 @@ fun HomeScreen(
                     onLogOut()
                 }
 
-                HomeUiEvent.ShowAlert -> {
+
+                is HomeUiEvent.ShowAlert -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "Debe Finalizar la RONDA actual",
+                            message = event.message,
                             duration = SnackbarDuration.Short
                         )
                     }
@@ -120,12 +122,12 @@ private fun Screen(
     modifier: Modifier = Modifier,
     locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
-    addReport: () -> Unit
+    navigateToReportScreen: (Int, Int, Int) -> Unit
 ) {
     val state by homeViewModel.state.collectAsState()
     val user by homeViewModel.userData.collectAsState()
     val routes by homeViewModel.routes.collectAsState()
-
+    val timerValue by homeViewModel.timer.collectAsState()
     var selectedHomeNav by rememberSaveable {
         mutableStateOf(HomeType.Home)
     }
@@ -140,15 +142,14 @@ private fun Screen(
         },
         bottomBar = {
             HomeBottomBar(
-                isCheckIn = state.isCheckedIn,
-                isEnable = state.enableCheck,
+                checkInStatus = state.checkStatus,
                 selectedScreen = selectedHomeNav,
                 onItemSelected = { selectedHomeNav = it },
                 onLogOut = {
                     if (state.isStarted) {
                         homeViewModel.onEvent(HomeViewModelEvent.OnLogOutRequested)
                     } else {
-                        homeViewModel.onLogOut()
+                        homeViewModel.onEvent(HomeViewModelEvent.OnLogOut)
                     }
                 },
                 onCheck = {
@@ -157,9 +158,11 @@ private fun Screen(
             )
         },
         floatingActionButton = {
-            //state.isStarted
-            HomeAddReport(true) {
-                addReport()
+            AddReportButton(state.isStarted) {
+                val roundId = state.roundId
+                val routeId = routes[state.currentIndex].id
+                val localityId = user?.localityId ?: 0
+                navigateToReportScreen(routeId, roundId, localityId)
             }
         }
     ) { paddingValue ->
@@ -168,12 +171,13 @@ private fun Screen(
                 .fillMaxSize()
                 .padding(top = paddingValue.calculateTopPadding())
         ) {
-            HeaderHome(
+            Timer(
                 modifier = Modifier.fillMaxWidth(),
-                isStarted = state.isStarted, isRoundBtnEnabled = state.isRoundBtnEnabled,
+                isTimerRunning = state.isStarted,
+                isEnable = !state.isStarted || state.currentIndex == routes.size - 1,
                 onStart = { homeViewModel.onEvent(HomeViewModelEvent.StartRound) },
                 onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) },
-                timer = state.timer
+                timer = timerValue
             )
             if (state.isLoading) {
                 BigSpinner(paddingValue)
@@ -186,18 +190,6 @@ private fun Screen(
                     updateIndex = { homeViewModel.onEvent(HomeViewModelEvent.UpdateIndex) },
                 )
             }
-//            if (state.showDialog) {
-//                //insertar dialgo
-//                CheckInDialogComponent(
-//                    title = "INICIAR RONDA",
-//                    message = "Seguro que desea iniciar la ronda?",
-//                    onCancel = { homeViewModel.onEvent(HomeViewModelEvent.OnClickDialog) },
-//                    onConfirm = {
-//
-//                    },
-//                    onDismissRequest = {homeViewModel.onEvent(HomeViewModelEvent.OnClickDialog)}
-//                )
-            //          }
 
         }
     }

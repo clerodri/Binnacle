@@ -61,12 +61,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.clerodri.binnacle.R
+import com.clerodri.binnacle.home.domain.model.ECheckIn
 import com.clerodri.binnacle.home.domain.model.HomeType
 import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
 import com.clerodri.binnacle.ui.theme.Primary
 import com.clerodri.binnacle.ui.theme.Secondary
 import com.clerodri.binnacle.ui.theme.TextColor
+import com.clerodri.binnacle.util.formatTime
 
 
 @Composable
@@ -83,7 +85,7 @@ fun ArrowIndicator() {
 
 
 @Composable
-fun TimerHomeComponent(timer: String) {
+fun TimerHomeComponent(timer: Long) {
     Row {
         Icon(
             modifier = Modifier
@@ -93,7 +95,7 @@ fun TimerHomeComponent(timer: String) {
             contentDescription = null
         )
         Text(
-            text = timer,
+            text = timer.formatTime(),
             modifier = Modifier
                 .heightIn()
                 .align(Alignment.CenterVertically),
@@ -139,7 +141,7 @@ fun HomeDividerTextComponent(modifier: Modifier) {
 @Composable
 fun StartButtonComponent(
     value: String,
-    isRoundBtnEnabled: Boolean,
+    isEnable: Boolean,
     isStarted: Boolean,
     onStart: () -> Unit,
     onStop: () -> Unit
@@ -152,7 +154,7 @@ fun StartButtonComponent(
         onClick = {
             openDialog = true
         },
-        enabled = isRoundBtnEnabled,
+        enabled = isEnable,
         colors = ButtonColors(
             containerColor = BackGroundAppColor,
             contentColor = Color.White,
@@ -202,13 +204,13 @@ fun HeadingTextComponent(modifier: Modifier = Modifier, value: String, isActive:
 
 @Composable
 fun HomeBottomBar(
-    isCheckIn: Boolean,
-    isEnable: Boolean,
+    checkInStatus: ECheckIn,
     selectedScreen: HomeType,
     onItemSelected: (HomeType) -> Unit,
     onLogOut: () -> Unit,
     onCheck: () -> Unit
 ) {
+    val isCheckIn = checkInStatus == ECheckIn.STARTED
     var openDialog by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -236,8 +238,9 @@ fun HomeBottomBar(
                             title = if (isCheckIn) "Check-Out" else "Check-In"
                             message =
                                 if (isCheckIn) "Esta seguro de registrar su Check-Out?" else "Esta seguro de registrar su Check-In?"
+                            if (checkInStatus == ECheckIn.DONE) onCheck()
                             onConfirmAction = onCheck
-                            openDialog = true
+                            openDialog = checkInStatus != ECheckIn.DONE
                         }
 
                         HomeType.LogOut -> {
@@ -261,11 +264,6 @@ fun HomeBottomBar(
                         text = if (item == HomeType.Check && isCheckIn) stringResource(R.string.checkout)
                         else stringResource(id = item.title)
                     )
-                },
-                enabled = when (item) {
-                    HomeType.Home -> true
-                    HomeType.Check -> isEnable
-                    HomeType.LogOut -> true
                 },
                 alwaysShowLabel = true,
                 icon = {
@@ -294,15 +292,15 @@ fun HomeBottomBar(
 
 
 @Composable
-fun HeaderHome(
+fun Timer(
     modifier: Modifier,
-    isStarted: Boolean,
-    isRoundBtnEnabled: Boolean,
-    timer: String,
+    isTimerRunning: Boolean,
+    isEnable: Boolean,
+    timer: Long,
     onStart: () -> Unit,
     onStop: () -> Unit
 ) {
-    val buttonText = if (isStarted) stringResource(R.string.btn_finalizar_text)
+    val buttonText = if (isTimerRunning) stringResource(R.string.btn_finalizar_text)
     else stringResource(R.string.btn_start_text)
 
     Row(
@@ -313,8 +311,9 @@ fun HeaderHome(
         TimerHomeComponent(timer = timer)
 
         StartButtonComponent(
-            buttonText, isRoundBtnEnabled = isRoundBtnEnabled,
-            isStarted = isStarted,
+            value = buttonText,
+            isEnable = isEnable,
+            isStarted = isTimerRunning,
             onStart = { onStart() },
             onStop = { onStop() }
         )
@@ -420,12 +419,6 @@ fun HomeTopBar(modifier: Modifier, fullname: String?, localityName: String) {
 
         },
         navigationIcon = {
-//            Icon(
-//                painter = painterResource(id = R.drawable.),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .padding(start = 12.dp, end = 8.dp).size(40.dp)
-//            )
             Icon(
                 imageVector = Icons.Outlined.VerifiedUser,
                 contentDescription = null,
@@ -441,7 +434,7 @@ fun HomeTopBar(modifier: Modifier, fullname: String?, localityName: String) {
 
 
 @Composable
-fun HomeAddReport(showFab: Boolean, addReport: () -> Unit) {
+fun AddReportButton(showFab: Boolean, addReport: () -> Unit) {
     AnimatedVisibility(visible = showFab) {
         FloatingActionButton(
             onClick = { addReport() },
