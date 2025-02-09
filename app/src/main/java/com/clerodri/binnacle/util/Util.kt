@@ -50,7 +50,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clerodri.binnacle.auth.presentation.admin.AdminViewModel
+import com.clerodri.binnacle.authentication.presentation.admin.AdminViewModel
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
 import com.clerodri.binnacle.ui.theme.Primary
 import com.google.android.gms.maps.model.CameraPosition
@@ -62,18 +62,23 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 
 @SuppressLint("DefaultLocale")
- fun formatTime(seconds: Int): String {
-    val hours = seconds / 3600
-    val minutes = (seconds % 3600) / 60
-    val secs = seconds % 60
+fun Long.formatTime(): String {
+    val hours = this / 3600
+    val minutes = (this % 3600) / 60
+    val secs = this % 60
     return String.format("%02d:%02d:%02d", hours, minutes, secs)
 }
 
 
 @Composable
-fun IdentifierField(identifier:String, identifierError:String?, onIdentifierChange: (String) -> Unit){
+fun IdentifierField(
+    identifier: String,
+    identifierError: String?,
+    onIdentifierChange: (String) -> Unit
+) {
 
-    OutlinedTextField(value = identifier,
+    OutlinedTextField(
+        value = identifier,
         onValueChange = { onIdentifierChange(it) },
         modifier = Modifier
             .fillMaxWidth()
@@ -91,7 +96,8 @@ fun IdentifierField(identifier:String, identifierError:String?, onIdentifierChan
             unfocusedTextColor = Color.Black,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-        ))
+        )
+    )
     if (identifierError != null) {
         Text(
             text = identifierError,
@@ -103,9 +109,10 @@ fun IdentifierField(identifier:String, identifierError:String?, onIdentifierChan
 }
 
 @Composable
-fun EmailField(email:String, onEmailChange: (String) -> Unit, emailError:String?){
+fun EmailField(email: String, onEmailChange: (String) -> Unit, emailError: String?) {
 
-    OutlinedTextField(value = email,
+    OutlinedTextField(
+        value = email,
         onValueChange = { onEmailChange(it) },
         modifier = Modifier
             .fillMaxWidth()
@@ -122,7 +129,8 @@ fun EmailField(email:String, onEmailChange: (String) -> Unit, emailError:String?
             unfocusedTextColor = Color.Black,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-        ))
+        )
+    )
     if (emailError != null) {
         Text(
             text = emailError,
@@ -134,7 +142,7 @@ fun EmailField(email:String, onEmailChange: (String) -> Unit, emailError:String?
 }
 
 @Composable
-fun PasswordField(password:String, passwordError:String? , onPasswordChange: (String) -> Unit){
+fun PasswordField(password: String, passwordError: String?, onPasswordChange: (String) -> Unit) {
     var isPasswordVisible by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = password,
@@ -148,11 +156,12 @@ fun PasswordField(password:String, passwordError:String? , onPasswordChange: (St
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password
         ),
-        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation() ,
+        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         singleLine = true,
         maxLines = 1,
         trailingIcon = {
-            val icon = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+            val icon =
+                if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
             val description = if (isPasswordVisible) "Hide password" else "Show password"
             IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                 Icon(imageVector = icon, contentDescription = description, tint = Color.Gray)
@@ -167,7 +176,8 @@ fun PasswordField(password:String, passwordError:String? , onPasswordChange: (St
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             cursorColor = Color.Black,
-        ))
+        )
+    )
     if (passwordError != null) {
         Text(
             text = passwordError,
@@ -177,12 +187,14 @@ fun PasswordField(password:String, passwordError:String? , onPasswordChange: (St
         )
     }
 }
+
 @Composable
-fun Container(content: @Composable () -> Unit){
+fun Container(content: @Composable () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(BackGroundAppColor))
+            .background(BackGroundAppColor)
+    )
     {
         content()
     }
@@ -215,8 +227,8 @@ fun Container(content: @Composable () -> Unit){
 //}
 
 @Composable
-fun ButtonLogin(loginEnable:Boolean, onLoginSelected:() -> Unit) {
-    Button (
+fun ButtonLogin(loginEnable: Boolean, onLoginSelected: () -> Unit) {
+    Button(
         onClick = {
             onLoginSelected()
         },
@@ -231,24 +243,27 @@ fun ButtonLogin(loginEnable:Boolean, onLoginSelected:() -> Unit) {
         ),
         enabled = loginEnable,
         shape = RoundedCornerShape(4.dp)
-    )   { Text("Iniciar Sesion") }
+    ) { Text("Iniciar Sesion") }
 }
 
 
 @Composable
-fun CheckBoxComponent(value: String){
-    Row(modifier = Modifier.fillMaxWidth()
-        .heightIn(56.dp)
-        .padding(16.dp),
+fun CheckBoxComponent(value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(56.dp)
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         val checkedState = remember { mutableStateOf(false) }
         Checkbox(checked = checkedState.value,
             onCheckedChange = {
-                checkedState.value  != checkedState.value
+                checkedState.value != checkedState.value
             }
         )
-        Text( text = "Recordar Contrasena?",
+        Text(
+            text = "Recordar Contrasena?",
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 20.dp),
@@ -258,7 +273,8 @@ fun CheckBoxComponent(value: String){
                 fontStyle = FontStyle.Normal
             ),
             color = Color.Black,
-            textAlign = TextAlign.Center)
+            textAlign = TextAlign.Center
+        )
 //        NormalTextComponent(value = value)
 
     }

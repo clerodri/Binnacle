@@ -5,18 +5,19 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.clerodri.binnacle.addreport.AddReportScreen
-import com.clerodri.binnacle.addreport.AddReportViewModel
-import com.clerodri.binnacle.auth.presentation.admin.AdminViewModel
-import com.clerodri.binnacle.auth.presentation.admin.LoginAdminScreen
-import com.clerodri.binnacle.auth.presentation.guard.GuardViewModel
-import com.clerodri.binnacle.auth.presentation.guard.GuardViewModelEvent
-import com.clerodri.binnacle.auth.presentation.guard.LoginGuardScreen
+import androidx.navigation.toRoute
+import com.clerodri.binnacle.addreport.ui.AddReportScreen
+import com.clerodri.binnacle.addreport.ui.AddReportViewModel
+import com.clerodri.binnacle.authentication.presentation.admin.AdminViewModel
+import com.clerodri.binnacle.authentication.presentation.admin.LoginAdminScreen
+import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModel
+import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModelEvent
+import com.clerodri.binnacle.authentication.presentation.guard.LoginGuardScreen
 import com.clerodri.binnacle.home.presentation.HomeScreen
 import com.clerodri.binnacle.home.presentation.HomeViewModel
 import com.clerodri.binnacle.location.presentation.LocationViewModel
@@ -30,9 +31,9 @@ fun NavigationWrapper(
     addReportViewModel: AddReportViewModel,
     locationViewModel: LocationViewModel
 ) {
-    val isUserAuthenticated by guardViewModel.isAuthenticated.collectAsState()
+    val isUserAuthenticated by guardViewModel.isAuthenticated.collectAsStateWithLifecycle()
 
-    LaunchedEffect(isUserAuthenticated) {
+    LaunchedEffect(false) {
         Log.d("GG", "isUserAuthenticated $isUserAuthenticated")
         if (isUserAuthenticated) {
             navController.navigate(HomeScreen) {
@@ -104,7 +105,17 @@ fun NavigationWrapper(
 
             HomeScreen(
                 locationViewModel,
-                addReport = { navController.navigate(ReportScreen) },
+                navigateToReportScreen = { routeId,
+                                           roundId,
+                                           localityId ->
+                    navController.navigate(
+                        ReportScreen(
+                            routeId = routeId,
+                            roundId = roundId,
+                            localityId = localityId
+                        )
+                    )
+                },
                 homeViewModel = homeViewModel,
                 onLogOut = {
                     guardViewModel.onEvent(GuardViewModelEvent.LogOut)
@@ -114,12 +125,16 @@ fun NavigationWrapper(
 
         }
 
-        composable<ReportScreen> {
+        composable<ReportScreen> { backStackEntry ->
+
+            val details = backStackEntry.toRoute<ReportScreen>()
             AddReportScreen(
                 addReportViewModel = addReportViewModel,
-            ) {
-                navController.popBackStack()
-            }
+                onBack = { navController.popBackStack() },
+                routeId = details.routeId,
+                roundId = details.roundId,
+                localityId = details.localityId,
+            )
         }
     }
 }

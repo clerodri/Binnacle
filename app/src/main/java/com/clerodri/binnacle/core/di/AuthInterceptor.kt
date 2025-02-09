@@ -1,7 +1,7 @@
 package com.clerodri.binnacle.core.di
 
 import android.util.Log
-import com.clerodri.binnacle.auth.data.datasource.local.LocalDataSource
+import com.clerodri.binnacle.authentication.data.datasource.local.LocalDataSource
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor

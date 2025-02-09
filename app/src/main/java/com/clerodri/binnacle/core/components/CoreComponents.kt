@@ -40,7 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clerodri.binnacle.auth.presentation.components.componentShapes
+import com.clerodri.binnacle.authentication.presentation.components.componentShapes
 import com.clerodri.binnacle.ui.theme.BgColor
 import com.clerodri.binnacle.ui.theme.Primary
 
@@ -129,27 +129,29 @@ fun NormalTextComponent(value: String) {
 
 
 @Composable
- fun SnackBarComponent(snackbarHostState: SnackbarHostState, modifier: Modifier = Modifier) {
-    SnackbarHost(snackbarHostState, modifier =modifier ) { data ->
+fun SnackBarComponent(snackbarHostState: SnackbarHostState, modifier: Modifier = Modifier) {
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = modifier,
+    ) { data ->
         Snackbar(
-            containerColor = Color.Red,
+            containerColor = Color.Red.copy(0.8f),
             shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            contentColor = Color.Yellow,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(imageVector = Icons.Filled.Warning, contentDescription = "")
+                Icon(imageVector = Icons.Filled.Warning, contentDescription = null)
                 Text(
                     text = data.visuals.message,
-                    modifier = Modifier.padding(10.dp),
+                    modifier = Modifier.padding(12.dp),
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }
-
         }
     }
 }
-

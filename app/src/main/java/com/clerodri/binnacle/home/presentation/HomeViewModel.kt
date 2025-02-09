@@ -3,17 +3,22 @@ package com.clerodri.binnacle.home.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clerodri.binnacle.auth.domain.DataError
-import com.clerodri.binnacle.auth.domain.Result
-import com.clerodri.binnacle.auth.domain.model.UserData
-import com.clerodri.binnacle.auth.domain.usecase.UserUseCase
-import com.clerodri.binnacle.home.domain.model.CheckStatus
+import com.clerodri.binnacle.authentication.domain.model.UserData
+import com.clerodri.binnacle.authentication.domain.usecase.UserUseCase
+import com.clerodri.binnacle.core.DataError
+import com.clerodri.binnacle.core.Result
+import com.clerodri.binnacle.home.domain.model.ECheckIn
 import com.clerodri.binnacle.home.domain.model.Home
 import com.clerodri.binnacle.home.domain.model.Route
+import com.clerodri.binnacle.home.domain.usecase.CheckInUseCase
+import com.clerodri.binnacle.home.domain.usecase.CheckOutUseCase
+import com.clerodri.binnacle.home.domain.usecase.CreateRoundUseCase
+import com.clerodri.binnacle.home.domain.usecase.FinishRoundUseCase
+import com.clerodri.binnacle.home.domain.usecase.GetCheckInStatusUseCase
 import com.clerodri.binnacle.home.domain.usecase.HomeUseCase
 import com.clerodri.binnacle.home.domain.usecase.LocalityUseCase
-import com.clerodri.binnacle.util.formatTime
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -30,27 +35,34 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val homeUseCase: HomeUseCase,
     private val userUseCase: UserUseCase,
-    private val localityUseCase: LocalityUseCase
-) : ViewModel() {
+    private val localityUseCase: LocalityUseCase,
+    private val createRoundUseCase: CreateRoundUseCase,
+    private val finishRoundUseCase: FinishRoundUseCase,
+    private val checkInUseCase: CheckInUseCase,
+    private val checkOutUseCase: CheckOutUseCase,
+    private val getCheckInStatusUseCase: GetCheckInStatusUseCase,
+
+    ) : ViewModel() {
 
 
     private val _userData = MutableStateFlow<UserData?>(null)
     val userData: StateFlow<UserData?> = _userData.asStateFlow()
 
-
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
-
     private val _routes = MutableStateFlow<List<Route>>(emptyList())
 
-
     val routes: StateFlow<List<Route>> = _routes.asStateFlow()
+
+    private val _timer = MutableStateFlow(0L)
+    val timer = _timer.asStateFlow()
 
     private var timerJob: Job? = null
 
     private val _eventChannel = Channel<HomeUiEvent>()
     internal fun getEventChannel() = _eventChannel.receiveAsFlow()
+
 
     init {
         viewModelScope.launch {
@@ -60,78 +72,118 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    // Handle user events
     fun onEvent(event: HomeViewModelEvent) {
         when (event) {
             HomeViewModelEvent.OnCheck -> {
-                Log.d("HomeViewModel", "OnCheck")
-                if (_state.value.isCheckedIn) checkOut() else checkIn()
+
+                when (_state.value.checkStatus) {
+                    ECheckIn.STARTED -> checkOut()
+                    ECheckIn.DONE -> sendScreenEvent(event = HomeUiEvent.ShowAlert("Ya esta registrado su Check-In"))
+                    ECheckIn.READY -> checkIn()
+                }
             }
 
             HomeViewModelEvent.StartRound -> {
-                Log.d("HomeViewModel", "Start round")
+
                 startTimer()
+                createRound()
             }
 
             HomeViewModelEvent.StopRound -> {
-                Log.d("HomeViewModel", "Stop round")
                 stopTimer()
+                finishRound()
+
             }
 
             HomeViewModelEvent.UpdateIndex -> {
-                if (_state.value.currentIndex == _routes.value.size - 2) {
-                    _state.update {
-                        it.copy(isRoundBtnEnabled = true, currentIndex = it.currentIndex + 1)
-                    }
 
-                } else {
-                    _state.update {
-                        it.copy(currentIndex = it.currentIndex + 1)
+                viewModelScope.launch {
+                    Log.d("RR", "updateIndex called ${_state.value.currentIndex}")
+                    if (_state.value.currentIndex == _routes.value.size - 1) {
+
+                        _state.value =
+                            _state.value.copy(currentIndex = _state.value.currentIndex + 1)
+                    } else {
+                        _state.value =
+                            _state.value.copy(currentIndex = _state.value.currentIndex + 1)
                     }
+                    saveHomeState(this)
                 }
 
-                saveHomeState()
             }
 
-            HomeViewModelEvent.OnLogOutRequested -> sendScreenEvent(event = HomeUiEvent.ShowAlert)
+            HomeViewModelEvent.OnLogOutRequested ->
+                sendScreenEvent(event = HomeUiEvent.ShowAlert("Debe finalizar la ronda para cerrar sesion"))
 
-            HomeViewModelEvent.OnCheckOut -> _state.update { it.copy(isCheckedOut = true) }
+            HomeViewModelEvent.OnLogOut -> onLogOut()
+            HomeViewModelEvent.OnDestroy -> {
+                viewModelScope.launch {
+                    saveHomeState(this)
+                }
+            }
         }
     }
 
+    private fun finishRound() {
+        viewModelScope.launch {
+            when (val result = finishRoundUseCase(_state.value.roundId)) {
+                is Result.Failure -> {
+                    sendScreenEvent(event = HomeUiEvent.ShowAlert(result.error.name))
+                }
 
-    fun onLogOut() {
+                is Result.Success -> {
+                    sendScreenEvent(event = HomeUiEvent.ShowAlert("Ronda finalizada exitosamente"))
+                }
+            }
+            homeUseCase.clearHomeData()
+        }
+    }
+
+    private fun createRound() {
+        viewModelScope.launch {
+            when (val result = createRoundUseCase.invoke(_userData.value?.id!!)) {
+                is Result.Failure -> {
+                    sendScreenEvent(event = HomeUiEvent.ShowAlert(result.error.name))
+                }
+
+                is Result.Success -> {
+                    Log.d("ReportRepositoryImpl", "ROUNDID IN HOMEVIEWMODEL: $result")
+                    _state.value = _state.value.copy(roundId = result.data.id)
+                    delay(500)
+                    sendScreenEvent(event = HomeUiEvent.ShowAlert("Ronda iniciada"))
+                }
+            }
+        }
+    }
+
+    private fun onLogOut() {
 
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
-
-            Log.d("OO", "viewModel onLogOut - START")
             userUseCase.clearUserData()
-            Log.d("OO", "viewModel onLogOut - Home cleared")
             homeUseCase.clearHomeData()
-            Log.d("OO", "viewModel onLogOut - User data cleared")
             delay(500)
             sendScreenEvent(event = HomeUiEvent.LogOut)
             delay(500)
-            Log.d("OO", "viewModel onLogOut - Navigation triggered")
             _state.value = _state.value.copy(isLoading = false)
         }
     }
 
     private fun checkOut() {
         viewModelScope.launch {
-            when (val result = homeUseCase.makeCheckOut(_userData.value?.id?.toInt())) {
+            when (val result = checkOutUseCase(_state.value.checkInId)) {
                 is Result.Failure -> {
                     handleCheckStatusFailure(result.error)
                 }
 
                 is Result.Success -> {
-                    _state.update {
-                        it.copy(isCheckedOut = true, enableCheck = false)
-                    }
+                    Log.d("RR", "checkOut ViewModel $result")
+                    _state.value = _state.value.copy(
+                        checkStatus = ECheckIn.DONE
+                    )
                 }
             }
-            saveHomeState()
+            saveHomeState(this)
         }
 
 
@@ -139,93 +191,82 @@ class HomeViewModel @Inject constructor(
 
     private fun checkIn() {
         viewModelScope.launch {
-            val checkIn = homeUseCase.makeCheckIn(_userData.value?.id?.toInt())
-            Log.d("RR", "checkIn ViewModel $checkIn")
-            _state.update {
-                it.copy(isCheckedIn = true)
+            when (val checkIn = checkInUseCase(_userData.value?.id!!)) {
+                is Result.Failure -> {
+                    when (checkIn.error) {
+                        DataError.CheckError.GUARD_NOT_FOUND -> TODO()
+                        DataError.CheckError.REQUEST_TIMEOUT -> TODO()
+                        DataError.CheckError.NO_INTERNET -> TODO()
+                    }
+                }
+
+                is Result.Success -> {
+                    Log.d("HomeViewModel", "checkIn ViewModel $checkIn")
+                    _state.value = _state.value.copy(
+                        checkStatus = checkIn.data.status,
+                        checkInId = checkIn.data.id
+                    )
+                }
             }
+            saveHomeState(this)
         }
-        saveHomeState()
+
     }
 
-
-    private fun startTimer(resumeFrom: Int = 0) {
-        if (timerJob?.isActive == true) {
-            Log.d("HomeViewModel", "Timer already running. Ignoring start request.")
-            return
-        }
-        Log.d("HomeViewModel", "startTimer called")
-        _state.update {
-            it.copy(
-                isStarted = true,
-                isRoundBtnEnabled = _routes.value.size == 1,
-                elapsedSeconds = resumeFrom
-            )
-        }
-
+    private fun startTimer(resumeFrom: Long = 0) {
+        _state.value = _state.value.copy(isStarted = true)
+        timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            var currentTime = resumeFrom
+            _timer.value = resumeFrom
             while (true) {
-                delay(1000L)
-                currentTime++
-                _state.update {
-                    it.copy(timer = formatTime(currentTime), elapsedSeconds = currentTime)
-                }
-                saveHomeState()
+                delay(1000)
+                _timer.value++
+                saveHomeState(this)
             }
         }
     }
 
     private fun stopTimer() {
-        Log.d("HomeViewModel", "stopTimer called")
+        _state.value = _state.value.copy(isStarted = false, currentIndex = 0)
+        _timer.value = 0
         timerJob?.cancel()
-        timerJob = null
-        _state.update {
-            it.copy(
-                currentIndex = 0,
-                isStarted = false,
-                timer = "00:00:00",
-                elapsedSeconds = 0
-            )
-        }
-        saveHomeState()
-
-
     }
 
-    private fun saveHomeState() {
-        viewModelScope.launch {
+
+    override fun onCleared() {
+        super.onCleared()
+        timerJob?.cancel()
+    }
+
+
+    private fun saveHomeState(viewModelScore: CoroutineScope) {
+        viewModelScore.launch {
             homeUseCase.saveHomeData(
                 Home(
                     currentIndex = _state.value.currentIndex,
                     isStarted = _state.value.isStarted,
-                    isRoundBtnEnabled = _state.value.isRoundBtnEnabled,
-                    timer = _state.value.timer,
-                    elapsedSeconds = _state.value.elapsedSeconds,
-                    isCheckedIn = _state.value.isCheckedIn,
-                    enableCheck = _state.value.enableCheck,
-                    isCheckedOut = _state.value.isCheckedOut
+                    elapsedSeconds = _timer.value,
+                    roundId = _state.value.roundId,
+                    checkId = _state.value.checkInId
                 )
             )
         }
     }
 
-
-    private fun handleCheckStatusFailure(error: DataError.Check) {
+    private fun handleCheckStatusFailure(error: DataError.CheckError) {
         when (error) {
-            DataError.Check.CONFLICT -> {
-                _state.update {
-                    it.copy(
-                        enableCheck = false,
-                        isCheckedIn = false,
-                        isCheckedOut = false
-                    )
-                }
+            DataError.CheckError.GUARD_NOT_FOUND -> {
+
             }
+
+            DataError.CheckError.REQUEST_TIMEOUT -> {
+
+            }
+
+            DataError.CheckError.NO_INTERNET -> {}
         }
 
     }
-
 
     private fun sendScreenEvent(event: HomeUiEvent) {
         viewModelScope.launch {
@@ -248,15 +289,35 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun loadHomeState() {
+        Log.d("HomeViewModel", "loadSavedState called")
+        viewModelScope.launch {
+            homeUseCase.getHomeData().collectLatest { savedState ->
+                Log.d("HomeViewModel", "loadSavedState called $savedState")
+                _state.update {
+                    it.copy(
+                        currentIndex = savedState?.currentIndex!!,
+                        isStarted = savedState.isStarted,
+                        roundId = savedState.roundId,
+                        checkInId = savedState.checkId
+                    )
+                }
+                if (savedState?.isStarted == true && savedState.elapsedSeconds > 0) {
+                    startTimer(resumeFrom = savedState.elapsedSeconds)
+                }
+            }
+
+        }
+    }
+
     private suspend fun fetchLocality(id: Int) {
         val locality = localityUseCase.invoke(id)
         Log.d("RR", "loadUserData locality called $locality")
         _routes.update {
             locality?.routes?.sortedBy { it.id }!!
         }
-
         _state.update {
-            it.copy(localityName = locality?.name!!, isRoundBtnEnabled = _routes.value.isNotEmpty())
+            it.copy(localityName = locality?.name!!)
         }
 
 
@@ -264,81 +325,14 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun fetchCheckInStatus(id: Int) {
 
-        when (val result = homeUseCase.validateCheckStatus(id)) {
+        when (val result = getCheckInStatusUseCase(id)) {
 
+            is Result.Failure -> handleCheckStatusFailure(result.error)
 
-            is Result.Failure -> {
-                handleCheckStatusFailure(result.error)
-            }
+            is Result.Success -> _state.value = _state.value.copy(checkStatus = result.data)
 
-            is Result.Success -> {
-                when (result.data) {
-                    CheckStatus.STARTED -> {
-                        _state.update {
-                            it.copy(
-                                enableCheck = true,
-                                isCheckedIn = true,
-                                isCheckedOut = false
-                            )
-                        }
-                    }
-
-                    CheckStatus.DONE -> {
-                        _state.update {
-                            it.copy(
-                                enableCheck = false,
-                                isCheckedIn = true,
-                                isCheckedOut = true
-                            )
-                        }
-                    }
-
-                    CheckStatus.READY -> {
-                        _state.update {
-                            it.copy(
-                                enableCheck = true,
-                                isCheckedIn = false,
-                                isCheckedOut = false
-                            )
-                        }
-                    }
-                }
-            }
         }
 
 
     }
-
-
-    private fun loadHomeState() {
-        Log.d("HomeViewModel", "loadSavedState called")
-        viewModelScope.launch {
-            homeUseCase.getHomeData().collectLatest { savedState ->
-                _state.update {
-                    it.copy(
-                        currentIndex = savedState?.currentIndex!!,
-                        isStarted = savedState.isStarted,
-                        isRoundBtnEnabled = savedState.isRoundBtnEnabled,
-                        timer = savedState.timer,
-                        enableCheck = savedState.enableCheck,
-                        isCheckedIn = savedState.isCheckedIn,
-                        isCheckedOut = savedState.isCheckedOut
-                    )
-                }
-
-                if (savedState?.isStarted!! && savedState.elapsedSeconds > 0 && timerJob == null) {
-                    Log.d(
-                        "HomeViewModel",
-                        "Resuming timer from ${savedState.elapsedSeconds} seconds"
-                    )
-                    startTimer(resumeFrom = savedState.elapsedSeconds)
-                } else {
-                    Log.d("HomeViewModel", "Timer is not running on app start")
-                }
-            }
-
-        }
-    }
-
-
 }

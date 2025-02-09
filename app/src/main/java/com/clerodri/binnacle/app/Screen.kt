@@ -14,5 +14,5 @@ object LoginAdmin
 object  HomeScreen
 
 @Serializable
-object  ReportScreen
+data class  ReportScreen(val routeId:Int, val roundId:Int, val localityId:Int)
 

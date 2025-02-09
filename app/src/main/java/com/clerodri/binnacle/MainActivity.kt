@@ -6,14 +6,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.clerodri.binnacle.addreport.AddReportViewModel
+import androidx.lifecycle.lifecycleScope
+import com.clerodri.binnacle.addreport.ui.AddReportViewModel
 import com.clerodri.binnacle.app.BinnacleApp
-import com.clerodri.binnacle.auth.presentation.admin.AdminViewModel
-import com.clerodri.binnacle.auth.presentation.guard.GuardViewModel
+import com.clerodri.binnacle.authentication.presentation.admin.AdminViewModel
+import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModel
 import com.clerodri.binnacle.home.presentation.HomeViewModel
+import com.clerodri.binnacle.home.presentation.HomeViewModelEvent
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -38,6 +40,15 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
+
+//    override fun onStop() {
+//        super.onStop()
+//        lifecycleScope.launch {
+//            homeViewModel.onEvent(HomeViewModelEvent.OnDestroy)
+//        }
+//    }
+
+
 }
 
 
