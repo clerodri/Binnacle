@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.dagger.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.camera.view)
     ksp(libs.dagger.hilt.android.compiler)
     ksp(libs.dagger.hilt.compiler)
 //    implementation(libs.maps)
@@ -93,9 +94,15 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     //Animaticon for navigaction
-
     implementation(libs.accompanist.navigation.animation)
 
+    //CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.compose)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.camera.extensions)
 
 
     implementation(libs.androidx.core.ktx)

@@ -158,7 +158,8 @@ private fun Screen(
             )
         },
         floatingActionButton = {
-            AddReportButton(state.isStarted) {
+            //state.isStarted
+            AddReportButton(true) {
                 val roundId = state.roundId
                 val routeId = routes[state.currentIndex].id
                 val localityId = user?.localityId ?: 0
