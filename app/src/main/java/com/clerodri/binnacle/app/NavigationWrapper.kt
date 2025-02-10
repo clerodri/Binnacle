@@ -1,5 +1,6 @@
 package com.clerodri.binnacle.app
 
+import android.app.Activity
 import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
