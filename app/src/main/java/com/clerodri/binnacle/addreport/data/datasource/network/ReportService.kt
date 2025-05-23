@@ -17,6 +17,7 @@ class ReportService @Inject constructor(
 ) {
 
     suspend fun addReport(report: ReportDto, imageFile: File?) {
+        Log.d("CameraX", "report service: $report")
         return withContext(Dispatchers.IO) {
             val gson = Gson()
             val reportJson = gson.toJson(report)

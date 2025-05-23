@@ -41,7 +41,8 @@ data class AddReportUiState(
     val isLoading: Boolean = false,
     val openCamera: Boolean = false,
     val btnCameraEnable: Boolean = false,
-    val bitmap: Bitmap? = null
+    val bitmap: Bitmap? = null,
+    val titleError: String? = null,
 )
 
 @HiltViewModel
@@ -87,7 +88,7 @@ class AddReportViewModel @Inject constructor(
 
             AddReportEvent.OnNavigateToHome -> {
                 _uiState.update {
-                    it.copy(description = "", title = "")
+                    it.copy(description = "", title = "", titleError = null)
                 }
             }
 
@@ -100,7 +101,7 @@ class AddReportViewModel @Inject constructor(
 
             is AddReportEvent.OnUpdateTitle -> {
                 _uiState.update {
-                    it.copy(title = event.title)
+                    it.copy(title = event.title, titleError = null)
                 }
             }
 
@@ -123,32 +124,40 @@ class AddReportViewModel @Inject constructor(
     }
 
     private fun createReport(report: Report) {
-        viewModelScope.launch {
-            when (val result = addReportUseCase(report)) {
-                is Result.Failure -> {
-                    when (result.error) {
-                        DataError.Report.REQUEST_TIMEOUT -> {
-                            Log.d("CameraX", "createReport: ${result.error}")
-                            sendScreenEvent(event = ReportUiEvent.onError(result.error.name))
-                        }
 
-                        DataError.Report.NO_INTERNET -> {
-                            sendScreenEvent(event = ReportUiEvent.onError(result.error.name))
-                            Log.d("CameraX", "createReport: ${result.error}")
+        if(report.title.isBlank()){
+                _uiState.value = _uiState.value.copy(titleError = "El titulo es requerido")
+        }else{
+            viewModelScope.launch {
+                when (val result = addReportUseCase(report)) {
+                    is Result.Failure -> {
+                        when (result.error) {
+                            DataError.Report.REQUEST_TIMEOUT -> {
+                                Log.d("CameraX", "createReport: ${result.error}")
+                                sendScreenEvent(event = ReportUiEvent.onError(result.error.name))
+                            }
+
+                            DataError.Report.NO_INTERNET -> {
+                                sendScreenEvent(event = ReportUiEvent.onError(result.error.name))
+                                Log.d("CameraX", "createReport: ${result.error}")
+                            }
                         }
                     }
-                }
 
-                is Result.Success -> {
-                    Log.d("CameraX", "createReport: $result")
-                    _uiState.update {
-                        it.copy(description = "", title = "", bitmap = null)
+                    is Result.Success -> {
+                        Log.d("CameraX", "createReport: $result")
+                        _uiState.update {
+                            it.copy(description = "", title = "", bitmap = null)
+                        }
+                        sendScreenEvent(event = ReportUiEvent.onBack)
+
                     }
-                    sendScreenEvent(event = ReportUiEvent.onBack)
-
                 }
             }
         }
+
+
+
     }
 
 

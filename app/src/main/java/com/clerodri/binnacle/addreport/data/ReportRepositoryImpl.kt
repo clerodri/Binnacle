@@ -32,7 +32,11 @@ class ReportRepositoryImpl @Inject constructor(
     override suspend fun addReport(report: Report): Result<Unit, DataError.Report> {
 
         return try {
-            val imageFile = saveBitmapToFile(report.imageBitmap!!)
+            var imageFile: File? = null
+            if (report.imageBitmap != null) {
+                imageFile = saveBitmapToFile(report.imageBitmap)
+            }
+
             val result = reportService.addReport(
                 ReportDto(
                     report.title,
