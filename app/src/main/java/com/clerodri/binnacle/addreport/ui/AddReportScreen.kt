@@ -102,16 +102,17 @@ fun AddReportScreen(
             FloatingActionButton(
                 modifier = Modifier.padding(bottom = 200.dp, end = 10.dp),
                 onClick = {
-                    if (state.title.isNotBlank() && state.description.isNotBlank()) {
-                        addReportViewModel.onReportEvent(
-                            AddReportEvent.OnAddReport(
-                                Report(
-                                    state.title, state.description, routeId, roundId, localityId,
-                                    state.bitmap
-                                )
+                    addReportViewModel.onReportEvent(
+                        AddReportEvent.OnAddReport(
+                            Report(
+                                state.title, state.description, routeId, roundId, localityId,
+                                state.bitmap
                             )
                         )
-                    }
+                    )
+//                    if (state.title.isNotBlank() && state.description.isNotBlank()) {
+//
+//                    }
                 }
             ) {
                 Icon(Icons.Filled.Done, stringResource(id = R.string.save_report))
@@ -122,6 +123,7 @@ fun AddReportScreen(
 
             AddReportContent(modifier = Modifier.padding(paddingValues),
                 title = state.title,
+                titleError = state.titleError,
                 description = state.description,
                 onTitleChanged = { addReportViewModel.onReportEvent(AddReportEvent.OnUpdateTitle(it)) },
                 onDescriptionChanged = {
@@ -143,6 +145,14 @@ fun AddReportScreen(
 
                 ReportUiEvent.onBack -> {
                     onBack()
+//                    coroutineScope.launch {
+//
+//                        snackHostState.showSnackbar(
+//                            message = "Reporte enviado!", duration = SnackbarDuration.Short
+//                        )
+//
+//                    }
+
                 }
 
                 is ReportUiEvent.onError -> {
@@ -161,6 +171,7 @@ fun AddReportScreen(
 @Composable
 private fun AddReportContent(
     title: String,
+    titleError:String?,
     description: String,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
@@ -207,8 +218,10 @@ private fun AddReportContent(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
             ),
             maxLines = 1,
-            colors = textFieldColors
+            colors = textFieldColors,
+            isError = titleError != null
         )
+        ErrorMessage(titleError)
 
         OutlinedTextField(
             value = description,
@@ -253,4 +266,16 @@ fun AddReportTopAppBar(@StringRes title: Int, onBack: () -> Unit, openCamera: ()
 
     }, modifier = Modifier.fillMaxWidth()
     )
+}
+
+@Composable
+fun ErrorMessage(value: String?) {
+    if (value != null) {
+        Text(
+            text = value,
+            color = MaterialTheme.colorScheme.error, // Use error color
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+        )
+    }
 }
