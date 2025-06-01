@@ -11,7 +11,7 @@
     <string name="version_app">v1.0.0</string>
     <string name="or">Or</string>
     <string name="iniciar_sesion">Iniciar Sesion</string>
-    <string name="eres_administrador">"Administrador? "</string>
+    <string name="eres_administrador">"eres Administrador? "</string>
     <string name="login_admin_text">" Login Admin"</string>
     <string name="rondas">Rutas</string>
     <string name="checkin_label">Check-In</string>

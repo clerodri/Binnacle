@@ -208,7 +208,8 @@ fun HomeBottomBar(
     selectedScreen: HomeType,
     onItemSelected: (HomeType) -> Unit,
     onLogOut: () -> Unit,
-    onCheck: () -> Unit
+    onCheck: () -> Unit,
+    isCheckEnabled: Boolean = true
 ) {
     val isCheckIn = checkInStatus == ECheckIn.STARTED
     var openDialog by remember { mutableStateOf(false) }
@@ -229,35 +230,41 @@ fun HomeBottomBar(
 
         HomeType.entries.forEach { item ->
             val selected = selectedScreen == item
-
+            val enabled = if (item == HomeType.Check) isCheckEnabled else true
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    when (item) {
-                        HomeType.Check -> {
-                            title = if (isCheckIn) "Check-Out" else "Check-In"
-                            message =
-                                if (isCheckIn) "Esta seguro de registrar su Check-Out?" else "Esta seguro de registrar su Check-In?"
-                            if (checkInStatus == ECheckIn.DONE) onCheck()
-                            onConfirmAction = onCheck
-                            openDialog = checkInStatus != ECheckIn.DONE
+                    if (enabled){
+                        when (item) {
+                            HomeType.Check -> {
+                                title = if (isCheckIn) "Check-Out" else "Check-In"
+                                message =
+                                    if (isCheckIn) "Esta seguro de registrar su Check-Out?" else "Esta seguro de registrar su Check-In?"
+                                if (checkInStatus == ECheckIn.DONE) onCheck()
+                                onConfirmAction = onCheck
+                                openDialog = checkInStatus != ECheckIn.DONE
+
+                            }
+
+                            HomeType.LogOut -> {
+                                title = "Cerrar Sesion"
+                                message = "Esta seguro de cerrar la sesion?"
+                                onConfirmAction = onLogOut
+                                openDialog = true
+
+                            }
+
+                            else -> onItemSelected(item)
                         }
-
-                        HomeType.LogOut -> {
-                            title = "Cerrar Sesion"
-                            message = "Esta seguro de cerrar la sesion?"
-                            onConfirmAction = onLogOut
-                            openDialog = true
-
-                        }
-
-                        else -> onItemSelected(item)
                     }
+
 
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Primary,
-                    unselectedIconColor = Color.Gray.copy(0.6f)
+                    unselectedIconColor = Color.Gray.copy(0.6f),
+                    disabledIconColor = Color.Gray.copy(0.3f),
+                    disabledTextColor = Color.Gray.copy(0.3f)
                 ),
                 label = {
                     Text(
@@ -271,7 +278,9 @@ fun HomeBottomBar(
                         imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
                         contentDescription = stringResource(id = item.title)
                     )
-                }
+                },
+                enabled = enabled
+
             )
         }
     }
@@ -398,7 +407,7 @@ fun CheckInDialogComponent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeTopBar(modifier: Modifier, fullname: String?, localityName: String) {
+fun HomeTopBar(modifier: Modifier, fullname: String?) {
     TopAppBar(
         modifier = modifier
             .padding(horizontal = 20.dp, vertical = 10.dp)
@@ -409,7 +418,7 @@ fun HomeTopBar(modifier: Modifier, fullname: String?, localityName: String) {
         windowInsets = WindowInsets(0.dp),
         title = {
             Text(
-                text = "${fullname?.uppercase()} - $localityName",
+                text = "${fullname?.uppercase()}",
                 color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
                 fontSize = 25.sp,
                 style = MaterialTheme.typography.titleLarge,

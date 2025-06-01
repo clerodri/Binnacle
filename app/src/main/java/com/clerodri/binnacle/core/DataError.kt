@@ -12,8 +12,7 @@ sealed interface DataError: Error {
     }
     enum class AuthNetwork: DataError {
         GUARD_NOT_FOUND,
-        REQUEST_TIMEOUT,
-        NO_INTERNET,
+        SERVICE_UNAVAILABLE,
     }
 
     enum class CheckError: DataError {
@@ -21,6 +20,12 @@ sealed interface DataError: Error {
         REQUEST_TIMEOUT,
         NO_INTERNET,
     }
+    enum class LocalityError: DataError {
+        SERVICE_UNAVAILABLE,
+        ROUTES_NOT_FOUND
+    }
+
+
     enum class Round: DataError {
         GUARD_NOT_FOUND,
         REQUEST_TIMEOUT,
@@ -28,6 +33,7 @@ sealed interface DataError: Error {
     }
     enum class Report: DataError {
         REQUEST_TIMEOUT,
-        NO_INTERNET
+        NO_INTERNET,
+        SERVICE_UNAVAILABLE
     }
 }

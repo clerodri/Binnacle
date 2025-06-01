@@ -15,9 +15,9 @@ class AuthInterceptor(
 
 
     override fun intercept(chain: Interceptor.Chain): Response {
-
+        Log.d("RR", "token RR")
         val token = runBlocking {
-            localDataSource.getUserData().first()?.accessToken ?: ""
+            localDataSource.getAuthData().first()?.accessToken ?: ""
         }
         Log.d("RR", "token $token")
         val request = chain.request().newBuilder()
@@ -25,4 +25,5 @@ class AuthInterceptor(
             .build()
         return chain.proceed(request)
     }
+
 }

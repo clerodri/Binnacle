@@ -3,6 +3,7 @@ package com.clerodri.binnacle.addreport.ui
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -33,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -46,9 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clerodri.binnacle.R
-import com.clerodri.binnacle.addreport.domain.Report
 import com.clerodri.binnacle.authentication.presentation.components.componentShapes
+import com.clerodri.binnacle.core.components.PrimaryButton
 import com.clerodri.binnacle.core.components.SnackBarComponent
+import com.clerodri.binnacle.core.components.SnackBarType
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
 import com.clerodri.binnacle.util.formatCurrentDateTime
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -60,14 +64,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AddReportScreen(
-    addReportViewModel: AddReportViewModel,
+    viewModel: AddReportViewModel,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit,
-    routeId: Int,
+    onBack: (Boolean) -> Unit,
     roundId: Int,
-    localityId: Int
 ) {
-    val state by addReportViewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
@@ -76,90 +78,116 @@ fun AddReportScreen(
             Modifier
                 .fillMaxSize()
                 .background(Color.Black),
-            onCloseCamara = { addReportViewModel.onReportEvent(AddReportEvent.OnCloseCamera) },
-            addReportViewModel = addReportViewModel
+            onCloseCamara = { viewModel.onReportEvent(AddReportEvent.OnCloseCamera) },
+            addReportViewModel = viewModel
         )
     } else {
         Scaffold(modifier = modifier.fillMaxSize(), snackbarHost = {
             SnackBarComponent(
-                snackHostState, modifier = Modifier.padding(bottom = 0.dp)
+                snackHostState,
+                modifier = Modifier.padding(bottom = 0.dp),
+                type = state.snackBarType ?: SnackBarType.Error
             )
         }, topBar = {
             AddReportTopAppBar(R.string.report_screen_name,
                 onBack = {
-                    addReportViewModel.onReportEvent(AddReportEvent.OnNavigateToHome)
-                    onBack()
+                    viewModel.onReportEvent(AddReportEvent.ClearFields)
+                    onBack(false)
                 }, openCamera = {
                     if (cameraPermissionState.status.isGranted) {
-                        addReportViewModel.onReportEvent(AddReportEvent.OnOpenCamera)
+                        viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
                     } else {
-                        addReportViewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
+                        viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
                     }
 
                 }
             )
         }, floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier.padding(bottom = 200.dp, end = 10.dp),
-                onClick = {
-                    addReportViewModel.onReportEvent(
-                        AddReportEvent.OnAddReport(
-                            Report(
-                                state.title, state.description, routeId, roundId, localityId,
-                                state.bitmap
-                            )
+            if (!state.hideFloatingActionButton) {
+                PrimaryButton(
+                    text = "Notificar",
+                    onClick = {
+                        viewModel.onReportEvent(
+                            AddReportEvent.OnAddReport(state.title, state.description, roundId)
                         )
-                    )
-//                    if (state.title.isNotBlank() && state.description.isNotBlank()) {
-//
-//                    }
-                }
-            ) {
-                Icon(Icons.Filled.Done, stringResource(id = R.string.save_report))
+                        // onBack()
+                    },
+                    modifier = Modifier.padding(bottom = 200.dp, end = 10.dp)
+                )
             }
         }
 
         ) { paddingValues ->
 
-            AddReportContent(modifier = Modifier.padding(paddingValues),
-                title = state.title,
-                titleError = state.titleError,
-                description = state.description,
-                onTitleChanged = { addReportViewModel.onReportEvent(AddReportEvent.OnUpdateTitle(it)) },
-                onDescriptionChanged = {
-                    addReportViewModel.onReportEvent(
-                        AddReportEvent.OnUpdateDescription(
-                            it
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                AddReportContent(
+                    modifier = Modifier.fillMaxSize(),
+                    title = state.title,
+                    titleError = state.titleError,
+                    description = state.description,
+                    onTitleChanged = {
+                        viewModel.onReportEvent(AddReportEvent.OnUpdateTitle(it))
+                    },
+                    onDescriptionChanged = {
+                        viewModel.onReportEvent(AddReportEvent.OnUpdateDescription(it))
+                    }
+                )
+
+                // Overlay loading spinner when isLoading is true
+                if (state.isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f))
+                            .align(Alignment.Center)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .align(Alignment.Center),
+                            color = Color.White
                         )
-                    )
-                })
-
-
+                    }
+                }
+            }
         }
     }
 
 
     LaunchedEffect(Unit) {
-        addReportViewModel.getEventChannel().collect { event ->
+        viewModel.getEventChannel().collect { event ->
             when (event) {
-
-                ReportUiEvent.onBack -> {
-                    onBack()
-//                    coroutineScope.launch {
-//
-//                        snackHostState.showSnackbar(
-//                            message = "Reporte enviado!", duration = SnackbarDuration.Short
-//                        )
-//
-//                    }
-
-                }
+                ReportUiEvent.onBack -> { onBack(false) }
 
                 is ReportUiEvent.onError -> {
-
                     coroutineScope.launch {
                         snackHostState.showSnackbar(
                             message = event.message, duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+                is ReportUiEvent.onBackWithSuccess -> {
+                    onBack(event.isSuccess) // Back with success status
+                }
+
+//                ReportUiEvent.onReportCreated -> {
+//                    coroutineScope.launch {
+//                        snackHostState.showSnackbar(
+//                            message = "Reporte enviado!", duration = SnackbarDuration.Short
+//                        )
+//                    }
+//                    onBack()
+//
+//                }
+
+                ReportUiEvent.onSendingReport ->{
+                    coroutineScope.launch {
+                        snackHostState.showSnackbar(
+                            message = "Enviando....!", duration = SnackbarDuration.Short
                         )
                     }
                 }
@@ -171,7 +199,7 @@ fun AddReportScreen(
 @Composable
 private fun AddReportContent(
     title: String,
-    titleError:String?,
+    titleError: String?,
     description: String,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,

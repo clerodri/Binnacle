@@ -1,9 +1,12 @@
 package com.clerodri.binnacle.util
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.location.Location
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -85,162 +88,13 @@ fun formatCurrentDateTime(): String {
     return current.format(formatter)
 }
 
-
-@Composable
-fun IdentifierField(
-    identifier: String,
-    identifierError: String?,
-    onIdentifierChange: (String) -> Unit
-) {
-
-    OutlinedTextField(
-        value = identifier,
-        onValueChange = { onIdentifierChange(it) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
-            .background(Color.White),
-        placeholder = { Text(text = "Cedula", color = Color.Gray) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        singleLine = true,
-        isError = identifierError != null,
-        maxLines = 1,
-        colors = TextFieldDefaults.colors().copy(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        )
-    )
-    if (identifierError != null) {
-        Text(
-            text = identifierError,
-            color = MaterialTheme.colorScheme.error, // Use error color
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-        )
-    }
+fun hasInternetConnection(context: Context): Boolean {
+    val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork ?: return false
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 }
-
-@Composable
-fun EmailField(email: String, onEmailChange: (String) -> Unit, emailError: String?) {
-
-    OutlinedTextField(
-        value = email,
-        onValueChange = { onEmailChange(it) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
-            .background(Color.White),
-        placeholder = { Text(text = "email", color = Color.Gray) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        singleLine = true,
-        maxLines = 1,
-        colors = TextFieldDefaults.colors().copy(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        )
-    )
-    if (emailError != null) {
-        Text(
-            text = emailError,
-            color = MaterialTheme.colorScheme.error, // Use error color
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-        )
-    }
-}
-
-@Composable
-fun PasswordField(password: String, passwordError: String?, onPasswordChange: (String) -> Unit) {
-    var isPasswordVisible by remember { mutableStateOf(false) }
-    OutlinedTextField(
-        value = password,
-        onValueChange = { onPasswordChange(it) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(8.dp))
-            .background(Color.White),
-        placeholder = { Text(text = "password", color = Color.Gray) },
-        isError = passwordError != null,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password
-        ),
-        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        singleLine = true,
-        maxLines = 1,
-        trailingIcon = {
-            val icon =
-                if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
-            val description = if (isPasswordVisible) "Hide password" else "Show password"
-            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
-                Icon(imageVector = icon, contentDescription = description, tint = Color.Gray)
-            }
-        },
-
-        colors = TextFieldDefaults.colors().copy(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = Color.Black,
-        )
-    )
-    if (passwordError != null) {
-        Text(
-            text = passwordError,
-            color = MaterialTheme.colorScheme.error, // Use error color
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-        )
-    }
-}
-
-@Composable
-fun Container(content: @Composable () -> Unit) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(BackGroundAppColor)
-    )
-    {
-        content()
-    }
-}
-
-//@Composable
-//fun Header(modifier: Modifier) {
-//    Box(modifier = modifier)
-//    {
-//        Column(Modifier.align(Alignment.Center)) {
-////            NameApp()
-//            HeaderImage(Modifier.padding(bottom = 36.dp).align(Alignment.CenterHorizontally))
-//        }
-//    }
-//}
-
-//@Composable
-//fun TitleApp(value:String, version:String) {
-//    Text(
-//        text = value,
-//        color = Color.White,
-//        fontWeight = FontWeight.ExtraBold,
-//        fontSize = 24.sp
-//    )
-//    Text(
-//        text = version,
-//        color = Color.White.copy(alpha = 0.7f),
-//        fontSize = 12.sp
-//    )
-//}
 
 @Composable
 fun ButtonLogin(loginEnable: Boolean, onLoginSelected: () -> Unit) {

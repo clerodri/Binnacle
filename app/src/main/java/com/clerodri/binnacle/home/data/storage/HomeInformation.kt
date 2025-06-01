@@ -24,7 +24,7 @@ class HomeInformation @Inject constructor(private val context: Context) {
         private val CURRENT_INDEX_KEY = intPreferencesKey("current_index")
         private val IS_STARTED_KEY = booleanPreferencesKey("is_started")
         private val ELAPSED_SECONDS_KEY = intPreferencesKey("elapsed_seconds")
-        private val ROUND_ID = intPreferencesKey("round_id")
+        private val ROUND_ID = longPreferencesKey("round_id")
         private val CHECK_IN_ID = intPreferencesKey("check_id")
     }
 

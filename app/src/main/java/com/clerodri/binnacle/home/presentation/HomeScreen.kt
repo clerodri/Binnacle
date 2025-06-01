@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.core.components.BigSpinner
 import com.clerodri.binnacle.core.components.SnackBarComponent
+import com.clerodri.binnacle.core.components.SnackBarType
 import com.clerodri.binnacle.home.domain.model.HomeType
 import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.home.presentation.components.AddReportButton
@@ -50,6 +51,7 @@ import com.clerodri.binnacle.home.presentation.components.Timer
 import com.clerodri.binnacle.location.presentation.LocationViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -58,8 +60,10 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
-    navigateToReportScreen: (Int, Int, Int) -> Unit,
-    onLogOut: () -> Unit
+    navigateToReportScreen: (Int, Int, String) -> Unit,
+    onLogOut: () -> Unit,
+    reportSuccess: Boolean,
+    onClearSuccessReport: () -> Unit
 ) {
     val locationPermissions = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -71,12 +75,14 @@ fun HomeScreen(
 
     val coroutineScope = rememberCoroutineScope()
     BackHandler(enabled = true) {
-
     }
+
+    val state by homeViewModel.state.collectAsState()
     Scaffold(
         snackbarHost = {
-
-            SnackBarComponent(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp))
+            SnackBarComponent(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp),
+                type = state.snackBarType ?: SnackBarType.Success
+            )
         }
     ) { padding ->
 
@@ -87,15 +93,40 @@ fun HomeScreen(
             navigateToReportScreen = navigateToReportScreen
         )
     }
-    LaunchedEffect(true) {
-        locationPermissions.launchMultiplePermissionRequest()
+//    LaunchedEffect(true) {
+//        locationPermissions.launchMultiplePermissionRequest()
+//    }
+
+
+//    LaunchedEffect(true) {
+//        locationViewModel.getCurrentLocation()
+//    }
+
+    LaunchedEffect(Unit) {
+        homeViewModel.onEnterHomeScreen()
     }
 
-    LaunchedEffect(true) {
-        locationViewModel.getCurrentLocation()
+    LaunchedEffect(reportSuccess) {
+        if (reportSuccess) {
+            coroutineScope.launch {
+                homeViewModel.onEvent(HomeViewModelEvent.OnReportSuccess)
+            }
+         //   delay(2000)
+            onClearSuccessReport()
+        }
     }
 
     LaunchedEffect(Unit) {
+        if (!homeViewModel.hasShownLoginSuccess) {
+            snackbarHostState.showSnackbar(
+                "¡Inicio de sesión exitoso!",
+                duration = SnackbarDuration.Short
+            )
+            homeViewModel.markLoginSuccessShown()
+        }
+    }
+    LaunchedEffect(Unit) {
+
         homeViewModel.getEventChannel().collect { event ->
             when (event) {
 
@@ -115,6 +146,7 @@ fun HomeScreen(
             }
         }
     }
+
 }
 
 @Composable
@@ -122,22 +154,23 @@ private fun Screen(
     modifier: Modifier = Modifier,
     locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
-    navigateToReportScreen: (Int, Int, Int) -> Unit
+    navigateToReportScreen: (Int, Int, String) -> Unit
 ) {
     val state by homeViewModel.state.collectAsState()
-    val user by homeViewModel.userData.collectAsState()
+    //val user by homeViewModel.userData.collectAsState()
+    val guard by homeViewModel.guardData.collectAsState()
     val routes by homeViewModel.routes.collectAsState()
     val timerValue by homeViewModel.timer.collectAsState()
     var selectedHomeNav by rememberSaveable {
         mutableStateOf(HomeType.Home)
     }
 
+
     Scaffold(
         topBar = {
             HomeTopBar(
                 modifier = modifier.fillMaxWidth(),
-                fullname = user?.fullname,
-                localityName = state.localityName
+                fullname = guard?.fullName
             )
         },
         bottomBar = {
@@ -154,16 +187,17 @@ private fun Screen(
                 },
                 onCheck = {
                     homeViewModel.onEvent(HomeViewModelEvent.OnCheck)
-                }
+                },
+                isCheckEnabled = false
             )
         },
         floatingActionButton = {
             //state.isStarted
-            AddReportButton(true) {
+            AddReportButton(state.isStarted) {
                 val roundId = state.roundId
-                val routeId = routes[state.currentIndex].id
-                val localityId = user?.localityId ?: 0
-                navigateToReportScreen(routeId, roundId, localityId)
+                val routeId = routes[state.currentIndex].order
+                val localityId = guard?.localityId ?: 0
+                navigateToReportScreen(routeId, roundId.toInt(), localityId.toString())
             }
         }
     ) { paddingValue ->

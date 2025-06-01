@@ -10,4 +10,5 @@ sealed class HomeViewModelEvent {
     data object  UpdateIndex: HomeViewModelEvent()
     data object  OnLogOut: HomeViewModelEvent()
     data object  OnDestroy: HomeViewModelEvent()
+    data object  OnReportSuccess: HomeViewModelEvent()
 }

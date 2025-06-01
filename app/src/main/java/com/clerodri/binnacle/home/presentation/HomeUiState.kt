@@ -1,5 +1,6 @@
 package com.clerodri.binnacle.home.presentation
 
+import com.clerodri.binnacle.core.components.SnackBarType
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 
 /**
@@ -12,7 +13,9 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val elapsedSeconds: Long = 0,
     val localityName:String ="",
-    val roundId:Int = 0,
+    //val roundId:Int = 0,
+    val roundId:Long = 0,
     val checkInId:Int = 0,
-    val checkStatus:ECheckIn = ECheckIn.READY
+    val checkStatus:ECheckIn = ECheckIn.READY,
+    val snackBarType: SnackBarType? = null
 )

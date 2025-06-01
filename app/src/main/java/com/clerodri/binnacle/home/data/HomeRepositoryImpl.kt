@@ -1,7 +1,7 @@
 package com.clerodri.binnacle.home.data
 
-import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.DataError
+import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.home.data.datasource.local.HomeDataSource
 import com.clerodri.binnacle.home.data.datasource.network.HomeService
 import com.clerodri.binnacle.home.domain.model.CheckIn
@@ -12,15 +12,14 @@ import com.clerodri.binnacle.home.domain.model.Round
 import com.clerodri.binnacle.home.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
+import java.io.IOException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 class HomeRepositoryImpl @Inject constructor(
     private val homeDataSource: HomeDataSource,
-    private val homeService: HomeService
+    private val homeService: HomeService,
 ) : HomeRepository {
-
-
-    override suspend fun getLocalityInfo(localityId: Int): Locality = homeService.getLocalities(localityId)
 
     override suspend fun getHomeData(): Flow<Home?> = homeDataSource.getHomeInfo()
 
@@ -28,6 +27,23 @@ class HomeRepositoryImpl @Inject constructor(
 
     override suspend fun clearHomeData() = homeDataSource.clearHomeState()
 
+
+    override suspend fun getRoutes(localityId: String): Result<Locality, DataError.LocalityError> {
+        return try {
+            val result = homeService.getLocality(localityId)
+            Result.Success(result)
+        } catch (e: HttpException) {
+            when (e.code()) {
+                404 -> Result.Failure(DataError.LocalityError.ROUTES_NOT_FOUND)
+                408 -> Result.Failure(DataError.LocalityError.SERVICE_UNAVAILABLE)
+                else -> Result.Failure(DataError.LocalityError.SERVICE_UNAVAILABLE)
+            }
+        } catch (e: SocketTimeoutException) {
+            Result.Failure(DataError.LocalityError.SERVICE_UNAVAILABLE)
+        } catch (e: IOException) {
+            Result.Failure(DataError.LocalityError.SERVICE_UNAVAILABLE)
+        }
+    }
 
 
     override suspend fun makeCheckIn(id: Int): Result<CheckIn, DataError.CheckError> {
@@ -69,7 +85,7 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun startRound(guardId: Int): Result<Round, DataError.Network> {
+    override suspend fun startRound(guardId: String): Result<Round, DataError.Network> {
         return try {
             Result.Success(homeService.startRound(guardId))
         } catch (e: HttpException) {
@@ -82,7 +98,7 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun stopRound(roundId: Int): Result<Unit, DataError.Network> {
+    override suspend fun stopRound(roundId: Long): Result<Unit, DataError.Network> {
         return try {
             Result.Success(homeService.stopRound(roundId))
         } catch (e: HttpException) {
@@ -91,6 +107,20 @@ class HomeRepositoryImpl @Inject constructor(
                 408 -> Result.Failure(DataError.Network.REQUEST_TIMEOUT)
                 else -> Result.Failure(DataError.Network.NO_INTERNET)
             }
+        }
+    }
+
+
+    override suspend fun validateSession(): Result<Unit, DataError> {
+        return try {
+            val response = homeService.pingServer()
+            if (response.isSuccessful) {
+                Result.Success(Unit)
+            } else {
+                Result.Failure(DataError.AuthNetwork.SERVICE_UNAVAILABLE)
+            }
+        } catch (e: IOException) {
+            Result.Failure(DataError.AuthNetwork.SERVICE_UNAVAILABLE)
         }
     }
 }

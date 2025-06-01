@@ -1,5 +1,6 @@
 package com.clerodri.binnacle.core.di
 
+import android.app.Application
 import android.content.Context
 import com.clerodri.binnacle.home.data.HomeRepositoryImpl
 import com.clerodri.binnacle.home.data.datasource.local.HomeDataSource
@@ -12,6 +13,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -32,6 +35,16 @@ object HomeModule {
     fun provideDataStoreManager(@ApplicationContext context: Context): HomeInformation {
         return HomeInformation(context)
     }
+
+
+    @Provides
+    @Singleton
+    fun provideApplicationContext(application: Application): Context {
+        return application.applicationContext
+    }
+
+    @Provides
+    fun provideDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
 
     @Provides

@@ -11,6 +11,7 @@ class LoginService @Inject constructor(private val loginClient: LoginClient) {
 
 
     suspend fun doLogin(identification: String): LoginResponse {
+        Log.d("RR", "doLogin")
         return withContext(Dispatchers.IO) {
             val response = loginClient.doLoginCall(LoginRequest(identification))
             Log.d("RR", "LoginService doLogin called $response")

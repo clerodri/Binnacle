@@ -8,7 +8,8 @@ import com.clerodri.binnacle.core.Result
 interface ReportRepository {
 
 
-    suspend fun addReport(report: Report): Result<Unit, DataError.Report>
+    suspend fun addReport(report: Report): Result<AddReportResponse, DataError.Report>
 
     suspend fun captureImage(imageCapture: ImageCapture): Bitmap?
+    suspend fun uploadPhoto(preSignedUrl: String, bitmap: Bitmap): Result<Unit, DataError.Report>
 }

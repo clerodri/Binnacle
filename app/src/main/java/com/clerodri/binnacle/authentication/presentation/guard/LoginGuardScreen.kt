@@ -35,10 +35,10 @@ import com.clerodri.binnacle.authentication.presentation.components.LogoApp
 import com.clerodri.binnacle.authentication.presentation.components.TitleApp
 import com.clerodri.binnacle.authentication.presentation.components.TitleGuard
 import com.clerodri.binnacle.core.components.SnackBarComponent
+import com.clerodri.binnacle.core.components.SnackBarType
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
 import com.clerodri.binnacle.ui.theme.WhiteColor
 import kotlinx.coroutines.launch
-
 
 
 @Composable
@@ -49,8 +49,8 @@ fun LoginGuardScreen(
 ) {
     Log.d("GG", "Rendering LoginGuardScreen...")
 
-   val snackbarHostState = remember { SnackbarHostState() }
-   val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     val state by viewModel.state.collectAsState()
 
@@ -89,7 +89,11 @@ fun LoginGuardScreen(
 
 
         }
-        SnackBarComponent(snackbarHostState, modifier = Modifier.padding(top = 20.dp))
+        SnackBarComponent(
+            snackbarHostState,
+            modifier = Modifier.padding(top = 20.dp),
+            type = SnackBarType.Error
+        )
     }
 
 
@@ -98,15 +102,13 @@ fun LoginGuardScreen(
         viewModel.getGuardChannel().collect { event ->
             when (event) {
                 LoginScreenEvent.Success -> {
-                    Log.d("OO", "Navigating to Home...")
                     navigateToHome()
                     viewModel.onEvent(GuardViewModelEvent.ClearFields)
                 }
 
                 is LoginScreenEvent.Failure -> {
-                    Log.d("RR", "Screen Guard Failure")
                     coroutineScope.launch {
-                       snackbarHostState.showSnackbar(event.message)
+                        snackbarHostState.showSnackbar(event.message)
                     }
                 }
             }
@@ -163,8 +165,9 @@ fun LoginGuardContent(
             Spacer(modifier = Modifier.height(20.dp))
             ClickableAdminTextComponent(Modifier.align(Alignment.CenterHorizontally),
                 onClick = {
-                    navigateToLoginAdmin()
-                })
+                    //navigateToLoginAdmin()
+                }
+            )
         }
     }
 }

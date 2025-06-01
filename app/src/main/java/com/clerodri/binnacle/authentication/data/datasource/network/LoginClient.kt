@@ -8,7 +8,7 @@ import retrofit2.http.POST
 
 interface LoginClient {
 
-    @POST("api/v1/auth/guard/login")
+    @POST("api/v1/auth/guard-login")
     suspend fun doLoginCall(@Body loginRequest: LoginRequest): Response<LoginResponse>
 }
 

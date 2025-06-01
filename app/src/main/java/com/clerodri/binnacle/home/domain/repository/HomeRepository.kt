@@ -1,7 +1,7 @@
 package com.clerodri.binnacle.home.domain.repository
 
-import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.DataError
+import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.home.domain.model.CheckIn
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 import com.clerodri.binnacle.home.domain.model.Home
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface HomeRepository {
 
-    suspend fun getLocalityInfo(localityId: Int): Locality?
+    suspend fun getRoutes(localityId: String): Result<Locality, DataError.LocalityError>
 
     suspend fun getHomeData(): Flow<Home?>
 
@@ -26,7 +26,11 @@ interface HomeRepository {
 
     suspend fun validateCheckIn(id: Int): Result<ECheckIn, DataError.CheckError>
 
-    suspend fun startRound(guardId: Int): Result<Round, DataError.Network>
+    suspend fun startRound(guardId: String): Result<Round, DataError.Network>
 
-    suspend fun stopRound(roundId: Int): Result<Unit, DataError.Network>
+    suspend fun stopRound(roundId: Long): Result<Unit, DataError.Network>
+
+    suspend fun validateSession(): Result<Unit, DataError>
+
+
 }

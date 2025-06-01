@@ -1,13 +1,15 @@
 package com.clerodri.binnacle.addreport.data.datasource.network
 
 import android.util.Log
-import com.clerodri.binnacle.addreport.data.datasource.network.dto.ReportDto
+import com.clerodri.binnacle.addreport.data.datasource.network.dto.EventDto
+import com.clerodri.binnacle.addreport.data.datasource.network.dto.EventResponse
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import retrofit2.HttpException
 import java.io.File
 import javax.inject.Inject
 
@@ -16,26 +18,29 @@ class ReportService @Inject constructor(
 
 ) {
 
-    suspend fun addReport(report: ReportDto, imageFile: File?) {
-        Log.d("CameraX", "report service: $report")
-        return withContext(Dispatchers.IO) {
-            val gson = Gson()
-            val reportJson = gson.toJson(report)
-            val reportRequestBody =
-                RequestBody.create(MediaType.parse("application/json"), reportJson)
+    suspend fun addReport(event: EventDto): EventResponse {
+        Log.d("CameraX", "report service: $event")
 
-            val imageFile = imageFile?.let {
-                val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), it)
-                MultipartBody.Part.createFormData("imageFile", it.name, requestFile)
-            }
+        // Make the API call
+        val response = reportClient.addReport(event)
 
-            val result = reportClient.addReport(reportRequestBody, imageFile)
-            if (result.isSuccessful) {
-                Log.d("CameraX", "addReport: $result")
+        if (response.isSuccessful) {
+            // Get the response body safely
+            val responseBody = response.body()
+            if (responseBody != null) {
+                Log.d("CameraX", "addReport success: $responseBody")
+                return responseBody
             } else {
-                Log.d("CameraX", "ERROR: $result")
+                throw Exception("Empty response body") // Or a more specific exception
             }
+        } else {
+            // Log the error
+            Log.d("CameraX", "addReport error: code=${response.code()} errorBody=${response.errorBody()?.string()}")
+            // Throw HttpException so your repository can catch it
+            throw HttpException(response)
         }
     }
+
+
 
 }
