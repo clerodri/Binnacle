@@ -1,7 +1,6 @@
 package com.clerodri.binnacle.home.presentation
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.authentication.domain.model.AuthData
@@ -76,7 +75,6 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            Log.d("HomeViewModel", "init loadHomeState")
             loadHomeState()
 
         }
@@ -87,13 +85,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val result = homeUseCase.validateSession()
             if (result is Result.Failure) {
-                Log.d("HomeViewModel", "validateSession failed, log out")
+
                 onLogOut()
             } else {
-                Log.d("HomeViewModel", "validateSession success")
+
                 guardData.collectLatest { data ->
                     if (data?.localityId != null) {
-                        Log.d("HomeViewModel", "fetching routes again")
                         fetchRoutes(data.localityId)
                         hasFetchedRoutes = true
                     }
@@ -114,8 +111,7 @@ class HomeViewModel @Inject constructor(
                     ECheckIn.STARTED -> checkOut()
                     ECheckIn.DONE -> sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
-                            "Ya esta registrado su Check-In",
-                            SnackBarType.Warning
+                            "Ya esta registrado su Check-In", SnackBarType.Warning
                         )
                     )
 
@@ -136,7 +132,6 @@ class HomeViewModel @Inject constructor(
             HomeViewModelEvent.UpdateIndex -> {
 
                 viewModelScope.launch {
-                    Log.d("RR", "updateIndex called ${_state.value.currentIndex}")
                     if (_state.value.currentIndex == _routes.value.size - 1) {
 
                         _state.value =
@@ -150,13 +145,11 @@ class HomeViewModel @Inject constructor(
 
             }
 
-            HomeViewModelEvent.OnLogOutRequested ->
-                sendScreenEvent(
-                    event = HomeUiEvent.ShowAlert(
-                        "Debe finalizar la ronda para cerrar sesion",
-                        SnackBarType.Warning
-                    )
+            HomeViewModelEvent.OnLogOutRequested -> sendScreenEvent(
+                event = HomeUiEvent.ShowAlert(
+                    "Debe finalizar la ronda para cerrar sesion", SnackBarType.Warning
                 )
+            )
 
             HomeViewModelEvent.OnLogOut -> {
                 hasShownLoginSuccess = false
@@ -173,8 +166,7 @@ class HomeViewModel @Inject constructor(
                 viewModelScope.launch {
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
-                            "Reporte enviado exitosamente!",
-                            SnackBarType.Success
+                            "Reporte enviado exitosamente!", SnackBarType.Success
                         )
                     )
                 }
@@ -190,8 +182,7 @@ class HomeViewModel @Inject constructor(
                 is Result.Failure -> {
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
-                            result.error.name,
-                            SnackBarType.Error
+                            result.error.name, SnackBarType.Error
                         )
                     )
                 }
@@ -199,8 +190,7 @@ class HomeViewModel @Inject constructor(
                 is Result.Success -> {
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
-                            "Ronda finalizada exitosamente",
-                            SnackBarType.Success
+                            "Ronda finalizada exitosamente", SnackBarType.Success
                         )
                     )
                 }
@@ -215,20 +205,17 @@ class HomeViewModel @Inject constructor(
                 is Result.Failure -> {
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
-                            result.error.name,
-                            SnackBarType.Error
+                            result.error.name, SnackBarType.Error
                         )
                     )
                 }
 
                 is Result.Success -> {
-                    Log.d("ReportRepositoryImpl", "ROUNDID IN HOMEVIEWMODEL: $result")
                     _state.value = _state.value.copy(roundId = result.data.id, isStarted = true)
                     delay(500)
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
-                            "Iniciando ronda....",
-                            SnackBarType.Success
+                            "Iniciando ronda....", SnackBarType.Success
                         )
                     )
                 }
@@ -259,7 +246,6 @@ class HomeViewModel @Inject constructor(
                 }
 
                 is Result.Success -> {
-                    Log.d("RR", "checkOut ViewModel $result")
                     _state.value = _state.value.copy(
                         checkStatus = ECheckIn.DONE
                     )
@@ -364,8 +350,7 @@ class HomeViewModel @Inject constructor(
         if (!hasInternetConnection(context)) {
             sendScreenEvent(
                 HomeUiEvent.ShowAlert(
-                    "No internet. Can't load data.",
-                    SnackBarType.Error
+                    "No internet. Can't load data.", SnackBarType.Error
                 )
             )
             return
@@ -373,7 +358,6 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             homeUseCase.getHomeData().collectLatest { savedState ->
-                Log.d("HomeViewModel", "loadSavedState called $savedState")
                 _state.update {
                     it.copy(
                         currentIndex = savedState?.currentIndex!!,
@@ -393,7 +377,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun fetchRoutes(id: String) {
         when (val result = localityUseCase.invoke(id)) {
             is Result.Failure -> {
-                // Handle the error
+
                 val message = when (result.error) {
                     DataError.LocalityError.ROUTES_NOT_FOUND -> "No se encontraron rutas para la localidad."
                     DataError.LocalityError.SERVICE_UNAVAILABLE -> "Error de conexión. Intenta nuevamente."
@@ -418,8 +402,6 @@ class HomeViewModel @Inject constructor(
             is Result.Success -> _state.value = _state.value.copy(checkStatus = result.data)
 
         }
-
-
     }
 
 

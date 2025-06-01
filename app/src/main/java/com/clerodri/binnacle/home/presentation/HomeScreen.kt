@@ -1,6 +1,5 @@
 package com.clerodri.binnacle.home.presentation
 
-import android.Manifest
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -48,59 +47,37 @@ import com.clerodri.binnacle.home.presentation.components.HomeBottomBar
 import com.clerodri.binnacle.home.presentation.components.HomeTopBar
 import com.clerodri.binnacle.home.presentation.components.RouteItem
 import com.clerodri.binnacle.home.presentation.components.Timer
-import com.clerodri.binnacle.location.presentation.LocationViewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
-    locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
     navigateToReportScreen: (Int, Int, String) -> Unit,
     onLogOut: () -> Unit,
     reportSuccess: Boolean,
     onClearSuccessReport: () -> Unit
 ) {
-    val locationPermissions = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    )
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     val coroutineScope = rememberCoroutineScope()
-    BackHandler(enabled = true) {
-    }
+    BackHandler(enabled = true) {}
 
     val state by homeViewModel.state.collectAsState()
-    Scaffold(
-        snackbarHost = {
-            SnackBarComponent(snackbarHostState, modifier = Modifier.padding(bottom = 150.dp),
-                type = state.snackBarType ?: SnackBarType.Success
-            )
-        }
-    ) { padding ->
+    Scaffold(snackbarHost = {
+        SnackBarComponent(
+            snackbarHostState,
+            modifier = Modifier.padding(bottom = 150.dp),
+            type = state.snackBarType ?: SnackBarType.Success
+        )
+    }) { padding ->
 
         Screen(
             modifier = Modifier.padding(top = padding.calculateTopPadding()),
-            locationViewModel = locationViewModel,
             homeViewModel = homeViewModel,
             navigateToReportScreen = navigateToReportScreen
         )
     }
-//    LaunchedEffect(true) {
-//        locationPermissions.launchMultiplePermissionRequest()
-//    }
-
-
-//    LaunchedEffect(true) {
-//        locationViewModel.getCurrentLocation()
-//    }
 
     LaunchedEffect(Unit) {
         homeViewModel.onEnterHomeScreen()
@@ -111,7 +88,6 @@ fun HomeScreen(
             coroutineScope.launch {
                 homeViewModel.onEvent(HomeViewModelEvent.OnReportSuccess)
             }
-         //   delay(2000)
             onClearSuccessReport()
         }
     }
@@ -119,8 +95,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         if (!homeViewModel.hasShownLoginSuccess) {
             snackbarHostState.showSnackbar(
-                "¡Inicio de sesión exitoso!",
-                duration = SnackbarDuration.Short
+                "¡Inicio de sesión exitoso!", duration = SnackbarDuration.Short
             )
             homeViewModel.markLoginSuccessShown()
         }
@@ -138,8 +113,7 @@ fun HomeScreen(
                 is HomeUiEvent.ShowAlert -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = event.message,
-                            duration = SnackbarDuration.Short
+                            message = event.message, duration = SnackbarDuration.Short
                         )
                     }
                 }
@@ -152,12 +126,10 @@ fun HomeScreen(
 @Composable
 private fun Screen(
     modifier: Modifier = Modifier,
-    locationViewModel: LocationViewModel,
     homeViewModel: HomeViewModel,
     navigateToReportScreen: (Int, Int, String) -> Unit
 ) {
     val state by homeViewModel.state.collectAsState()
-    //val user by homeViewModel.userData.collectAsState()
     val guard by homeViewModel.guardData.collectAsState()
     val routes by homeViewModel.routes.collectAsState()
     val timerValue by homeViewModel.timer.collectAsState()
@@ -166,41 +138,35 @@ private fun Screen(
     }
 
 
-    Scaffold(
-        topBar = {
-            HomeTopBar(
-                modifier = modifier.fillMaxWidth(),
-                fullname = guard?.fullName
-            )
-        },
-        bottomBar = {
-            HomeBottomBar(
-                checkInStatus = state.checkStatus,
-                selectedScreen = selectedHomeNav,
-                onItemSelected = { selectedHomeNav = it },
-                onLogOut = {
-                    if (state.isStarted) {
-                        homeViewModel.onEvent(HomeViewModelEvent.OnLogOutRequested)
-                    } else {
-                        homeViewModel.onEvent(HomeViewModelEvent.OnLogOut)
-                    }
-                },
-                onCheck = {
-                    homeViewModel.onEvent(HomeViewModelEvent.OnCheck)
-                },
-                isCheckEnabled = false
-            )
-        },
-        floatingActionButton = {
-            //state.isStarted
-            AddReportButton(state.isStarted) {
-                val roundId = state.roundId
-                val routeId = routes[state.currentIndex].order
-                val localityId = guard?.localityId ?: 0
-                navigateToReportScreen(routeId, roundId.toInt(), localityId.toString())
-            }
+    Scaffold(topBar = {
+        HomeTopBar(
+            modifier = modifier.fillMaxWidth(), fullname = guard?.fullName
+        )
+    }, bottomBar = {
+        HomeBottomBar(
+            checkInStatus = state.checkStatus,
+            selectedScreen = selectedHomeNav,
+            onItemSelected = { selectedHomeNav = it },
+            onLogOut = {
+                if (state.isStarted) {
+                    homeViewModel.onEvent(HomeViewModelEvent.OnLogOutRequested)
+                } else {
+                    homeViewModel.onEvent(HomeViewModelEvent.OnLogOut)
+                }
+            },
+            onCheck = {
+                homeViewModel.onEvent(HomeViewModelEvent.OnCheck)
+            },
+            isCheckEnabled = false
+        )
+    }, floatingActionButton = {
+        AddReportButton(state.isStarted) {
+            val roundId = state.roundId
+            val routeId = routes[state.currentIndex].order
+            val localityId = guard?.localityId ?: 0
+            navigateToReportScreen(routeId, roundId.toInt(), localityId.toString())
         }
-    ) { paddingValue ->
+    }) { paddingValue ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -250,9 +216,7 @@ private fun HomeScreenContent(
         else stringResource(R.string.complete_all_rounds_for_finish_round)
 
         Text(
-            info,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.error
+            info, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.error
         )
 
         routes.forEachIndexed { index, item ->
@@ -260,14 +224,12 @@ private fun HomeScreenContent(
                 visible = index >= currentIndex && index <= currentIndex + 1,
                 enter = fadeIn(
                     animationSpec = tween(
-                        durationMillis = 1000,
-                        easing = LinearEasing
+                        durationMillis = 1000, easing = LinearEasing
                     )
                 ) + slideInVertically(),
                 exit = fadeOut(
                     animationSpec = tween(
-                        durationMillis = 1000,
-                        easing = FastOutSlowInEasing
+                        durationMillis = 1000, easing = FastOutSlowInEasing
                     )
                 ) + slideOutVertically(),
             ) {
@@ -277,8 +239,7 @@ private fun HomeScreenContent(
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
-                    RouteItem(
-                        index = index,
+                    RouteItem(index = index,
                         item = item,
                         isActive = index == currentIndex && isStarted,
                         showArrow = index != currentIndex,
@@ -287,8 +248,7 @@ private fun HomeScreenContent(
                             if (currentIndex < routes.size - 1) {
                                 updateIndex()
                             }
-                        }
-                    )
+                        })
 
                 }
 

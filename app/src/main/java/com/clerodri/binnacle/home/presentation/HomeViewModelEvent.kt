@@ -1,7 +1,5 @@
 package com.clerodri.binnacle.home.presentation
-/**
- * Events that the UI can send to the [HomeViewModel]
- */
+
 sealed class HomeViewModelEvent {
     data object  OnCheck: HomeViewModelEvent()
     data object  OnLogOutRequested: HomeViewModelEvent()

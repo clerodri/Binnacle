@@ -18,8 +18,6 @@ import javax.inject.Singleton
 object NetworkModule {
 
 
-
-
     @Provides
     @Singleton
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {

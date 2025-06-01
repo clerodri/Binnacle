@@ -2,7 +2,6 @@ package com.clerodri.binnacle.authentication.data.datasource.local
 
 import com.clerodri.binnacle.authentication.data.storage.AuthInformation
 import com.clerodri.binnacle.authentication.domain.model.AuthData
-import com.clerodri.binnacle.authentication.domain.model.UserData
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -14,7 +13,6 @@ class LocalDataSource @Inject constructor(private val userInformation: AuthInfor
 
 
     suspend fun clearAuthData() = userInformation.clearAuthData()
-
 
 
 }

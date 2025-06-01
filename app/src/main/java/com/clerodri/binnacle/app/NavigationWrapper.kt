@@ -20,8 +20,6 @@ import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModel
 import com.clerodri.binnacle.authentication.presentation.guard.LoginGuardScreen
 import com.clerodri.binnacle.home.presentation.HomeScreen
 import com.clerodri.binnacle.home.presentation.HomeViewModel
-import com.clerodri.binnacle.location.presentation.LocationViewModel
-import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.EntryPointAccessors
 
 @Composable
@@ -31,14 +29,12 @@ fun NavigationWrapper(
     adminViewModel: AdminViewModel,
     homeViewModel: HomeViewModel,
     addReportViewModel: AddReportViewModel,
-    locationViewModel: LocationViewModel
 ) {
 
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         val entryPoint = EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            AuthManagerEntryPoint::class.java
+            context.applicationContext, AuthManagerEntryPoint::class.java
         )
         entryPoint.authManager().loadUserData()
     }
@@ -54,131 +50,78 @@ fun NavigationWrapper(
         }
 
     }
-//    val startDestination =
-//        if (userData?.isAuthenticated == true) HomeScreen else LoginGuard
-//        val startDestination =
-//        if (userData == null) SplashScreen
-//        else if (userData?.isAuthenticated == true) HomeScreen
-//        else LoginGuard
 
     val startDestination = SplashScreen
-    //val startDestination = if (userData?.isAuthenticated == true) HomeScreen else LoginGuard
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        enterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        exitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Left,
-                animationSpec = tween(500)
-            )
-        },
-        popEnterTransition = {
-            slideIntoContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        },
-        popExitTransition = {
-            slideOutOfContainer(
-                AnimatedContentTransitionScope.SlideDirection.Right,
-                animationSpec = tween(500)
-            )
-        }
+    NavHost(navController = navController, startDestination = startDestination, enterTransition = {
+        slideIntoContainer(
+            AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+        )
+    }, exitTransition = {
+        slideOutOfContainer(
+            AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(500)
+        )
+    }, popEnterTransition = {
+        slideIntoContainer(
+            AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
+        )
+    }, popExitTransition = {
+        slideOutOfContainer(
+            AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(500)
+        )
+    }
 
     ) {
-//        composable<SplashScreen> {
-//            SplashScreen(
-//                onNavigateToHome = {
-//                    if (hasInternetConnection(context)) {
-//                        navController.navigate(HomeScreen)
-//                    } else {
-//                        navController.navigate(LoginGuard)
-//                    }
-//                },
-//                onNavigateToLogin = {
-//                    navController.navigate(LoginGuard) {
-//                        popUpTo(SplashScreen) { inclusive = true }
-//                    }
-//                }
-//            )
-//        }
 
         composable<SplashScreen> {
-            SplashScreen(
-                onNavigateToHome = {
-                    navController.navigate(HomeScreen) {
-                        popUpTo(SplashScreen) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
-                onNavigateToLogin = {
-                    navController.navigate(LoginGuard) {
-                        popUpTo(SplashScreen) { inclusive = true }
-                        launchSingleTop = true
-                    }
+            SplashScreen(onNavigateToHome = {
+                navController.navigate(HomeScreen) {
+                    popUpTo(SplashScreen) { inclusive = true }
+                    launchSingleTop = true
                 }
-            )
+            }, onNavigateToLogin = {
+                navController.navigate(LoginGuard) {
+                    popUpTo(SplashScreen) { inclusive = true }
+                    launchSingleTop = true
+                }
+            })
         }
         composable<LoginGuard> {
             Log.d("GG", "LoginGuard")
-            LoginGuardScreen(
-                viewModel = guardViewModel,
+            LoginGuardScreen(viewModel = guardViewModel,
                 navigateToLoginAdmin = { navController.navigate(LoginAdmin) },
                 navigateToHome = {
                     navController.navigate(HomeScreen) {
                         popUpTo(LoginGuard) { inclusive = false }
                         launchSingleTop = true
                     }
-                }
-            )
+                })
         }
         composable<LoginAdmin> {
-            LoginAdminScreen(
-                viewModel = adminViewModel,
-                navigateToLoginGuard = {
-                    navController.navigate(LoginGuard) {
-                        popUpTo<LoginGuard> {
-                            inclusive = true
-                        }
+            LoginAdminScreen(viewModel = adminViewModel, navigateToLoginGuard = {
+                navController.navigate(LoginGuard) {
+                    popUpTo<LoginGuard> {
+                        inclusive = true
                     }
-                },
-                navigateToHome = { navController.navigate(HomeScreen) }
-            )
+                }
+            }, navigateToHome = { navController.navigate(HomeScreen) })
         }
         composable<HomeScreen> { backStackEntry ->
             val savedStateHandle = backStackEntry.savedStateHandle
             val reportSuccess = savedStateHandle.get<Boolean>("report_success") ?: false
-            HomeScreen(
-                locationViewModel,
-                navigateToReportScreen = { routeId,
-                                           roundId,
-                                           localityId ->
-                    navController.navigate(
-                        ReportScreen(
-                            routeId = routeId,
-                            roundId = roundId,
-                            localityId = localityId
-                        )
+            HomeScreen(navigateToReportScreen = { routeId, roundId, localityId ->
+                navController.navigate(
+                    ReportScreen(
+                        routeId = routeId, roundId = roundId, localityId = localityId
                     )
-                },
-                homeViewModel = homeViewModel,
-                onLogOut = {
-                    navController.navigate(LoginGuard) {
-                        // Remove HomeScreen and its back stack
-                        popUpTo(HomeScreen) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
-                reportSuccess = reportSuccess,
-                onClearSuccessReport = {
-                    savedStateHandle["report_success"] = false
+                )
+            }, homeViewModel = homeViewModel, onLogOut = {
+                navController.navigate(LoginGuard) {
+                    popUpTo(HomeScreen) { inclusive = true }
+                    launchSingleTop = true
                 }
+            }, reportSuccess = reportSuccess, onClearSuccessReport = {
+                savedStateHandle["report_success"] = false
+            }
 
             )
         }
@@ -187,16 +130,15 @@ fun NavigationWrapper(
 
             val details = backStackEntry.toRoute<ReportScreen>()
             AddReportScreen(
-                viewModel = addReportViewModel,
-                onBack = { isSuccess ->
+                viewModel = addReportViewModel, onBack = { isSuccess ->
                     if (isSuccess) {
-                        navController.previousBackStackEntry
-                            ?.savedStateHandle
-                            ?.set("report_success", true)
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "report_success",
+                            true
+                        )
                     }
                     navController.popBackStack()
-                },
-                roundId = details.roundId
+                }, roundId = details.roundId
             )
 
         }

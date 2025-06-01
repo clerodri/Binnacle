@@ -7,11 +7,5 @@ data class EventDto(
     val image:String?,
     val imageType:String
 ) {
-//    fun toDomain(): Report {
-//        return Report(
-//            content = content,
-//            imgUrl = imgUrl,
-//            routeId = routeId,
-//            roundId = roundId,
-//    }
+
 }

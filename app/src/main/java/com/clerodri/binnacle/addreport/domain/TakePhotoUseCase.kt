@@ -7,8 +7,5 @@ class TakePhotoUseCase @Inject constructor(
     private val reportRepository: ReportRepository
 ) {
 
-
-//    suspend operator fun invoke(image: ImageCapture) = reportRepository.takePhoto(image)
-
     suspend operator fun invoke(image: ImageCapture) = reportRepository.captureImage(image)
 }

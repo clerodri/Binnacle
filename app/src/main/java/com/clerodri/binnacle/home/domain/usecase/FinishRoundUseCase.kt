@@ -1,7 +1,7 @@
 package com.clerodri.binnacle.home.domain.usecase
 
-import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.DataError
+import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.home.domain.repository.HomeRepository
 import javax.inject.Inject
 
