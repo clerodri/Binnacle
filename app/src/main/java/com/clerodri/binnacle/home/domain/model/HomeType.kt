@@ -15,15 +15,18 @@ enum class HomeType(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    Home(title = R.string.rondas_label,
+    Home(
+        title = R.string.rondas_label,
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home
     ),
-    Check(title = R.string.checkin_label,
+    Check(
+        title = R.string.checkin_label,
         selectedIcon = Icons.Filled.VerifiedUser,
         unselectedIcon = Icons.Outlined.VerifiedUser
     ),
-    LogOut(title = R.string.logout_label,
+    LogOut(
+        title = R.string.logout_label,
         selectedIcon = Icons.Filled.Logout,
         unselectedIcon = Icons.Outlined.Logout
     )

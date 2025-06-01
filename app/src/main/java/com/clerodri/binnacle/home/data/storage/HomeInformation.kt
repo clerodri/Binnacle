@@ -1,12 +1,10 @@
 package com.clerodri.binnacle.home.data.storage
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.clerodri.binnacle.home.domain.model.Home
 import kotlinx.coroutines.flow.Flow
@@ -52,7 +50,6 @@ class HomeInformation @Inject constructor(private val context: Context) {
     suspend fun clearHomeState() {
 
         context.homeStore.edit {
-            Log.d("clearHomeState", "MESSAGE CLEARON")
             it.clear()
         }
     }

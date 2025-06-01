@@ -100,9 +100,7 @@ fun TimerHomeComponent(timer: Long) {
                 .heightIn()
                 .align(Alignment.CenterVertically),
             style = TextStyle(
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Normal
+                fontSize = 30.sp, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Normal
             ),
             color = Color.Black,
             textAlign = TextAlign.Start
@@ -113,8 +111,7 @@ fun TimerHomeComponent(timer: Long) {
 @Composable
 fun HomeDividerTextComponent(modifier: Modifier) {
     Row(
-        modifier.padding(top = 80.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier.padding(top = 80.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         HorizontalDivider(
             color = Color.LightGray,
@@ -125,7 +122,9 @@ fun HomeDividerTextComponent(modifier: Modifier) {
         )
 
         Text(
-            text = stringResource(R.string.rondas), fontSize = 14.sp, color = TextColor,
+            text = stringResource(R.string.rondas),
+            fontSize = 14.sp,
+            color = TextColor,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
         HorizontalDivider(
@@ -140,22 +139,15 @@ fun HomeDividerTextComponent(modifier: Modifier) {
 
 @Composable
 fun StartButtonComponent(
-    value: String,
-    isEnable: Boolean,
-    isStarted: Boolean,
-    onStart: () -> Unit,
-    onStop: () -> Unit
+    value: String, isEnable: Boolean, isStarted: Boolean, onStart: () -> Unit, onStop: () -> Unit
 ) {
     var openDialog by remember { mutableStateOf(false) }
     ElevatedButton(
         modifier = Modifier
             .width(175.dp)
-            .heightIn(50.dp),
-        onClick = {
+            .heightIn(50.dp), onClick = {
             openDialog = true
-        },
-        enabled = isEnable,
-        colors = ButtonColors(
+        }, enabled = isEnable, colors = ButtonColors(
             containerColor = BackGroundAppColor,
             contentColor = Color.White,
             disabledContainerColor = BackGroundAppColor.copy(0.3f),
@@ -163,24 +155,18 @@ fun StartButtonComponent(
         )
     ) {
         Text(
-            text = value,
-            fontSize = 18.sp,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
+            text = value, fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold
         )
     }
     if (openDialog) {
-        CheckInDialogComponent(
-            title = if (isStarted) "FINALIZAR RONDA" else "INICIAR RONDA",
+        CheckInDialogComponent(title = if (isStarted) "FINALIZAR RONDA" else "INICIAR RONDA",
             message = if (isStarted) "Seguro que desea finalizar la ronda?" else "Seguro que desea iniciar la ronda?",
             onCancel = { openDialog = false },
             onConfirm = {
-                if (isStarted) onStop() else
-                    onStart()
+                if (isStarted) onStop() else onStart()
                 openDialog = false
             },
-            onDismissRequest = { openDialog = false }
-        )
+            onDismissRequest = { openDialog = false })
     }
 }
 
@@ -221,72 +207,62 @@ fun HomeBottomBar(
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
             .shadow(
-                elevation = 20.dp,
-                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                elevation = 20.dp, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
 
-            ),
-        containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ), containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) {
 
         HomeType.entries.forEach { item ->
             val selected = selectedScreen == item
             val enabled = if (item == HomeType.Check) isCheckEnabled else true
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (enabled){
-                        when (item) {
-                            HomeType.Check -> {
-                                title = if (isCheckIn) "Check-Out" else "Check-In"
-                                message =
-                                    if (isCheckIn) "Esta seguro de registrar su Check-Out?" else "Esta seguro de registrar su Check-In?"
-                                if (checkInStatus == ECheckIn.DONE) onCheck()
-                                onConfirmAction = onCheck
-                                openDialog = checkInStatus != ECheckIn.DONE
+            NavigationBarItem(selected = selected, onClick = {
+                if (enabled) {
+                    when (item) {
+                        HomeType.Check -> {
+                            title = if (isCheckIn) "Check-Out" else "Check-In"
+                            message =
+                                if (isCheckIn) "Esta seguro de registrar su Check-Out?" else "Esta seguro de registrar su Check-In?"
+                            if (checkInStatus == ECheckIn.DONE) onCheck()
+                            onConfirmAction = onCheck
+                            openDialog = checkInStatus != ECheckIn.DONE
 
-                            }
-
-                            HomeType.LogOut -> {
-                                title = "Cerrar Sesion"
-                                message = "Esta seguro de cerrar la sesion?"
-                                onConfirmAction = onLogOut
-                                openDialog = true
-
-                            }
-
-                            else -> onItemSelected(item)
                         }
+
+                        HomeType.LogOut -> {
+                            title = "Cerrar Sesion"
+                            message = "Esta seguro de cerrar la sesion?"
+                            onConfirmAction = onLogOut
+                            openDialog = true
+
+                        }
+
+                        else -> onItemSelected(item)
                     }
+                }
 
 
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Primary,
-                    unselectedIconColor = Color.Gray.copy(0.6f),
-                    disabledIconColor = Color.Gray.copy(0.3f),
-                    disabledTextColor = Color.Gray.copy(0.3f)
-                ),
-                label = {
-                    Text(
-                        text = if (item == HomeType.Check && isCheckIn) stringResource(R.string.checkout)
-                        else stringResource(id = item.title)
-                    )
-                },
-                alwaysShowLabel = true,
-                icon = {
-                    Icon(
-                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = stringResource(id = item.title)
-                    )
-                },
-                enabled = enabled
+            }, colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Primary,
+                unselectedIconColor = Color.Gray.copy(0.6f),
+                disabledIconColor = Color.Gray.copy(0.3f),
+                disabledTextColor = Color.Gray.copy(0.3f)
+            ), label = {
+                Text(
+                    text = if (item == HomeType.Check && isCheckIn) stringResource(R.string.checkout)
+                    else stringResource(id = item.title)
+                )
+            }, alwaysShowLabel = true, icon = {
+                Icon(
+                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                    contentDescription = stringResource(id = item.title)
+                )
+            }, enabled = enabled
 
             )
         }
     }
     if (openDialog) {
-        CheckInDialogComponent(
-            title = title,
+        CheckInDialogComponent(title = title,
             message = message,
             onCancel = { openDialog = false },
             onConfirm = {
@@ -294,8 +270,7 @@ fun HomeBottomBar(
                 openDialog = false
 
             },
-            onDismissRequest = { openDialog = false }
-        )
+            onDismissRequest = { openDialog = false })
     }
 }
 
@@ -319,13 +294,11 @@ fun Timer(
     ) {
         TimerHomeComponent(timer = timer)
 
-        StartButtonComponent(
-            value = buttonText,
+        StartButtonComponent(value = buttonText,
             isEnable = isEnable,
             isStarted = isTimerRunning,
             onStart = { onStart() },
-            onStop = { onStop() }
-        )
+            onStop = { onStop() })
 
     }
     HomeDividerTextComponent(modifier)
@@ -341,8 +314,7 @@ fun CheckInDialogComponent(
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    BasicAlertDialog(
-        onDismissRequest = { onDismissRequest() },
+    BasicAlertDialog(onDismissRequest = { onDismissRequest() },
         modifier = Modifier.fillMaxSize(),
         properties = DialogProperties(),
         content = {
@@ -367,8 +339,7 @@ fun CheckInDialogComponent(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = message,
-                        color = MaterialTheme.colorScheme.error
+                        text = message, color = MaterialTheme.colorScheme.error
                     )
 
                     Row(
@@ -408,36 +379,30 @@ fun CheckInDialogComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopBar(modifier: Modifier, fullname: String?) {
-    TopAppBar(
-        modifier = modifier
-            .padding(horizontal = 20.dp, vertical = 10.dp)
-            .clip(RoundedCornerShape(100.dp)),
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
-        ),
-        windowInsets = WindowInsets(0.dp),
-        title = {
-            Text(
-                text = "${fullname?.uppercase()}",
-                color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
-                fontSize = 25.sp,
-                style = MaterialTheme.typography.titleLarge,
-                fontStyle = FontStyle.Italic
-            )
+    TopAppBar(modifier = modifier
+        .padding(horizontal = 20.dp, vertical = 10.dp)
+        .clip(RoundedCornerShape(100.dp)), colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
+    ), windowInsets = WindowInsets(0.dp), title = {
+        Text(
+            text = "${fullname?.uppercase()}",
+            color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
+            fontSize = 25.sp,
+            style = MaterialTheme.typography.titleLarge,
+            fontStyle = FontStyle.Italic
+        )
 
 
-        },
-        navigationIcon = {
-            Icon(
-                imageVector = Icons.Outlined.VerifiedUser,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(start = 12.dp, end = 8.dp)
-                    .size(30.dp)
+    }, navigationIcon = {
+        Icon(
+            imageVector = Icons.Outlined.VerifiedUser,
+            contentDescription = null,
+            modifier = Modifier
+                .padding(start = 12.dp, end = 8.dp)
+                .size(30.dp)
 
-            )
-        }
-    )
+        )
+    })
 
 }
 
@@ -468,8 +433,7 @@ fun RouteItem(
     onNextClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (showArrow) {
             ArrowIndicator()
@@ -515,11 +479,7 @@ fun RouteItem(
 
 @Composable
 fun RouteContent(
-    index: Int,
-    item: Route,
-    isActive: Boolean,
-    isLastItem: Boolean,
-    onNextClick: () -> Unit
+    index: Int, item: Route, isActive: Boolean, isLastItem: Boolean, onNextClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -531,8 +491,7 @@ fun RouteContent(
     ) {
         if (isActive && !isLastItem) {
             ElevatedButton(
-                onClick = { onNextClick() },
-                colors = ButtonColors(
+                onClick = { onNextClick() }, colors = ButtonColors(
                     containerColor = Color.White,
                     contentColor = BackGroundAppColor,
                     disabledContainerColor = Secondary.copy(0.8f),
@@ -550,8 +509,7 @@ fun RouteContent(
         Box(
             modifier = Modifier
                 .width(100.dp)
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
+                .padding(8.dp), contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "# ${(index + 1)}",
@@ -561,9 +519,7 @@ fun RouteContent(
             )
         }
         HeadingTextComponent(
-            value = item.name,
-            isActive = isActive,
-            modifier = Modifier.weight(1f)
+            value = item.name, isActive = isActive, modifier = Modifier.weight(1f)
         )
     }
 }

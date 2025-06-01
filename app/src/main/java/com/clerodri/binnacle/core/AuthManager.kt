@@ -22,10 +22,6 @@ class AuthManager @Inject constructor(private val localDataSource: LocalDataSour
 
     }
 
-//    fun setUserData(userData: AuthData) {
-//        _userData.value = userData
-//    }
-
     suspend fun clearUserData() {
         _userData.value = null
 

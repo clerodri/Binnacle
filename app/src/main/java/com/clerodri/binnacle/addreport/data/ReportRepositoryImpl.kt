@@ -34,7 +34,6 @@ class ReportRepositoryImpl @Inject constructor(
     private val application: Application
 ) : ReportRepository {
 
-
     override suspend fun addReport(report: Report): Result<AddReportResponse, DataError.Report> {
 
         return try {
@@ -68,12 +67,10 @@ class ReportRepositoryImpl @Inject constructor(
                 ContextCompat.getMainExecutor(application),
                 object : ImageCapture.OnImageCapturedCallback() {
                     override fun onCaptureSuccess(image: ImageProxy) {
-                        Log.d("CameraX", "captureImage: $image")
                         super.onCaptureSuccess(image)
                         val bitmap =
                             image.toBitmap().rotate(image.imageInfo.rotationDegrees.toFloat())
                         image.close()
-                        Log.d("CameraX", " Image captured successfully")
                         continuation.resume(bitmap)
                     }
 
@@ -106,15 +103,11 @@ class ReportRepositoryImpl @Inject constructor(
             val response = OkHttpClient().newCall(request).execute()
 
             if (response.isSuccessful) {
-                Log.d("CameraX", "uploadPhoto: SUCCESS")
                 Result.Success(Unit)
             } else {
-                val errorBody = response.body?.string()
-                Log.e("CameraX", "uploadPhoto: FAILURE - ${response.code} - ${response.message} - $errorBody")
                 Result.Failure(DataError.Report.REQUEST_TIMEOUT)
             }
         } catch (e: Exception) {
-            Log.e("CameraX", "uploadPhoto: EXCEPTION", e)
             Result.Failure(DataError.Report.REQUEST_TIMEOUT)
         }
     }

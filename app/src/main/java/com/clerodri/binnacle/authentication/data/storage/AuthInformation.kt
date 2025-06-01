@@ -1,15 +1,11 @@
 package com.clerodri.binnacle.authentication.data.storage
 
 import android.content.Context
-import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.clerodri.binnacle.authentication.domain.model.AuthData
-import com.clerodri.binnacle.authentication.domain.model.UserData
-import com.clerodri.binnacle.home.domain.model.Locality
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -40,8 +36,8 @@ class AuthInformation @Inject constructor(
         val guardId = preferences[GUARD_ID]
         val isAuthenticated = preferences[USER_IS_AUTHENTICATED] ?: false
         val localityId = preferences[LOCALITY_ID]
-        if ( accessToken != null  && fullName != null && guardId != null && localityId != null) {
-            AuthData( accessToken,null, isAuthenticated, fullName, guardId, localityId)
+        if (accessToken != null && fullName != null && guardId != null && localityId != null) {
+            AuthData(accessToken, null, isAuthenticated, fullName, guardId, localityId)
         } else {
             null
         }
@@ -60,11 +56,7 @@ class AuthInformation @Inject constructor(
 
     suspend fun clearAuthData() {
         context.authDataStore.edit { preferences ->
-            Log.d("OO", "UserInformation clearUserData")
-
             preferences.clear()
-
-            Log.d("OO", "UserInformation $preferences" )
         }
     }
 

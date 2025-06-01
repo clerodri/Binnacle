@@ -15,7 +15,6 @@ import com.clerodri.binnacle.app.BinnacleApp
 import com.clerodri.binnacle.authentication.presentation.admin.AdminViewModel
 import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModel
 import com.clerodri.binnacle.home.presentation.HomeViewModel
-import com.clerodri.binnacle.location.presentation.LocationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,7 +22,6 @@ class MainActivity : ComponentActivity() {
     private val adminViewModel: AdminViewModel by viewModels()
     private val guardViewModel: GuardViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
-    private val locationViewModel: LocationViewModel by viewModels()
     private val addReportViewModel: AddReportViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -37,27 +35,16 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             BinnacleApp(
-                guardViewModel,
-                adminViewModel,
-                homeViewModel,
-                addReportViewModel,
-                locationViewModel
+                guardViewModel, adminViewModel, homeViewModel, addReportViewModel
             )
         }
     }
 
-//    override fun onStop() {
-//        super.onStop()
-//        lifecycleScope.launch {
-//            homeViewModel.onEvent(HomeViewModelEvent.OnDestroy)
-//        }
-//    }
 
     private fun arePermissionsGranted(): Boolean {
         return CAMERA_PERMISSION.all { permission ->
             ContextCompat.checkSelfPermission(
-                applicationContext,
-                permission
+                applicationContext, permission
             ) == PackageManager.PERMISSION_GRANTED
         }
     }

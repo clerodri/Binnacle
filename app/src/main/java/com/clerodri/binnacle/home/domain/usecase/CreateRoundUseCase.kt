@@ -7,5 +7,5 @@ class CreateRoundUseCase @Inject constructor(
     private val homeRepository: HomeRepository
 ) {
 
-    suspend operator  fun invoke(guardId: String) = homeRepository.startRound(guardId);
+    suspend operator fun invoke(guardId: String) = homeRepository.startRound(guardId);
 }

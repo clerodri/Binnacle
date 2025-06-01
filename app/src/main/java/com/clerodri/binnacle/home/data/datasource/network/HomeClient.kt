@@ -2,11 +2,9 @@ package com.clerodri.binnacle.home.data.datasource.network
 
 import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInDto
 import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInResponse
-import com.clerodri.binnacle.home.data.datasource.network.dto.CheckOutDto
 import com.clerodri.binnacle.home.data.datasource.network.dto.LocalityResponse
 import com.clerodri.binnacle.home.data.datasource.network.dto.RoundDto
 import com.clerodri.binnacle.home.data.datasource.network.dto.RoundResponse
-import com.clerodri.binnacle.home.domain.model.CheckStatus
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 import retrofit2.Response
 import retrofit2.http.Body
@@ -29,7 +27,6 @@ interface HomeClient {
 
     @GET("api/v1/check/{id}")
     suspend fun validateCheckStatus(@Path("id") id: Int): Response<ECheckIn>
-
 
 
     @POST("api/v1/round")
