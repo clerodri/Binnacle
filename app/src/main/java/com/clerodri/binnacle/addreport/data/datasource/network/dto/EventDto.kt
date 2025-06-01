@@ -1,11 +1,11 @@
 package com.clerodri.binnacle.addreport.data.datasource.network.dto
 
-data class ReportDto(
+data class EventDto(
     val title: String,
-    val detalle: String?=null,
-    val routeId: Int,
+    val detail: String?=null,
     val roundId: Int,
-    val localityId: Int,
+    val image:String?,
+    val imageType:String
 ) {
 //    fun toDomain(): Report {
 //        return Report(

@@ -8,16 +8,22 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.core.content.ContextCompat
 import com.clerodri.binnacle.addreport.data.datasource.network.ReportService
-import com.clerodri.binnacle.addreport.data.datasource.network.dto.ReportDto
+import com.clerodri.binnacle.addreport.data.datasource.network.dto.EventDto
+import com.clerodri.binnacle.addreport.domain.AddReportResponse
 import com.clerodri.binnacle.addreport.domain.Report
 import com.clerodri.binnacle.addreport.domain.ReportRepository
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.util.rotate
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
-import java.io.File
-import java.io.FileOutputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -29,29 +35,29 @@ class ReportRepositoryImpl @Inject constructor(
 ) : ReportRepository {
 
 
-    override suspend fun addReport(report: Report): Result<Unit, DataError.Report> {
+    override suspend fun addReport(report: Report): Result<AddReportResponse, DataError.Report> {
 
         return try {
-            var imageFile: File? = null
-            if (report.imageBitmap != null) {
-                imageFile = saveBitmapToFile(report.imageBitmap)
-            }
-
-            val result = reportService.addReport(
-                ReportDto(
-                    report.title,
-                    report.description,
-                    report.routeId,
-                    report.roundId,
-                    report.localityId
-                ), imageFile
+            val eventDto = EventDto(
+                title = report.title,
+                detail = report.description,
+                roundId = report.roundId,
+                image = report.image,
+                imageType = report.imageType
             )
-            Result.Success(Unit)
+            val response = reportService.addReport(eventDto)
+
+            val preSignedUrl = response.ulr_upload
+            Result.Success(AddReportResponse(preSignedUrl))
         } catch (e: HttpException) {
             when (e.code()) {
                 408 -> Result.Failure(DataError.Report.REQUEST_TIMEOUT)
                 else -> Result.Failure(DataError.Report.NO_INTERNET)
             }
+        } catch (e: java.net.SocketTimeoutException) {
+            Result.Failure(DataError.Report.SERVICE_UNAVAILABLE)
+         } catch (e: IOException) {
+            Result.Failure(DataError.Report.NO_INTERNET)
         }
     }
 
@@ -80,21 +86,40 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun saveBitmapToFile(bitmap: Bitmap): File? {
-        return try {
-            val file = File.createTempFile("photo_", ".jpg")
-            val outputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            file
-        } catch (e: IOException) {
-            Log.e("CameraX", "Error saving bitmap: ${e.message}", e)
-            null
+    override suspend fun uploadPhoto(
+        preSignedUrl: String,
+        bitmap: Bitmap
+    ): Result<Unit, DataError.Report> = withContext(Dispatchers.IO) {
+
+        try {
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            val byteArray = stream.toByteArray()
+
+            val requestBody = byteArray.toRequestBody("image/jpeg".toMediaType())
+            val request = Request.Builder()
+                .url(preSignedUrl)
+                .put(requestBody)
+                .header("Content-Type", "image/jpeg")
+                .build()
+
+            val response = OkHttpClient().newCall(request).execute()
+
+            if (response.isSuccessful) {
+                Log.d("CameraX", "uploadPhoto: SUCCESS")
+                Result.Success(Unit)
+            } else {
+                val errorBody = response.body?.string()
+                Log.e("CameraX", "uploadPhoto: FAILURE - ${response.code} - ${response.message} - $errorBody")
+                Result.Failure(DataError.Report.REQUEST_TIMEOUT)
+            }
+        } catch (e: Exception) {
+            Log.e("CameraX", "uploadPhoto: EXCEPTION", e)
+            Result.Failure(DataError.Report.REQUEST_TIMEOUT)
         }
-
-
     }
+
+
 
 }
 

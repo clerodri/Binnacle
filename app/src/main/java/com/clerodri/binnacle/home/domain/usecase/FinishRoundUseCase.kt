@@ -10,6 +10,6 @@ class FinishRoundUseCase @Inject constructor(
 ) {
 
 
-    suspend operator fun invoke(roundId: Int): Result<Unit, DataError.Network> =
+    suspend operator fun invoke(roundId: Long): Result<Unit, DataError.Network> =
         homeRepository.stopRound(roundId)
 }

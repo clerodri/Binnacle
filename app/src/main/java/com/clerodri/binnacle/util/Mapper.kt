@@ -6,6 +6,6 @@ import com.clerodri.binnacle.home.domain.model.Round
 
 fun RoundResponse.toModel() = Round(
     id = id,
-    startedTime = startedTime,
-    status = status
+//    startedTime = startedTime,
+//    status = status
 )

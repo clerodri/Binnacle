@@ -1,5 +1,5 @@
 package com.clerodri.binnacle.home.data.datasource.network.dto
 
 data class RoundDto(
-    val guardId:Int
+    val guardId:String?
 )

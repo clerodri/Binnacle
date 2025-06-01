@@ -7,7 +7,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.clerodri.binnacle.authentication.domain.model.AuthData
 import com.clerodri.binnacle.authentication.domain.model.UserData
+import com.clerodri.binnacle.home.domain.model.Locality
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,52 +19,46 @@ const val AUTH_DATASTORE = "auth_data"
 
 val Context.authDataStore by preferencesDataStore(name = AUTH_DATASTORE)
 
-class UserInformation @Inject constructor(
+class AuthInformation @Inject constructor(
 
     @ApplicationContext private val context: Context
 ) {
 
     companion object {
         private val ACCESS_TOKEN = stringPreferencesKey("accessToken")
-        private val REFRESH_TOKEN = stringPreferencesKey("refreshToken")
         private val FULL_NAME = stringPreferencesKey("fullname")
-        private val LOCALITY_ID = intPreferencesKey("localityId")
-        private val USER_ID = intPreferencesKey("id")
+        private val GUARD_ID = stringPreferencesKey("id")
         private val USER_IS_AUTHENTICATED = booleanPreferencesKey("isAuthenticated")
+        private val LOCALITY_ID = stringPreferencesKey("id")
     }
 
-    val userData: Flow<UserData?> = context.authDataStore.data.map { preferences ->
-        val id = preferences[USER_ID]
-        val localityId = preferences[LOCALITY_ID]
-        val fullname = preferences[FULL_NAME]
-        val accessToken = preferences[ACCESS_TOKEN]
-        val refreshToken = preferences[REFRESH_TOKEN]
-        val isAuthenticated = preferences[USER_IS_AUTHENTICATED] ?: false
 
-        if (id != null && localityId != null && fullname != null && accessToken != null
-            && refreshToken != null
-        ) {
-            UserData(
-                id, fullname, localityId, accessToken, refreshToken, isAuthenticated
-            )
+    val authData: Flow<AuthData?> = context.authDataStore.data.map { preferences ->
+
+        val accessToken = preferences[ACCESS_TOKEN]
+        val fullName = preferences[FULL_NAME]
+        val guardId = preferences[GUARD_ID]
+        val isAuthenticated = preferences[USER_IS_AUTHENTICATED] ?: false
+        val localityId = preferences[LOCALITY_ID]
+        if ( accessToken != null  && fullName != null && guardId != null && localityId != null) {
+            AuthData( accessToken,null, isAuthenticated, fullName, guardId, localityId)
         } else {
             null
         }
     }
 
-    suspend fun saveUserData(user: UserData) {
+    suspend fun saveAuthData(auth: AuthData) {
         context.authDataStore.edit { pref ->
-            pref[ACCESS_TOKEN] = user.accessToken!!
-            pref[REFRESH_TOKEN] = user.refreshToken!!
-            pref[FULL_NAME] = user.fullname!!
-            pref[LOCALITY_ID] = user.localityId!!
-            pref[USER_ID] = user.id!!
-            pref[USER_IS_AUTHENTICATED] = user.isAuthenticated
-
+            pref[ACCESS_TOKEN] = auth.accessToken!!
+            pref[USER_IS_AUTHENTICATED] = auth.isAuthenticated
+            pref[FULL_NAME] = auth.fullName!!
+            pref[GUARD_ID] = auth.guardId!!
+            pref[LOCALITY_ID] = auth.localityId!!
         }
     }
 
-    suspend fun clearUserData() {
+
+    suspend fun clearAuthData() {
         context.authDataStore.edit { preferences ->
             Log.d("OO", "UserInformation clearUserData")
 
@@ -71,5 +67,7 @@ class UserInformation @Inject constructor(
             Log.d("OO", "UserInformation $preferences" )
         }
     }
+
+
 }
 

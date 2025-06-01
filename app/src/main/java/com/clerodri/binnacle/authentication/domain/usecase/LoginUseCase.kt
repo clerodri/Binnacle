@@ -1,5 +1,6 @@
 package com.clerodri.binnacle.authentication.domain.usecase
 
+
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.authentication.domain.repository.AuthRepository

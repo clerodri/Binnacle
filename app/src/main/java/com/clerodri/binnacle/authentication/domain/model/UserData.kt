@@ -5,6 +5,6 @@ data class UserData(
     val fullname: String?,
     val localityId: Int?,
     val accessToken: String?,
-    val refreshToken: String?,
+   // val refreshToken: String?,
     val isAuthenticated: Boolean = false
 )

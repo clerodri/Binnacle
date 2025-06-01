@@ -6,6 +6,6 @@ package com.clerodri.binnacle.authentication.presentation.guard
 sealed class GuardViewModelEvent {
     data object  ClearFields: GuardViewModelEvent()
     data object  LoginGuard : GuardViewModelEvent()
-    data object  LogOut : GuardViewModelEvent()
+   // data object  LogOut : GuardViewModelEvent()
     data class UpdateIdentifier(val identifier: String) : GuardViewModelEvent()
 }

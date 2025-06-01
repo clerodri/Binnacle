@@ -30,6 +30,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"https://a7be-2800-bf0-826c-1458-890c-a62f-c069-73b3.ngrok-free.app/\"")
+            signingConfig = signingConfigs.getByName("debug")
         }
         debug {
             isMinifyEnabled = false
@@ -37,6 +39,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"http://192.168.100.70:8080/\"")
+
         }
     }
     compileOptions {
@@ -54,6 +58,12 @@ android {
 }
 
 dependencies {
+    //ROOM
+//    implementation(libs.room.runtime)
+//    implementation(libs.room.ktx)
+//    ksp(libs.room.compiler)
+
+
   //  Dagger Hilt
     implementation(libs.dagger.hilt.android)
     implementation(libs.hilt.navigation.compose)
@@ -68,6 +78,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.gson)
     implementation(libs.gson.converter)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.kotlin)
 
     //Icons extended
     implementation(libs.androidx.material.icons.extended)

@@ -1,21 +1,24 @@
 package com.clerodri.binnacle.authentication.presentation.guard
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clerodri.binnacle.authentication.domain.model.AuthData
+import com.clerodri.binnacle.authentication.domain.model.IdentificationValidator
+import com.clerodri.binnacle.authentication.domain.usecase.LoginUseCase
+import com.clerodri.binnacle.authentication.presentation.LoginScreenEvent
+import com.clerodri.binnacle.core.AuthManager
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.IdentificationError
 import com.clerodri.binnacle.core.Result
-import com.clerodri.binnacle.authentication.domain.model.IdentificationValidator
-import com.clerodri.binnacle.authentication.domain.usecase.LoginUseCase
-import com.clerodri.binnacle.authentication.domain.usecase.UserUseCase
-import com.clerodri.binnacle.authentication.presentation.LoginScreenEvent
+import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -24,41 +27,33 @@ import javax.inject.Inject
 @HiltViewModel
 class GuardViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val userUseCase: UserUseCase,
-    private val identificationValidator: IdentificationValidator
+    private val authManager: AuthManager,
+    private val identificationValidator: IdentificationValidator,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    private val _isAuthenticated = MutableStateFlow(false)
-    val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
 
     private val _state = MutableStateFlow(GuardScreenState.GuardState())
     val state: StateFlow<GuardScreenState.GuardState> = _state.asStateFlow()
 
+    val userData: StateFlow<AuthData?> = authManager.userData
 
     // channel for send events to guard screen
     private val _guardChannel = Channel<LoginScreenEvent>()
     internal fun getGuardChannel() = _guardChannel.receiveAsFlow()
 
-    init {
-       checkAuthentication()
-    }
-
-    private fun checkAuthentication() {
-        viewModelScope.launch {
-            userUseCase.getUserData().collectLatest { user ->
-                val authStatus = user?.isAuthenticated == true
-                _isAuthenticated.value = authStatus
-            }
-        }
-
-    }
-
 
     fun onEvent(event: GuardViewModelEvent) {
+
         when (event) {
             GuardViewModelEvent.LoginGuard -> {
-                login()
+                if( _state.value.identifier.isBlank()){
+                    _state.update { it.copy(identifierError = "Debe ingresar una cédula") }
+                    return
+                }
+                login(context)
             }
+
             is GuardViewModelEvent.UpdateIdentifier -> {
                 val result = identificationValidator.validateIdentification(event.identifier)
                 when (result) {
@@ -86,10 +81,6 @@ class GuardViewModel @Inject constructor(
                 }
             }
 
-            GuardViewModelEvent.LogOut -> {
-
-                _isAuthenticated.value = false
-            }
         }
     }
 
@@ -117,17 +108,24 @@ class GuardViewModel @Inject constructor(
         }
     }
 
-    private fun login() {
+
+    private fun login(context: Context) {
+
+        if (!hasInternetConnection(context)) {
+            sendScreenEvent(event = LoginScreenEvent.Failure("No hay conexión a internet"))
+            return
+        }
+
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
             delay(500)
             when (val result = loginUseCase(_state.value.identifier)) {
                 is Result.Failure -> {
-                   handleLoginFailure(result.error)
-                    _state.value = _state.value.copy(isLoading = true)
+                    handleLoginFailure(result.error)
                 }
 
                 is Result.Success -> {
+                    authManager.loadUserData()
                     sendScreenEvent(LoginScreenEvent.Success)
                 }
             }
@@ -139,20 +137,13 @@ class GuardViewModel @Inject constructor(
 
 
     private fun handleLoginFailure(error: DataError.AuthNetwork) {
-        when (error) {
-            DataError.AuthNetwork.GUARD_NOT_FOUND -> {
-                sendScreenEvent(event = LoginScreenEvent.Failure("Guardia no existe"))
-            }
-
-            DataError.AuthNetwork.REQUEST_TIMEOUT -> {
-                sendScreenEvent(event = LoginScreenEvent.Failure("Servidor no responde"))
-            }
-
-            DataError.AuthNetwork.NO_INTERNET -> {
-                sendScreenEvent(event = LoginScreenEvent.Failure("No hay conexión a internet"))
-            }
+        val message = when (error) {
+            DataError.AuthNetwork.GUARD_NOT_FOUND -> "Guardia no registrado"
+            DataError.AuthNetwork.SERVICE_UNAVAILABLE -> "Servidor no responde"
+//            DataError.AuthNetwork.NO_INTERNET -> "No hay conexión a internet"
+            else -> "Error desconocido"
         }
-
+        sendScreenEvent(LoginScreenEvent.Failure(message))
         _state.update { it.copy(isLoading = false) }
     }
 

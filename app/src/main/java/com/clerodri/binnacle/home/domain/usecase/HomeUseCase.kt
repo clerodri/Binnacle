@@ -13,4 +13,6 @@ class HomeUseCase @Inject constructor(private val repository: HomeRepository) {
 
     suspend fun clearHomeData() = repository.clearHomeData()
 
+    suspend fun validateSession() = repository.validateSession()
+
 }

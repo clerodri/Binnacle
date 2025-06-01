@@ -31,6 +31,7 @@ navigationCompose = "2.8.5"
 playServicesMaps = "19.0.0"
 retrofit = "2.10.0"
 gson = "2.10.1"
+okhttp = "4.12.0"
 
 kotlinxSerializationJson = "1.8.0"
 maps = "3.1.0-beta"
@@ -45,6 +46,8 @@ camerax = "1.5.0-alpha05"
 accompanist = "0.36.0"
 cameraView = "1.4.1"
 
+#Room
+room  = "2.7.1"
 [libraries]
 ## Animation navigation
 accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanistNavigationAnimation" }
@@ -69,6 +72,12 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
+
+#Room
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+
 #Dagger HIlt
 dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger" }
 dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "dagger" }
@@ -88,7 +97,8 @@ play-services-maps = { module = "com.google.android.gms:play-services-maps", ver
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 gson = {module="com.google.code.gson:gson", version.ref="gson"}
 gson-converter={module="com.squareup.retrofit2:converter-gson", version.ref="retrofit"}
-
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okhttp-kotlin = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 
 #Data store
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
