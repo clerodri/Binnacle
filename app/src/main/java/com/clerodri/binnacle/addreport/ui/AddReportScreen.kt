@@ -5,9 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -16,10 +20,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -82,14 +85,15 @@ fun AddReportScreen(
             addReportViewModel = viewModel
         )
     } else {
-        Scaffold(modifier = modifier.fillMaxSize(), snackbarHost = {
+        Scaffold(modifier = modifier.fillMaxSize().imePadding(), snackbarHost = {
             SnackBarComponent(
                 snackHostState,
                 modifier = Modifier.padding(bottom = 0.dp),
                 type = state.snackBarType ?: SnackBarType.Error
             )
         }, topBar = {
-            AddReportTopAppBar(R.string.report_screen_name,
+            AddReportTopAppBar(
+                R.string.report_screen_name,
                 onBack = {
                     viewModel.onReportEvent(AddReportEvent.ClearFields)
                     onBack(false)
@@ -112,10 +116,10 @@ fun AddReportScreen(
                         )
                         // onBack()
                     },
-                    modifier = Modifier.padding(bottom = 200.dp, end = 10.dp)
+                    modifier = Modifier.padding(16.dp).navigationBarsPadding()
                 )
             }
-        }
+        }, floatingActionButtonPosition = FabPosition.Center,
 
         ) { paddingValues ->
 
@@ -161,30 +165,19 @@ fun AddReportScreen(
     LaunchedEffect(Unit) {
         viewModel.getEventChannel().collect { event ->
             when (event) {
-                ReportUiEvent.onBack -> { onBack(false) }
-
-                is ReportUiEvent.onError -> {
+                is ReportUiEvent.OnError -> {
                     coroutineScope.launch {
                         snackHostState.showSnackbar(
                             message = event.message, duration = SnackbarDuration.Short
                         )
                     }
                 }
-                is ReportUiEvent.onBackWithSuccess -> {
+
+                is ReportUiEvent.OnBackWithSuccess -> {
                     onBack(event.isSuccess) // Back with success status
                 }
 
-//                ReportUiEvent.onReportCreated -> {
-//                    coroutineScope.launch {
-//                        snackHostState.showSnackbar(
-//                            message = "Reporte enviado!", duration = SnackbarDuration.Short
-//                        )
-//                    }
-//                    onBack()
-//
-//                }
-
-                ReportUiEvent.onSendingReport ->{
+                is ReportUiEvent.OnSendingReport -> {
                     coroutineScope.launch {
                         snackHostState.showSnackbar(
                             message = "Enviando....!", duration = SnackbarDuration.Short
@@ -217,7 +210,7 @@ private fun AddReportContent(
         val textFieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = BackGroundAppColor.copy(0.3f),
             unfocusedBorderColor = Color.Gray.copy(0.3f),
-            cursorColor = MaterialTheme.colorScheme.onSecondary
+            cursorColor = Color.Black
         )
         Text(
             modifier = Modifier
@@ -231,16 +224,15 @@ private fun AddReportContent(
         OutlinedTextField(
             value = title,
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(componentShapes.small),
+                .fillMaxWidth(),
             onValueChange = onTitleChanged,
-            placeholder = {
+            label = {
                 Text(
                     text = stringResource(id = R.string.title_hint),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light)
                 )
             },
-            textStyle = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
@@ -250,19 +242,23 @@ private fun AddReportContent(
             isError = titleError != null
         )
         ErrorMessage(titleError)
-
         OutlinedTextField(
             value = description,
-            onValueChange = onDescriptionChanged,
-            placeholder = { Text(stringResource(id = R.string.description_hint)) },
             modifier = Modifier
-                .fillMaxSize()
-                .height(200.dp)
-                .clip(componentShapes.small),
-            colors = textFieldColors,
+                .fillMaxWidth()
+                .height(200.dp),
+            onValueChange = onDescriptionChanged,
+            label = {
+                Text(
+                    text = stringResource(id = R.string.description_hint),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light)
+                )
+            },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold,color = Color.Black.copy(0.5f)),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
             ),
+            colors = textFieldColors,
         )
     }
 }
@@ -271,7 +267,8 @@ private fun AddReportContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportTopAppBar(@StringRes title: Int, onBack: () -> Unit, openCamera: () -> Unit) {
-    TopAppBar(title = { Text(text = stringResource(title)) }, navigationIcon = {
+    TopAppBar(
+        title = { Text(text = stringResource(title)) }, navigationIcon = {
         IconButton(onClick = onBack) {
             Icon(
                 Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
@@ -301,9 +298,9 @@ fun ErrorMessage(value: String?) {
     if (value != null) {
         Text(
             text = value,
-            color = MaterialTheme.colorScheme.error, // Use error color
+            color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+            modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 0.dp)
         )
     }
 }

@@ -1,6 +1,5 @@
 package com.clerodri.binnacle.addreport.ui
 
-import com.clerodri.binnacle.addreport.domain.Report
 
 sealed interface AddReportEvent {
     data class OnAddReport(val title: String, val detail:String, val roundId: Int) : AddReportEvent

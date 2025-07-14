@@ -1,6 +1,7 @@
 package com.clerodri.binnacle.home.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -229,8 +230,8 @@ fun HomeBottomBar(
                         }
 
                         HomeType.LogOut -> {
-                            title = "Cerrar Sesion"
-                            message = "Esta seguro de cerrar la sesion?"
+                            title = "Cerrar Sesión"
+                            message = "Esta seguro de cerrar la sesión?"
                             onConfirmAction = onLogOut
                             openDialog = true
 
@@ -382,10 +383,10 @@ fun HomeTopBar(modifier: Modifier, fullname: String?) {
     TopAppBar(modifier = modifier
         .padding(horizontal = 20.dp, vertical = 10.dp)
         .clip(RoundedCornerShape(100.dp)), colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(0.6f)
+        containerColor = Color.White
     ), windowInsets = WindowInsets(0.dp), title = {
         Text(
-            text = "${fullname?.uppercase()}",
+            text = "$fullname",
             color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
             fontSize = 25.sp,
             style = MaterialTheme.typography.titleLarge,
@@ -394,13 +395,12 @@ fun HomeTopBar(modifier: Modifier, fullname: String?) {
 
 
     }, navigationIcon = {
-        Icon(
-            imageVector = Icons.Outlined.VerifiedUser,
+        Image(
+            painter = painterResource(id = R.drawable.guard_logo),
             contentDescription = null,
             modifier = Modifier
                 .padding(start = 12.dp, end = 8.dp)
                 .size(30.dp)
-
         )
     })
 

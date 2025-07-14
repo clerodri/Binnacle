@@ -143,7 +143,7 @@ fun LoginGuardContent(
                 )
             }
         } else {
-            TitleGuard()
+//            TitleGuard()
 
             CedulaFieldComponent(
                 value = state.identifier,

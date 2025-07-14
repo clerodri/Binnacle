@@ -7,15 +7,15 @@
     <string name="hide_password">Hide password</string>
     <string name="show_password">Show password</string>
     <string name="remember_password">Recordar contraseña</string>
-    <string name="login">Iniciar Sesion</string>
+    <string name="login">Iniciar Sesión</string>
     <string name="version_app">v1.0.0</string>
     <string name="or">Or</string>
-    <string name="iniciar_sesion">Iniciar Sesion</string>
+    <string name="iniciar_sesion">Iniciar Sesión</string>
     <string name="eres_administrador">"eres Administrador? "</string>
     <string name="login_admin_text">" Login Admin"</string>
     <string name="rondas">Rutas</string>
     <string name="checkin_label">Check-In</string>
-    <string name="logout_label">Cerrar Sesion</string>
+    <string name="logout_label">Cerrar Sesión</string>
     <string name="report_label">Report</string>
     <string name="rondas_label">Rondas</string>
     <string name="login_administrator_label">Administrator</string>
@@ -28,7 +28,7 @@
     <string name="btn_finalizar_text">FINALIZAR</string>
     <string name="btn_start_text">INICIAR</string>
     <string name="title_hint">Titulo</string>
-    <string name="description_hint">Detalle\n</string>
+    <string name="description_hint">Detalle</string>
     <string name="menu_back">Regresar</string>
     <string name="report_screen_name">Reporte</string>
     <string name="save_report">Guardar</string>

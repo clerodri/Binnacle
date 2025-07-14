@@ -1,3 +1,5 @@
+import org.apache.commons.logging.LogFactory.release
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,21 +19,31 @@ android {
         applicationId = "com.clerodri.binnacle"
         minSdk = 31
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        register("release") {
+            storeFile = file(project.property("KEYSTORE_FILE") as String)
+            storePassword = project.property("KEYSTORE_PASSWORD") as String
+            keyAlias = project.property("KEY_ALIAS") as String
+            keyPassword = project.property("KEY_PASSWORD") as String
+        }
+    }
+
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://a7be-2800-bf0-826c-1458-890c-a62f-c069-73b3.ngrok-free.app/\"")
-            signingConfig = signingConfigs.getByName("debug")
+            buildConfigField("String", "BASE_URL", "\"https://binnacle-4bb55064e6f7.herokuapp.com/\"")
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
@@ -59,9 +71,9 @@ android {
 
 dependencies {
     //ROOM
-//    implementation(libs.room.runtime)
-//    implementation(libs.room.ktx)
-//    ksp(libs.room.compiler)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
 
   //  Dagger Hilt
@@ -80,6 +92,7 @@ dependencies {
     implementation(libs.gson.converter)
     implementation(libs.okhttp)
     implementation(libs.okhttp.kotlin)
+    implementation(libs.logging.interceptor)
 
     //Icons extended
     implementation(libs.androidx.material.icons.extended)

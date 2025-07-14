@@ -52,13 +52,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     homeViewModel: HomeViewModel,
-    navigateToReportScreen: (Int, Int, String) -> Unit,
+    navigateToReportScreen: (Int, Int) -> Unit,
     onLogOut: () -> Unit,
     reportSuccess: Boolean,
     onClearSuccessReport: () -> Unit
 ) {
 
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackState = remember { SnackbarHostState() }
 
     val coroutineScope = rememberCoroutineScope()
     BackHandler(enabled = true) {}
@@ -66,7 +66,7 @@ fun HomeScreen(
     val state by homeViewModel.state.collectAsState()
     Scaffold(snackbarHost = {
         SnackBarComponent(
-            snackbarHostState,
+            snackState,
             modifier = Modifier.padding(bottom = 150.dp),
             type = state.snackBarType ?: SnackBarType.Success
         )
@@ -94,7 +94,7 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         if (!homeViewModel.hasShownLoginSuccess) {
-            snackbarHostState.showSnackbar(
+            snackState.showSnackbar(
                 "¡Inicio de sesión exitoso!", duration = SnackbarDuration.Short
             )
             homeViewModel.markLoginSuccessShown()
@@ -112,7 +112,7 @@ fun HomeScreen(
 
                 is HomeUiEvent.ShowAlert -> {
                     coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
+                        snackState.showSnackbar(
                             message = event.message, duration = SnackbarDuration.Short
                         )
                     }
@@ -127,7 +127,7 @@ fun HomeScreen(
 private fun Screen(
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel,
-    navigateToReportScreen: (Int, Int, String) -> Unit
+    navigateToReportScreen: (Int, Int) -> Unit
 ) {
     val state by homeViewModel.state.collectAsState()
     val guard by homeViewModel.guardData.collectAsState()
@@ -163,8 +163,7 @@ private fun Screen(
         AddReportButton(state.isStarted) {
             val roundId = state.roundId
             val routeId = routes[state.currentIndex].order
-            val localityId = guard?.localityId ?: 0
-            navigateToReportScreen(routeId, roundId.toInt(), localityId.toString())
+            navigateToReportScreen(routeId, roundId.toInt())
         }
     }) { paddingValue ->
         Box(

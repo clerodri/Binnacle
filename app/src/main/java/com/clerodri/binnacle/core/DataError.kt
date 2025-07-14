@@ -13,6 +13,7 @@ sealed interface DataError : Error {
     enum class AuthNetwork : DataError {
         GUARD_NOT_FOUND,
         SERVICE_UNAVAILABLE,
+        BAD_CREDENTIAL
     }
 
     enum class CheckError : DataError {

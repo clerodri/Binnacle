@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clerodri.binnacle.ui.theme.Primary
 
 
 @Composable
@@ -125,11 +126,11 @@ fun SnackBarComponent(
         hostState = snackbarHostState,
         modifier = modifier,
     ) { data ->
-        val (bgColor, icon) = when (type) {
-            SnackBarType.Success -> Color(0xFF4CAF50) to Icons.Default.CheckCircle
-            SnackBarType.Warning -> Color(0xFFFF9800) to Icons.Default.Warning
-            SnackBarType.Error -> Color.Red.copy(alpha = 0.9f) to Icons.Default.Error
-            SnackBarType.Info -> Color(0xFF2196F3) to Icons.Default.Info
+        val (bgColor, icon, textColor) = when (type) {
+            SnackBarType.Success -> Triple(Primary, Icons.Default.CheckCircle, Color.White)
+            SnackBarType.Warning -> Triple(Color.White, Icons.Default.Warning, Color.Red)
+            SnackBarType.Info -> Triple(Primary, Icons.Default.Info, Color.White)
+            SnackBarType.Error -> Triple(Color.White, Icons.Default.Error, Color.Red)
         }
         Snackbar(
             containerColor = bgColor,
@@ -146,14 +147,15 @@ fun SnackBarComponent(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = textColor,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = data.visuals.message,
                     modifier = Modifier.padding(horizontal = 4.dp),
                     fontWeight = FontWeight.Medium,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor
                 )
             }
         }
