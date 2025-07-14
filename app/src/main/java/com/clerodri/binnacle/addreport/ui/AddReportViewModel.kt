@@ -20,11 +20,9 @@ import com.clerodri.binnacle.addreport.domain.AddReportUseCase
 import com.clerodri.binnacle.addreport.domain.Report
 import com.clerodri.binnacle.addreport.domain.TakePhotoUseCase
 import com.clerodri.binnacle.addreport.domain.UploadPhotoUseCase
-import com.clerodri.binnacle.authentication.presentation.LoginScreenEvent
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.components.SnackBarType
-import com.clerodri.binnacle.home.presentation.HomeUiEvent
 import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -54,7 +52,8 @@ data class AddReportUiState(
     val bitmap: Bitmap? = null,
     val titleError: String? = null,
     val snackBarType: SnackBarType? = null,
-    val hideFloatingActionButton: Boolean = false
+    val hideFloatingActionButton: Boolean = false,
+    val photoFileName: String? = null
 )
 
 @HiltViewModel
@@ -98,28 +97,28 @@ class AddReportViewModel @Inject constructor(
         when (event) {
             is AddReportEvent.OnAddReport -> {
                 if (!hasInternetConnection(context)) {
-                    sendScreenEvent(event = ReportUiEvent.onError("No hay conexión a internet", SnackBarType.Error))
+                    sendScreenEvent(event = ReportUiEvent.OnError("No hay conexión a internet", SnackBarType.Error))
                     return
                 }
-                if ( _uiState.value.title.isBlank()){
+                if (_uiState.value.title.isBlank()) {
                     _uiState.value = _uiState.value.copy(titleError = "El titulo es requerido")
-                }else{
-                    sendScreenEvent(event = ReportUiEvent.onSendingReport)
-                    val photoFileName = generatePhotoFileName()
-                    if (photoFileName != null) {
-                        _uiState.update {
-                            it.copy(isLoading = true)
-                        }
-                    }
-                    val report = Report(
-                        title = event.title,
-                        description = event.detail,
-                        roundId = event.roundId,
-                        image = photoFileName,
-                        imageType = "image/jpg"
-                    )
-                    createReport(report)
+                    return
                 }
+
+                val photoFileName = _uiState.value.photoFileName
+                Log.d("CameraX", "PHONEFILE: $photoFileName")
+
+                sendScreenEvent(event = ReportUiEvent.OnSendingReport)
+                _uiState.update { it.copy(isLoading = true) }
+
+                val report = Report(
+                    title = event.title,
+                    description = event.detail,
+                    roundId = event.roundId,
+                    image = photoFileName,
+                    imageType = "image/jpeg"
+                )
+                createReport(report)
 
             }
 
@@ -147,8 +146,20 @@ class AddReportViewModel @Inject constructor(
                 viewModelScope.launch {
                     val result = photoUseCase(imageCapture)
                     Log.d("CameraX", "onReportEvent: $result")
-                    _uiState.value =
-                        _uiState.value.copy(openCamera = false, isLoading = false, bitmap = result)
+                    val fileName = if (result != null) {
+                        val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
+                        "photo_${formatter.format(Date())}.jpg"
+                    } else null
+
+                    _uiState.update {
+                        it.copy(
+                            openCamera = false,
+                            isLoading = false,
+                            bitmap = result,
+                            photoFileName = fileName
+                        )
+                    }
+
                 }
 
             }
@@ -156,14 +167,13 @@ class AddReportViewModel @Inject constructor(
             AddReportEvent.OnOpenCamera -> _uiState.update { it.copy(openCamera = true) }
             AddReportEvent.OnCloseCamera -> _uiState.update { it.copy(openCamera = false) }
             AddReportEvent.NoCameraAllowed ->
-                sendScreenEvent(event = ReportUiEvent.onError("No tiene permisos para usar la CAMARA", SnackBarType.Warning))
+                sendScreenEvent(event = ReportUiEvent.OnError("No tiene permisos para usar la CAMARA", SnackBarType.Warning))
 
         }
 
     }
 
     private fun createReport(report: Report) {
-
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, hideFloatingActionButton = true) }
             delay(4000)
@@ -172,36 +182,41 @@ class AddReportViewModel @Inject constructor(
                     when (result.error) {
                         DataError.Report.REQUEST_TIMEOUT -> {
                             Log.d("CameraX", "createReport: ${result.error}")
-                            sendScreenEvent(event = ReportUiEvent.onError("Servidor no disponible", SnackBarType.Error))
+                            sendScreenEvent(event = ReportUiEvent.OnError("Servidor no disponible", SnackBarType.Error))
                             _uiState.update { it.copy(isLoading = false) }
                         }
 
                         DataError.Report.NO_INTERNET -> {
-                            sendScreenEvent(event = ReportUiEvent.onError("No hay internet", SnackBarType.Error))
+                            sendScreenEvent(event = ReportUiEvent.OnError("No hay internet", SnackBarType.Error))
                             _uiState.update { it.copy(isLoading = false) }
                             Log.d("CameraX", "createReport: ${result.error}")
                         }
 
                         DataError.Report.SERVICE_UNAVAILABLE -> {
-                            sendScreenEvent(event = ReportUiEvent.onError("Servidor no disponible", SnackBarType.Error))
+                            sendScreenEvent(event = ReportUiEvent.OnError("Servidor no disponible", SnackBarType.Error))
                             _uiState.update { it.copy(isLoading = false) }
                             Log.d("CameraX", "createReport: ${result.error}")
                         }
+
                     }
                 }
 
                 is Result.Success -> {
-                    Log.d("CameraX", "createReport: $result")
                     val preSignedUrl = result.data.preSignedUrl
                     val bitmap = _uiState.value.bitmap
-                    if (bitmap != null) {
+
+                    Log.d("CameraX", "Bitmap: $bitmap")
+                    Log.d("CameraX", "PreSigned URL: $preSignedUrl")
+                    if (bitmap != null && preSignedUrl != null) {
+                        Log.d("CameraX", "createReport: $preSignedUrl")
                         val uploadResult = uploadPhotoUseCase(preSignedUrl, bitmap)
+                        _uiState.update { it.copy(photoFileName = null) }
                         if (uploadResult is Result.Failure) {
-                            sendScreenEvent(ReportUiEvent.onError("Error al subir la foto a S3", SnackBarType.Warning))
+                            sendScreenEvent(ReportUiEvent.OnError("Error al subir la foto a S3", SnackBarType.Warning))
                             return@launch
                         }
                     }
-                    sendScreenEvent(ReportUiEvent.onBackWithSuccess(true))
+                    sendScreenEvent(ReportUiEvent.OnBackWithSuccess(true))
                 }
             }
             // Done loading
@@ -213,15 +228,23 @@ class AddReportViewModel @Inject constructor(
 
     private fun sendScreenEvent(event: ReportUiEvent) {
         viewModelScope.launch {
-            if (event is ReportUiEvent.onError) {
+            if (event is ReportUiEvent.OnError) {
                 _uiState.update { it.copy(snackBarType = event.type) }
             }
-            if (event is ReportUiEvent.onSendingReport) {
+            if (event is ReportUiEvent.OnSendingReport) {
                 _uiState.update { it.copy(snackBarType = SnackBarType.Info) }
             }
             _eventChannel.send(event)
-            _uiState.update {
-                it.copy(description = "", title = "", bitmap = null, isLoading = false )
+            if (event is ReportUiEvent.OnBackWithSuccess) {
+                _uiState.update {
+                    it.copy(
+                        description = "",
+                        title = "",
+                        bitmap = null,
+                        photoFileName = null,
+                        isLoading = false
+                    )
+                }
             }
         }
     }
@@ -246,10 +269,5 @@ class AddReportViewModel @Inject constructor(
 
     }
 
-    private fun generatePhotoFileName(): String? {
-        _uiState.value.bitmap ?: return null
-        val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault())
-        val date = Date()
-        return "photo_${formatter.format(date)}.jpg"
-    }
+
 }

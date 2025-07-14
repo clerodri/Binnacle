@@ -5,13 +5,13 @@ import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.home.domain.model.CheckIn
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 import com.clerodri.binnacle.home.domain.model.Home
-import com.clerodri.binnacle.home.domain.model.Locality
 import com.clerodri.binnacle.home.domain.model.Round
+import com.clerodri.binnacle.home.domain.model.Route
 import kotlinx.coroutines.flow.Flow
 
 interface HomeRepository {
 
-    suspend fun getRoutes(localityId: String): Result<Locality, DataError.LocalityError>
+    suspend fun getRoutes(): Result<List<Route>, DataError.LocalityError>
 
     suspend fun getHomeData(): Flow<Home?>
 

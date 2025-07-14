@@ -23,9 +23,8 @@ class AuthInformation @Inject constructor(
     companion object {
         private val ACCESS_TOKEN = stringPreferencesKey("accessToken")
         private val FULL_NAME = stringPreferencesKey("fullname")
-        private val GUARD_ID = stringPreferencesKey("id")
+        private val GUARD_ID = stringPreferencesKey("guardId")
         private val USER_IS_AUTHENTICATED = booleanPreferencesKey("isAuthenticated")
-        private val LOCALITY_ID = stringPreferencesKey("id")
     }
 
 
@@ -35,9 +34,8 @@ class AuthInformation @Inject constructor(
         val fullName = preferences[FULL_NAME]
         val guardId = preferences[GUARD_ID]
         val isAuthenticated = preferences[USER_IS_AUTHENTICATED] ?: false
-        val localityId = preferences[LOCALITY_ID]
-        if (accessToken != null && fullName != null && guardId != null && localityId != null) {
-            AuthData(accessToken, null, isAuthenticated, fullName, guardId, localityId)
+        if (accessToken != null && fullName != null && guardId != null ) {
+            AuthData(accessToken, null, isAuthenticated, fullName, guardId)
         } else {
             null
         }
@@ -49,7 +47,6 @@ class AuthInformation @Inject constructor(
             pref[USER_IS_AUTHENTICATED] = auth.isAuthenticated
             pref[FULL_NAME] = auth.fullName!!
             pref[GUARD_ID] = auth.guardId!!
-            pref[LOCALITY_ID] = auth.localityId!!
         }
     }
 

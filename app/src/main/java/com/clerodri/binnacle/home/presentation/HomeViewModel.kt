@@ -1,6 +1,7 @@
 package com.clerodri.binnacle.home.presentation
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.authentication.domain.model.AuthData
@@ -17,7 +18,7 @@ import com.clerodri.binnacle.home.domain.usecase.CreateRoundUseCase
 import com.clerodri.binnacle.home.domain.usecase.FinishRoundUseCase
 import com.clerodri.binnacle.home.domain.usecase.GetCheckInStatusUseCase
 import com.clerodri.binnacle.home.domain.usecase.HomeUseCase
-import com.clerodri.binnacle.home.domain.usecase.LocalityUseCase
+import com.clerodri.binnacle.home.domain.usecase.RouteUseCase
 import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,7 +38,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeUseCase: HomeUseCase,
-    private val localityUseCase: LocalityUseCase,
+    private val routeUseCase: RouteUseCase,
     private val createRoundUseCase: CreateRoundUseCase,
     private val finishRoundUseCase: FinishRoundUseCase,
     private val checkInUseCase: CheckInUseCase,
@@ -64,7 +65,7 @@ class HomeViewModel @Inject constructor(
 
     private val _eventChannel = Channel<HomeUiEvent>()
     internal fun getEventChannel() = _eventChannel.receiveAsFlow()
-    private var hasFetchedRoutes = false
+//    private var hasFetchedRoutes = false
     var hasShownLoginSuccess = false
         private set
 
@@ -74,27 +75,16 @@ class HomeViewModel @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
-            loadHomeState()
-
-        }
+        loadHomeState()
     }
 
     fun onEnterHomeScreen() {
-        if (hasFetchedRoutes) return
         viewModelScope.launch {
             val result = homeUseCase.validateSession()
             if (result is Result.Failure) {
-
                 onLogOut()
-            } else {
-
-                guardData.collectLatest { data ->
-                    if (data?.localityId != null) {
-                        fetchRoutes(data.localityId)
-                        hasFetchedRoutes = true
-                    }
-                }
+            }else{
+                fetchRoutes()
             }
         }
     }
@@ -147,7 +137,7 @@ class HomeViewModel @Inject constructor(
 
             HomeViewModelEvent.OnLogOutRequested -> sendScreenEvent(
                 event = HomeUiEvent.ShowAlert(
-                    "Debe finalizar la ronda para cerrar sesion", SnackBarType.Warning
+                    "Debe finalizar la ronda para cerrar sesión", SnackBarType.Warning
                 )
             )
 
@@ -201,6 +191,7 @@ class HomeViewModel @Inject constructor(
 
     private fun createRound() {
         viewModelScope.launch {
+            Log.d("HomeViewModel", "Guard id: ${guardData.value?.guardId}")
             when (val result = createRoundUseCase.invoke(guardData.value?.guardId!!)) {
                 is Result.Failure -> {
                     sendScreenEvent(
@@ -231,7 +222,7 @@ class HomeViewModel @Inject constructor(
             authManager.clearUserData()
             homeUseCase.clearHomeData()
             delay(500)
-            hasFetchedRoutes = false
+//            hasFetchedRoutes = false
             sendScreenEvent(event = HomeUiEvent.LogOut)
             delay(500)
             _state.value = _state.value.copy(isLoading = false)
@@ -347,16 +338,16 @@ class HomeViewModel @Inject constructor(
 
 
     private fun loadHomeState() {
-        if (!hasInternetConnection(context)) {
-            sendScreenEvent(
-                HomeUiEvent.ShowAlert(
-                    "No internet. Can't load data.", SnackBarType.Error
-                )
-            )
-            return
-        }
-
         viewModelScope.launch {
+            if (!hasInternetConnection(context)) {
+                sendScreenEvent(
+                    HomeUiEvent.ShowAlert(
+                        "No internet. Can't load data.", SnackBarType.Error
+                    )
+                )
+                return@launch
+            }
+
             homeUseCase.getHomeData().collectLatest { savedState ->
                 _state.update {
                     it.copy(
@@ -374,23 +365,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchRoutes(id: String) {
-        when (val result = localityUseCase.invoke(id)) {
-            is Result.Failure -> {
-
-                val message = when (result.error) {
-                    DataError.LocalityError.ROUTES_NOT_FOUND -> "No se encontraron rutas para la localidad."
-                    DataError.LocalityError.SERVICE_UNAVAILABLE -> "Error de conexión. Intenta nuevamente."
+    private suspend fun fetchRoutes() {
+            _state.value = _state.value.copy(isLoading = true)
+            when (val result = routeUseCase.invoke()) {
+                is Result.Failure -> {
+                    val message = when (result.error) {
+                        DataError.LocalityError.ROUTES_NOT_FOUND -> "No se encontraron rutas para la localidad."
+                        DataError.LocalityError.SERVICE_UNAVAILABLE -> "Error de conexión. Intenta nuevamente."
+                    }
+                    sendScreenEvent(HomeUiEvent.ShowAlert(message, SnackBarType.Error))
                 }
-                sendScreenEvent(HomeUiEvent.ShowAlert(message, SnackBarType.Error))
-            }
 
-            is Result.Success -> {
-                val locality = result.data
-                _routes.update { locality.routes?.sortedBy { it.order } ?: emptyList() }
-                _state.update { it.copy(localityName = locality.name ?: "Laguna Dorada") }
+                is Result.Success -> {
+                    _routes.update { result.data.sortedBy { it.order } }
+
+                }
             }
-        }
+            _state.value = _state.value.copy(isLoading = false)
+
     }
 
     private suspend fun fetchCheckInStatus(id: Int) {

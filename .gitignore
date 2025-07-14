@@ -22,7 +22,7 @@ captures/
 # OS-specific files
 .DS_Store
 Thumbs.db
-
+.keystore/
 # Dependency caches
 **/.gradle/
 **/local.properties

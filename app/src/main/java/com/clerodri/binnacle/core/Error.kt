@@ -1,4 +1,3 @@
 package com.clerodri.binnacle.core
 
-sealed interface Error {
-}
+sealed interface Error

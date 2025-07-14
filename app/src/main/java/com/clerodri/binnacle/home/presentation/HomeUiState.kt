@@ -10,7 +10,7 @@ data class HomeUiState(
     val isStarted: Boolean = false,
     val isLoading: Boolean = false,
     val elapsedSeconds: Long = 0,
-    val localityName:String ="",
+    val localityName:String = "Laguna Dorada",
     val roundId:Long = 0,
     val checkInId:Int = 0,
     val checkStatus:ECheckIn = ECheckIn.READY,

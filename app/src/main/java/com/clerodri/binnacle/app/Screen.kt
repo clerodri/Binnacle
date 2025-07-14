@@ -18,5 +18,5 @@ object SplashScreen
 
 
 @Serializable
-data class  ReportScreen(val routeId:Int, val roundId:Int, val localityId:String)
+data class  ReportScreen(val routeId:Int, val roundId:Int)
 

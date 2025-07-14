@@ -137,11 +137,11 @@ class GuardViewModel @Inject constructor(
 
 
     private fun handleLoginFailure(error: DataError.AuthNetwork) {
+        println("TEST: ${error.name}")
         val message = when (error) {
             DataError.AuthNetwork.GUARD_NOT_FOUND -> "Guardia no registrado"
-            DataError.AuthNetwork.SERVICE_UNAVAILABLE -> "Servidor no responde"
-//            DataError.AuthNetwork.NO_INTERNET -> "No hay conexión a internet"
-            else -> "Error desconocido"
+            DataError.AuthNetwork.SERVICE_UNAVAILABLE -> "Servicio no disponible"
+            DataError.AuthNetwork.BAD_CREDENTIAL -> "Cedula no valida"
         }
         sendScreenEvent(LoginScreenEvent.Failure(message))
         _state.update { it.copy(isLoading = false) }

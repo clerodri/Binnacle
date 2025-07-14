@@ -55,7 +55,7 @@ class ReportRepositoryImpl @Inject constructor(
             }
         } catch (e: java.net.SocketTimeoutException) {
             Result.Failure(DataError.Report.SERVICE_UNAVAILABLE)
-         } catch (e: IOException) {
+        } catch (e: IOException) {
             Result.Failure(DataError.Report.NO_INTERNET)
         }
     }
@@ -67,15 +67,16 @@ class ReportRepositoryImpl @Inject constructor(
                 ContextCompat.getMainExecutor(application),
                 object : ImageCapture.OnImageCapturedCallback() {
                     override fun onCaptureSuccess(image: ImageProxy) {
-                        super.onCaptureSuccess(image)
+                        Log.d("CameraX", "Capture successful")
                         val bitmap =
                             image.toBitmap().rotate(image.imageInfo.rotationDegrees.toFloat())
                         image.close()
-                        continuation.resume(bitmap)
+                        if (continuation.isActive) continuation.resume(bitmap)
                     }
 
                     override fun onError(exception: ImageCaptureException) {
                         Log.d("CameraX", "Photo capture failed: ${exception.message}", exception)
+                        if (continuation.isActive) continuation.resume(null)
                     }
 
                 }
@@ -93,25 +94,30 @@ class ReportRepositoryImpl @Inject constructor(
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
             val byteArray = stream.toByteArray()
 
-            val requestBody = byteArray.toRequestBody("image/jpeg".toMediaType())
+            val mediaType = "image/jpeg".toMediaType()
+            val requestBody = byteArray.toRequestBody(mediaType)
             val request = Request.Builder()
                 .url(preSignedUrl)
                 .put(requestBody)
-                .header("Content-Type", "image/jpeg")
+                .addHeader("Content-Type", "image/jpeg")
                 .build()
+
 
             val response = OkHttpClient().newCall(request).execute()
 
             if (response.isSuccessful) {
+                Log.d("CameraX", "Upload successful")
                 Result.Success(Unit)
             } else {
+                val errorBody = response.body?.string()
+                Log.e("CameraX", "Upload failed: ${response.code} - $errorBody")
                 Result.Failure(DataError.Report.REQUEST_TIMEOUT)
             }
         } catch (e: Exception) {
+            Log.e("CameraX", "Exception: ${e.localizedMessage}", e)
             Result.Failure(DataError.Report.REQUEST_TIMEOUT)
         }
     }
-
 
 
 }

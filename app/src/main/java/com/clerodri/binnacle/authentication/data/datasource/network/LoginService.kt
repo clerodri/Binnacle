@@ -13,6 +13,7 @@ class LoginService @Inject constructor(private val loginClient: LoginClient) {
 
         return withContext(Dispatchers.IO) {
             val response = loginClient.doLoginCall(LoginRequest(identification))
+           println("TEST: ${response.code()}")
             if (response.isSuccessful) {
                 response.body() ?: throw HttpException(response)
             } else {

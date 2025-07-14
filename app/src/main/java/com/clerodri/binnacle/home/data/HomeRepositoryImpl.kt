@@ -7,8 +7,8 @@ import com.clerodri.binnacle.home.data.datasource.network.HomeService
 import com.clerodri.binnacle.home.domain.model.CheckIn
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 import com.clerodri.binnacle.home.domain.model.Home
-import com.clerodri.binnacle.home.domain.model.Locality
 import com.clerodri.binnacle.home.domain.model.Round
+import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.home.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
@@ -28,9 +28,9 @@ class HomeRepositoryImpl @Inject constructor(
     override suspend fun clearHomeData() = homeDataSource.clearHomeState()
 
 
-    override suspend fun getRoutes(localityId: String): Result<Locality, DataError.LocalityError> {
+    override suspend fun getRoutes(): Result<List<Route>, DataError.LocalityError> {
         return try {
-            val result = homeService.getLocality(localityId)
+            val result = homeService.fetchRoutes()
             Result.Success(result)
         } catch (e: HttpException) {
             when (e.code()) {

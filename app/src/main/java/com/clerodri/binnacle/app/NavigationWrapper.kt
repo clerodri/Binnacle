@@ -108,10 +108,10 @@ fun NavigationWrapper(
         composable<HomeScreen> { backStackEntry ->
             val savedStateHandle = backStackEntry.savedStateHandle
             val reportSuccess = savedStateHandle.get<Boolean>("report_success") ?: false
-            HomeScreen(navigateToReportScreen = { routeId, roundId, localityId ->
+            HomeScreen(navigateToReportScreen = { routeId, roundId ->
                 navController.navigate(
                     ReportScreen(
-                        routeId = routeId, roundId = roundId, localityId = localityId
+                        routeId = routeId, roundId = roundId
                     )
                 )
             }, homeViewModel = homeViewModel, onLogOut = {

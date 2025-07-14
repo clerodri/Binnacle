@@ -2,9 +2,9 @@ package com.clerodri.binnacle.home.data.datasource.network
 
 import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInDto
 import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInResponse
-import com.clerodri.binnacle.home.data.datasource.network.dto.LocalityResponse
 import com.clerodri.binnacle.home.data.datasource.network.dto.RoundDto
 import com.clerodri.binnacle.home.data.datasource.network.dto.RoundResponse
+import com.clerodri.binnacle.home.data.datasource.network.dto.RouteResponse
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 import retrofit2.Response
 import retrofit2.http.Body
@@ -16,8 +16,8 @@ import retrofit2.http.Path
 
 interface HomeClient {
 
-    @GET("api/v1/locality/{id}/routes")
-    suspend fun getRoutes(@Path("id") localityId: String): Response<LocalityResponse>
+    @GET("api/v1/route")
+    suspend fun getRoutes(): Response<List<RouteResponse>>
 
     @POST("api/v1/check")
     suspend fun makeCheckIn(@Body checkInDto: CheckInDto): Response<CheckInResponse>
