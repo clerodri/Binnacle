@@ -96,45 +96,6 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
-//    override suspend fun uploadPhoto(
-//        photos:  List<PhotoItem>,
-//        result:  List<EventResponse>
-//    ): Result<Unit, DataError.Report> = withContext(Dispatchers.IO) {
-//
-//        try {
-//
-//
-//            val stream = ByteArrayOutputStream()
-//            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-//            val byteArray = stream.toByteArray()
-//
-//            val mediaType = "image/jpeg".toMediaType()
-//            val requestBody = byteArray.toRequestBody(mediaType)
-//            val request = Request.Builder()
-//                .url(preSignedUrl)
-//                .put(requestBody)
-//                .addHeader("Content-Type", "image/jpeg")
-//                .build()
-//
-//
-//            val response = OkHttpClient().newCall(request).execute()
-//
-//            if (response.isSuccessful) {
-//                Log.d("CameraX", "Upload successful")
-//                Result.Success(Unit)
-//            } else {
-//                val errorBody = response.body?.string()
-//                Log.e("CameraX", "Upload failed: ${response.code} - $errorBody")
-//                Result.Failure(DataError.Report.REQUEST_TIMEOUT)
-//            }
-//        } catch (e: Exception) {
-//            Log.e("CameraX", "Exception: ${e.localizedMessage}", e)
-//            Result.Failure(DataError.Report.REQUEST_TIMEOUT)
-//        }
-//    }
-//
-//
-
     override suspend fun uploadPhotos(
         photos: List<PhotoItem>,
         result: List<EventResponse>
