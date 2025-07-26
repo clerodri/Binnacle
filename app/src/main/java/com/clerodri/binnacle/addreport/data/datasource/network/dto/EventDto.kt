@@ -4,8 +4,7 @@ data class EventDto(
     val title: String,
     val detail: String?=null,
     val roundId: Int,
-    val image:String?,
-    val imageType:String
+    val images: List<String>
 ) {
 
 }

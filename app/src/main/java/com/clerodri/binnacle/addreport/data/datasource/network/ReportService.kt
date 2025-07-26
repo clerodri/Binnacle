@@ -10,7 +10,7 @@ class ReportService @Inject constructor(
 
 ) {
 
-    suspend fun addReport(event: EventDto): EventResponse {
+    suspend fun addReport(event: EventDto): List<EventResponse> {
         val response = reportClient.addReport(event)
         if (response.isSuccessful) {
             val responseBody = response.body()

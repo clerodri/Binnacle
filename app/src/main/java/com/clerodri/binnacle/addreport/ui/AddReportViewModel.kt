@@ -19,7 +19,6 @@ import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.addreport.domain.AddReportUseCase
 import com.clerodri.binnacle.addreport.domain.Report
 import com.clerodri.binnacle.addreport.domain.TakePhotoUseCase
-import com.clerodri.binnacle.addreport.domain.UploadPhotoUseCase
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.components.SnackBarType
@@ -56,16 +55,28 @@ data class AddReportUiState(
     val photoFileName: String? = null
 )
 
+data class PhotoItem(
+    val bitmap: Bitmap,
+    val fileName: String
+)
+
+data class PhotoState(
+    val photoItems: List<PhotoItem> = emptyList()
+)
+
 @HiltViewModel
 class AddReportViewModel @Inject constructor(
     private val addReportUseCase: AddReportUseCase,
     private val photoUseCase: TakePhotoUseCase,
-    private val uploadPhotoUseCase: UploadPhotoUseCase,
+//    private val uploadPhotoUseCase: UploadPhotoUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddReportUiState())
     val state = _uiState.asStateFlow()
+
+    private val _photoState = MutableStateFlow(PhotoState())
+    val photoState = _photoState.asStateFlow()
 
     // Used to set up a link between the Camera and your UI.
     private val _surfaceRequest = MutableStateFlow<SurfaceRequest?>(null)
@@ -80,6 +91,9 @@ class AddReportViewModel @Inject constructor(
         }
     }
 
+    private val _lensFacing = MutableStateFlow(CameraSelector.LENS_FACING_BACK)
+    val lensFacing: StateFlow<Int> = _lensFacing
+
     @SuppressLint("RestrictedApi")
     private val imageCapture = ImageCapture.Builder()
         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
@@ -92,22 +106,36 @@ class AddReportViewModel @Inject constructor(
         .setBufferFormat(ImageFormat.YUV_420_888)
         .build()
 
+    private fun addPhoto(bitmap: Bitmap, fileName: String) {
+        _photoState.update {
+            it.copy(photoItems = it.photoItems + PhotoItem(bitmap, fileName))
+        }
+    }
+
+    fun removePhoto(fileName: String) {
+        _photoState.update {
+            it.copy(photoItems = it.photoItems.filterNot { item -> item.fileName == fileName })
+        }
+    }
+
+
     fun onReportEvent(event: AddReportEvent) {
 
         when (event) {
             is AddReportEvent.OnAddReport -> {
                 if (!hasInternetConnection(context)) {
-                    sendScreenEvent(event = ReportUiEvent.OnError("No hay conexión a internet", SnackBarType.Error))
+                    sendScreenEvent(
+                        event = ReportUiEvent.OnError(
+                            "No hay conexión a internet",
+                            SnackBarType.Error
+                        )
+                    )
                     return
                 }
                 if (_uiState.value.title.isBlank()) {
                     _uiState.value = _uiState.value.copy(titleError = "El titulo es requerido")
                     return
                 }
-
-                val photoFileName = _uiState.value.photoFileName
-                Log.d("CameraX", "PHONEFILE: $photoFileName")
-
                 sendScreenEvent(event = ReportUiEvent.OnSendingReport)
                 _uiState.update { it.copy(isLoading = true) }
 
@@ -115,9 +143,9 @@ class AddReportViewModel @Inject constructor(
                     title = event.title,
                     description = event.detail,
                     roundId = event.roundId,
-                    image = photoFileName,
-                    imageType = "image/jpeg"
+                    images = _photoState.value.photoItems
                 )
+
                 createReport(report)
 
             }
@@ -125,6 +153,9 @@ class AddReportViewModel @Inject constructor(
             AddReportEvent.ClearFields -> {
                 _uiState.update {
                     it.copy(description = "", title = "", titleError = null)
+                }
+                _photoState.update {
+                    it.copy(photoItems = emptyList())
                 }
             }
 
@@ -160,6 +191,11 @@ class AddReportViewModel @Inject constructor(
                         )
                     }
 
+                    // Add to photo list if valid
+                    if (result != null && fileName != null) {
+                        addPhoto(result, fileName)
+                    }
+
                 }
 
             }
@@ -167,8 +203,21 @@ class AddReportViewModel @Inject constructor(
             AddReportEvent.OnOpenCamera -> _uiState.update { it.copy(openCamera = true) }
             AddReportEvent.OnCloseCamera -> _uiState.update { it.copy(openCamera = false) }
             AddReportEvent.NoCameraAllowed ->
-                sendScreenEvent(event = ReportUiEvent.OnError("No tiene permisos para usar la CAMARA", SnackBarType.Warning))
+                sendScreenEvent(
+                    event = ReportUiEvent.OnError(
+                        "No tiene permisos para usar la CAMARA",
+                        SnackBarType.Warning
+                    )
+                )
 
+            AddReportEvent.OnSwitchCamera -> {
+                _lensFacing.value = if (_lensFacing.value == CameraSelector.LENS_FACING_BACK)
+                    CameraSelector.LENS_FACING_FRONT
+                else
+                    CameraSelector.LENS_FACING_BACK
+
+
+            }
         }
 
     }
@@ -179,43 +228,11 @@ class AddReportViewModel @Inject constructor(
             delay(4000)
             when (val result = addReportUseCase(report)) {
                 is Result.Failure -> {
-                    when (result.error) {
-                        DataError.Report.REQUEST_TIMEOUT -> {
-                            Log.d("CameraX", "createReport: ${result.error}")
-                            sendScreenEvent(event = ReportUiEvent.OnError("Servidor no disponible", SnackBarType.Error))
-                            _uiState.update { it.copy(isLoading = false) }
-                        }
-
-                        DataError.Report.NO_INTERNET -> {
-                            sendScreenEvent(event = ReportUiEvent.OnError("No hay internet", SnackBarType.Error))
-                            _uiState.update { it.copy(isLoading = false) }
-                            Log.d("CameraX", "createReport: ${result.error}")
-                        }
-
-                        DataError.Report.SERVICE_UNAVAILABLE -> {
-                            sendScreenEvent(event = ReportUiEvent.OnError("Servidor no disponible", SnackBarType.Error))
-                            _uiState.update { it.copy(isLoading = false) }
-                            Log.d("CameraX", "createReport: ${result.error}")
-                        }
-
-                    }
+                    handleReportError(result.error)
                 }
 
                 is Result.Success -> {
-                    val preSignedUrl = result.data.preSignedUrl
-                    val bitmap = _uiState.value.bitmap
-
-                    Log.d("CameraX", "Bitmap: $bitmap")
-                    Log.d("CameraX", "PreSigned URL: $preSignedUrl")
-                    if (bitmap != null && preSignedUrl != null) {
-                        Log.d("CameraX", "createReport: $preSignedUrl")
-                        val uploadResult = uploadPhotoUseCase(preSignedUrl, bitmap)
-                        _uiState.update { it.copy(photoFileName = null) }
-                        if (uploadResult is Result.Failure) {
-                            sendScreenEvent(ReportUiEvent.OnError("Error al subir la foto a S3", SnackBarType.Warning))
-                            return@launch
-                        }
-                    }
+                    _photoState.update { it.copy(photoItems = emptyList()) }
                     sendScreenEvent(ReportUiEvent.OnBackWithSuccess(true))
                 }
             }
@@ -225,6 +242,30 @@ class AddReportViewModel @Inject constructor(
         }
     }
 
+
+    private fun handleReportError(error: DataError.Report) {
+        _uiState.update { it.copy(snackBarType = SnackBarType.Error) }
+        when (error) {
+            DataError.Report.REQUEST_TIMEOUT -> {
+                sendErrorEvent("Servidor no disponible")
+            }
+
+            DataError.Report.NO_INTERNET -> {
+                sendErrorEvent("No hay internet")
+            }
+
+            DataError.Report.SERVICE_UNAVAILABLE -> {
+                sendErrorEvent("Servidor no disponible")
+            }
+        }
+        _uiState.update { it.copy(isLoading = false) }
+    }
+
+    private fun sendErrorEvent(message: String) {
+        viewModelScope.launch {
+            _eventChannel.send(ReportUiEvent.OnError(message, SnackBarType.Error))
+        }
+    }
 
     private fun sendScreenEvent(event: ReportUiEvent) {
         viewModelScope.launch {
@@ -255,6 +296,9 @@ class AddReportViewModel @Inject constructor(
         cameraSelector: CameraSelector
     ) {
         val processCameraProvider = ProcessCameraProvider.awaitInstance(applicationContext)
+
+        processCameraProvider.unbindAll()
+
 
         processCameraProvider.bindToLifecycle(
             lifecycleOwner, cameraSelector, imageCapture, cameraPreviewUseCase

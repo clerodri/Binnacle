@@ -1,25 +1,28 @@
 package com.clerodri.binnacle.addreport.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -32,16 +35,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clerodri.binnacle.R
-import com.clerodri.binnacle.authentication.presentation.components.componentShapes
 import com.clerodri.binnacle.core.components.PrimaryButton
 import com.clerodri.binnacle.core.components.SnackBarComponent
 import com.clerodri.binnacle.core.components.SnackBarType
@@ -76,6 +81,8 @@ fun AddReportScreen(
     val snackHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+
+    val photoState by viewModel.photoState.collectAsStateWithLifecycle()
     if (state.openCamera) {
         CameraScreen(
             Modifier
@@ -85,43 +92,52 @@ fun AddReportScreen(
             addReportViewModel = viewModel
         )
     } else {
-        Scaffold(modifier = modifier.fillMaxSize().imePadding(), snackbarHost = {
-            SnackBarComponent(
-                snackHostState,
-                modifier = Modifier.padding(bottom = 0.dp),
-                type = state.snackBarType ?: SnackBarType.Error
-            )
-        }, topBar = {
-            AddReportTopAppBar(
-                R.string.report_screen_name,
-                onBack = {
-                    viewModel.onReportEvent(AddReportEvent.ClearFields)
-                    onBack(false)
-                }, openCamera = {
-                    if (cameraPermissionState.status.isGranted) {
-                        viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
-                    } else {
-                        viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
-                    }
-
-                }
-            )
-        }, floatingActionButton = {
-            if (!state.hideFloatingActionButton) {
-                PrimaryButton(
-                    text = "Notificar",
-                    onClick = {
-                        viewModel.onReportEvent(
-                            AddReportEvent.OnAddReport(state.title, state.description, roundId)
-                        )
-                        // onBack()
-                    },
-                    modifier = Modifier.padding(16.dp).navigationBarsPadding()
+        Scaffold(
+            modifier = modifier
+                .fillMaxSize()
+                .imePadding(),
+            snackbarHost = {
+                SnackBarComponent(
+                    snackHostState,
+                    modifier = Modifier.padding(bottom = 0.dp),
+                    type = state.snackBarType ?: SnackBarType.Error
                 )
-            }
-        }, floatingActionButtonPosition = FabPosition.Center,
+            },
+            topBar = {
+                AddReportTopAppBar(
+                    R.string.report_screen_name,
+                    onBack = {
+                        viewModel.onReportEvent(AddReportEvent.ClearFields)
+                        onBack(false)
+                    }, openCamera = {
+                        if (cameraPermissionState.status.isGranted) {
+                            viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
+                        } else {
+                            viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
+                        }
 
-        ) { paddingValues ->
+                    }
+                )
+            },
+            floatingActionButton = {
+                if (!state.hideFloatingActionButton) {
+                    PrimaryButton(
+                        text = "Notificar",
+                        onClick = {
+                            viewModel.onReportEvent(
+                                AddReportEvent.OnAddReport(state.title, state.description, roundId)
+                            )
+                            // onBack()
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .navigationBarsPadding()
+                    )
+                }
+            },
+            floatingActionButtonPosition = FabPosition.Center,
+
+            ) { paddingValues ->
 
             Box(
                 modifier = Modifier
@@ -138,7 +154,9 @@ fun AddReportScreen(
                     },
                     onDescriptionChanged = {
                         viewModel.onReportEvent(AddReportEvent.OnUpdateDescription(it))
-                    }
+                    },
+                    photos = photoState.photoItems,
+                    onDeletePhoto = { viewModel.removePhoto(it.fileName) }
                 )
 
                 // Overlay loading spinner when isLoading is true
@@ -158,6 +176,8 @@ fun AddReportScreen(
                     }
                 }
             }
+
+
         }
     }
 
@@ -196,8 +216,9 @@ private fun AddReportContent(
     description: String,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
-
+    modifier: Modifier = Modifier,
+    photos: List<PhotoItem>,
+    onDeletePhoto: (PhotoItem) -> Unit
 ) {
 
     Column(
@@ -232,7 +253,10 @@ private fun AddReportContent(
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light)
                 )
             },
-            textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black),
+            textStyle = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            ),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
@@ -254,12 +278,72 @@ private fun AddReportContent(
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light)
                 )
             },
-            textStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold,color = Color.Black.copy(0.5f)),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black.copy(0.5f)
+            ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
             ),
             colors = textFieldColors,
         )
+        PhotoPreviewRow(photos, onDeletePhoto = { onDeletePhoto(it) })
+    }
+}
+
+@Composable
+fun PhotoPreviewRow(
+    photoItems: List<PhotoItem>,
+    onDeletePhoto: (PhotoItem) -> Unit
+) {
+    val photoToDeleteState = remember { mutableStateOf<PhotoItem?>(null) }
+
+    Column {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            items(photoItems.size) { index ->
+                val photo = photoItems[index]
+                Box {
+                    Image(
+                        bitmap = photo.bitmap.asImageBitmap(),
+                        contentDescription = "Photo",
+                        modifier = Modifier
+                            .size(150.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                photoToDeleteState.value = photo
+                            }
+                    )
+                }
+            }
+        }
+
+        photoToDeleteState.value?.let { photoToDelete ->
+            AlertDialog(
+                onDismissRequest = { photoToDeleteState.value = null },
+                title = { Text("Eliminar foto") },
+                text = { Text("¿Estás seguro que deseas eliminar?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onDeletePhoto(photoToDelete)
+                        photoToDeleteState.value = null
+                    }) {
+                        Text("Sí")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        photoToDeleteState.value = null
+                    }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -269,27 +353,27 @@ private fun AddReportContent(
 fun AddReportTopAppBar(@StringRes title: Int, onBack: () -> Unit, openCamera: () -> Unit) {
     TopAppBar(
         title = { Text(text = stringResource(title)) }, navigationIcon = {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(40.dp),
-            )
-        }
-    }, actions = {
-        IconButton(onClick = { openCamera() }) {
-            Icon(
-                imageVector = Icons.Filled.CameraAlt,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .size(40.dp),
-                tint = BackGroundAppColor
-            )
-        }
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(40.dp),
+                )
+            }
+        }, actions = {
+            IconButton(onClick = { openCamera() }) {
+                Icon(
+                    imageVector = Icons.Filled.CameraAlt,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(40.dp),
+                    tint = BackGroundAppColor
+                )
+            }
 
-    }, modifier = Modifier.fillMaxWidth()
+        }, modifier = Modifier.fillMaxWidth()
     )
 }
 

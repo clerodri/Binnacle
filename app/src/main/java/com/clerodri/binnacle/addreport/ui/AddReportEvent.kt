@@ -10,4 +10,5 @@ sealed interface AddReportEvent {
     data object OnOpenCamera : AddReportEvent
     data object OnCloseCamera : AddReportEvent
     data object NoCameraAllowed : AddReportEvent
+    data object OnSwitchCamera  : AddReportEvent
 }

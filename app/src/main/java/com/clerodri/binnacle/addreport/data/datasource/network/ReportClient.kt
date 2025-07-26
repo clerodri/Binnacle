@@ -11,6 +11,6 @@ interface ReportClient {
 
 
     @POST("api/v1/round/event")
-    suspend fun addReport(@Body eventDto: EventDto): Response<EventResponse>
+    suspend fun addReport(@Body eventDto: EventDto): Response<List<EventResponse>>
 
 }

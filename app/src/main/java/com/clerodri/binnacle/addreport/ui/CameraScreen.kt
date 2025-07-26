@@ -9,15 +9,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,10 +49,11 @@ fun CameraScreen(
 
     val context = LocalContext.current
     val cameraSelector: CameraSelector = CameraSelector.Builder()
-        .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
+        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
         .build()
     val surfaceRequest by addReportViewModel.surfaceRequest.collectAsStateWithLifecycle()
     val state by addReportViewModel.state.collectAsStateWithLifecycle()
+    val lensFacing by addReportViewModel.lensFacing.collectAsStateWithLifecycle()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -60,6 +66,16 @@ fun CameraScreen(
                 context.applicationContext,
                 lifecycleOwner,
                 cameraSelector
+            )
+        }
+        LaunchedEffect(lensFacing) {
+
+            addReportViewModel.bindToCamera(
+                context.applicationContext,
+                lifecycleOwner,
+                CameraSelector.Builder()
+                    .requireLensFacing(lensFacing)
+                    .build()
             )
         }
 
@@ -129,6 +145,26 @@ fun CameraScreen(
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(26.dp)
                 )
+
+            }
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(60.dp)
+                    .background(BackGroundAppColor)
+                    .clickable(enabled = !state.isLoading) {
+                       addReportViewModel.onReportEvent(AddReportEvent.OnSwitchCamera)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Cameraswitch,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(26.dp)
+                )
+
             }
         }
         if (state.isLoading) {
