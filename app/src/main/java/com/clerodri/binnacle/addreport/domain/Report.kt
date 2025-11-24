@@ -5,6 +5,6 @@ data class Report(
     val title: String,
     val description: String? = null,
     val roundId: Int,
-    val image: String? = null,
-    val imageType: String,
+    val images: List<String>,
+    val imageType: String
 )

@@ -5,5 +5,6 @@ data class AuthData(
     val role:String?,
     val isAuthenticated: Boolean = false,
     val fullName: String?,
-    val guardId: String?
+    val guardId: String?,
+    val localityId: String?,
 )

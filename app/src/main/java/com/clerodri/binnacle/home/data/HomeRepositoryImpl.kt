@@ -85,9 +85,9 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun startRound(guardId: String): Result<Round, DataError.Network> {
+    override suspend fun startRound(guardId: String?, localityId: String?): Result<Round, DataError.Network> {
         return try {
-            Result.Success(homeService.startRound(guardId))
+            Result.Success(homeService.startRound(guardId, localityId))
         } catch (e: HttpException) {
             when (e.code()) {
                 404 -> Result.Failure(DataError.Network.GUARD_NOT_FOUND)

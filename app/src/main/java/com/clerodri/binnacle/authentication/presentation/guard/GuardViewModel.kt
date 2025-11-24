@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clerodri.binnacle.authentication.domain.model.AuthData
 import com.clerodri.binnacle.authentication.domain.model.IdentificationValidator
+import com.clerodri.binnacle.authentication.domain.usecase.LoadAvailableLocalitiesUseCase
 import com.clerodri.binnacle.authentication.domain.usecase.LoginUseCase
 import com.clerodri.binnacle.authentication.presentation.LoginScreenEvent
 import com.clerodri.binnacle.core.AuthManager
@@ -29,6 +30,7 @@ class GuardViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val authManager: AuthManager,
     private val identificationValidator: IdentificationValidator,
+    private val loadAvailableLocalitiesUseCase: LoadAvailableLocalitiesUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -42,12 +44,36 @@ class GuardViewModel @Inject constructor(
     private val _guardChannel = Channel<LoginScreenEvent>()
     internal fun getGuardChannel() = _guardChannel.receiveAsFlow()
 
+    init {
+        loadAvailableOptions()
+    }
+
+    private fun loadAvailableOptions() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            when (val result = loadAvailableLocalitiesUseCase.invoke()) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            availableOptions = result.data,
+                            isLoading = false
+                        )
+                    }
+                }
+
+                is Result.Failure -> {
+                    _state.update { it.copy(isLoading = false) }
+                }
+            }
+        }
+    }
 
     fun onEvent(event: GuardViewModelEvent) {
 
         when (event) {
             GuardViewModelEvent.LoginGuard -> {
-                if( _state.value.identifier.isBlank()){
+                if (_state.value.identifier.isBlank()) {
                     _state.update { it.copy(identifierError = "Debe ingresar una cédula") }
                     return
                 }
@@ -81,6 +107,18 @@ class GuardViewModel @Inject constructor(
                 }
             }
 
+            GuardViewModelEvent.BackToSelection -> {
+                _state.update { it.copy(showSelectionScreen = true, identifier = "") }
+            }
+
+            GuardViewModelEvent.ProceedToLogin -> {
+                if (_state.value.selectedOption != null) {
+                    _state.update { it.copy(showSelectionScreen = false) }
+                }
+            }
+
+            is GuardViewModelEvent.SelectOption ->
+                _state.update { it.copy(selectedOption = event.locality) }
         }
     }
 
@@ -119,7 +157,8 @@ class GuardViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             delay(500)
-            when (val result = loginUseCase(_state.value.identifier)) {
+            when (val result = loginUseCase(_state.value.identifier,
+                _state.value.selectedOption?.id)) {
                 is Result.Failure -> {
                     handleLoginFailure(result.error)
                 }

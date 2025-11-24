@@ -122,15 +122,16 @@ class HomeViewModel @Inject constructor(
             HomeViewModelEvent.UpdateIndex -> {
 
                 viewModelScope.launch {
-                    if (_state.value.currentIndex == _routes.value.size - 1) {
-
-                        _state.value =
-                            _state.value.copy(currentIndex = _state.value.currentIndex + 1)
-                    } else {
-                        _state.value =
-                            _state.value.copy(currentIndex = _state.value.currentIndex + 1)
-                    }
-                    saveHomeState(this)
+//                    if (_state.value.currentIndex == _routes.value.size - 1) {
+//
+//                        _state.value =
+//                            _state.value.copy(currentIndex = _state.value.currentIndex + 1)
+//                    } else {
+//
+//                    }
+                    _state.value =
+                        _state.value.copy(currentIndex = _state.value.currentIndex + 1)
+                    saveHomeState()
                 }
 
             }
@@ -148,7 +149,7 @@ class HomeViewModel @Inject constructor(
 
             HomeViewModelEvent.OnDestroy -> {
                 viewModelScope.launch {
-                    saveHomeState(this)
+                    saveHomeState()
                 }
             }
 
@@ -192,7 +193,10 @@ class HomeViewModel @Inject constructor(
     private fun createRound() {
         viewModelScope.launch {
             Log.d("HomeViewModel", "Guard id: ${guardData.value?.guardId}")
-            when (val result = createRoundUseCase.invoke(guardData.value?.guardId!!)) {
+            Log.d("HomeViewModel", "Guard id: ${guardData.value?.localityId}")
+            when (val result = createRoundUseCase.invoke(
+                guardId = guardData.value?.guardId,
+                localityId = guardData.value?.localityId)) {
                 is Result.Failure -> {
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
@@ -242,7 +246,7 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }
-            saveHomeState(this)
+            saveHomeState()
         }
 
 
@@ -269,7 +273,6 @@ class HomeViewModel @Inject constructor(
 //            }
 //            saveHomeState(this)
         }
-
     }
 
     private fun startTimer(resumeFrom: Long = 0) {
@@ -280,7 +283,7 @@ class HomeViewModel @Inject constructor(
             while (true) {
                 delay(1000)
                 _timer.value++
-                saveHomeState(this)
+                saveHomeState()
             }
         }
     }
@@ -297,17 +300,14 @@ class HomeViewModel @Inject constructor(
         timerJob?.cancel()
     }
 
-
-    private fun saveHomeState(viewModelScore: CoroutineScope) {
-        viewModelScore.launch {
-            homeUseCase.saveHomeData(
-                Home(
-                    currentIndex = _state.value.currentIndex,
-                    isStarted = _state.value.isStarted,
-                    elapsedSeconds = _timer.value,
-                    roundId = _state.value.roundId,
-                    checkId = _state.value.checkInId
-                )
+    private fun saveHomeState() {
+        viewModelScope.launch {
+            Home(
+                currentIndex = _state.value.currentIndex,
+                isStarted = _state.value.isStarted,
+                elapsedSeconds = _timer.value,
+                roundId = _state.value.roundId,
+                checkId = _state.value.checkInId
             )
         }
     }

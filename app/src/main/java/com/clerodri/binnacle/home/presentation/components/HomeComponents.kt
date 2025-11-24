@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -61,6 +62,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.home.domain.model.ECheckIn
 import com.clerodri.binnacle.home.domain.model.HomeType
@@ -88,13 +93,24 @@ fun ArrowIndicator() {
 @Composable
 fun TimerHomeComponent(timer: Long) {
     Row {
-        Icon(
-            modifier = Modifier
-                .padding(8.dp)
-                .size(40.dp),
-            painter = painterResource(id = R.drawable.ic_timer),
-            contentDescription = null
+        val composition by rememberLottieComposition(
+            LottieCompositionSpec.RawRes(R.raw.timer)
         )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .background(Color.Transparent)
+        ) {
+
+            LottieAnimation(
+                composition = composition,
+                isPlaying = true,
+                iterations = LottieConstants.IterateForever,
+                speed = 1f,
+                modifier = Modifier.size(50.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
         Text(
             text = timer.formatTime(),
             modifier = Modifier

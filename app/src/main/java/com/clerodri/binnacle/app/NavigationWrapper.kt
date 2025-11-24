@@ -85,6 +85,19 @@ fun NavigationWrapper(
                 }
             })
         }
+        composable<SplashScreen> {
+            SplashScreen(onNavigateToHome = {
+                navController.navigate(HomeScreen) {
+                    popUpTo(SplashScreen) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }, onNavigateToLogin = {
+                navController.navigate(LoginGuard) {
+                    popUpTo(SplashScreen) { inclusive = true }
+                    launchSingleTop = true
+                }
+            })
+        }
         composable<LoginGuard> {
             Log.d("GG", "LoginGuard")
             LoginGuardScreen(viewModel = guardViewModel,

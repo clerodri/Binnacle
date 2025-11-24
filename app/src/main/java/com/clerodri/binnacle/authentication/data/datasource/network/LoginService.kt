@@ -9,11 +9,10 @@ import javax.inject.Inject
 class LoginService @Inject constructor(private val loginClient: LoginClient) {
 
 
-    suspend fun doLogin(identification: String): LoginResponse {
+    suspend fun doLogin(identification: String, selectedOption: String?): LoginResponse {
 
         return withContext(Dispatchers.IO) {
-            val response = loginClient.doLoginCall(LoginRequest(identification))
-           println("TEST: ${response.code()}")
+            val response = loginClient.doLoginCall(LoginRequest(identification, selectedOption))
             if (response.isSuccessful) {
                 response.body() ?: throw HttpException(response)
             } else {

@@ -5,7 +5,7 @@ import com.clerodri.binnacle.authentication.data.datasource.local.LocalDataSourc
 import com.clerodri.binnacle.authentication.data.datasource.network.LoginService
 import com.clerodri.binnacle.authentication.domain.model.AuthData
 import com.clerodri.binnacle.authentication.domain.repository.AuthRepository
-import com.clerodri.binnacle.core.DataError.*
+import com.clerodri.binnacle.core.DataError.AuthNetwork
 import com.clerodri.binnacle.core.Result
 import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
@@ -19,10 +19,13 @@ internal class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
 
-    override suspend fun login(identification: String): Result<Unit, AuthNetwork> {
+    override suspend fun login(
+        identification: String,
+        localityId: String?
+    ): Result<Unit, AuthNetwork> {
 
         return try {
-            val response = api.doLogin(identification)
+            val response = api.doLogin(identification, localityId)
 
 
             localDataSource.saveAuthData(
@@ -31,12 +34,12 @@ internal class AuthRepositoryImpl @Inject constructor(
                     role = response.role,
                     isAuthenticated = true,
                     fullName = response.fullname,
-                    guardId = response.guardId
+                    guardId = response.guardId,
+                    localityId = localityId
                 )
             )
             Result.Success(Unit)
         } catch (e: HttpException) {
-            println("TEST: ${e.code()}")
             when (e.code()) {
                 404 -> Result.Failure(AuthNetwork.GUARD_NOT_FOUND)
                 400 -> Result.Failure(AuthNetwork.BAD_CREDENTIAL)

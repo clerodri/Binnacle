@@ -14,7 +14,8 @@ interface LoginClient {
 
 @Serializable
 data class LoginRequest(
-    private val identification: String
+    private val identification: String,
+    private val localityId: String?
 )
 
 

@@ -41,13 +41,13 @@ class ReportRepositoryImpl @Inject constructor(
                 title = report.title,
                 detail = report.description,
                 roundId = report.roundId,
-                image = report.image,
+                images = report.images,
                 imageType = report.imageType
             )
             val response = reportService.addReport(eventDto)
 
-            val preSignedUrl = response.ulr_upload
-            Result.Success(AddReportResponse(preSignedUrl))
+
+            Result.Success(AddReportResponse(response.eventId))
         } catch (e: HttpException) {
             when (e.code()) {
                 408 -> Result.Failure(DataError.Report.REQUEST_TIMEOUT)
@@ -85,7 +85,7 @@ class ReportRepositoryImpl @Inject constructor(
     }
 
     override suspend fun uploadPhoto(
-        preSignedUrl: String,
+        response: AddReportResponse,
         bitmap: Bitmap
     ): Result<Unit, DataError.Report> = withContext(Dispatchers.IO) {
 
@@ -97,7 +97,7 @@ class ReportRepositoryImpl @Inject constructor(
             val mediaType = "image/jpeg".toMediaType()
             val requestBody = byteArray.toRequestBody(mediaType)
             val request = Request.Builder()
-                .url(preSignedUrl)
+                .url(response.eventId!!)
                 .put(requestBody)
                 .addHeader("Content-Type", "image/jpeg")
                 .build()

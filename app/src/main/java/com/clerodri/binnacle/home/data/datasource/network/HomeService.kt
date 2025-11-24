@@ -57,9 +57,9 @@ class HomeService @Inject constructor(
         }
     }
 
-    suspend fun startRound(guardId: String): Round {
+    suspend fun startRound(guardId: String?, localityId: String?): Round {
         return withContext(Dispatchers.IO) {
-            val response = homeClient.startRound(RoundDto(guardId)).body()
+            val response = homeClient.startRound(RoundDto(guardId, localityId)).body()
             Round(response?.id!!)
         }
     }

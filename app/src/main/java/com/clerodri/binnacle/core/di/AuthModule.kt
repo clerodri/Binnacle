@@ -2,12 +2,15 @@ package com.clerodri.binnacle.core.di
 
 import android.content.Context
 import com.clerodri.binnacle.authentication.data.AuthRepositoryImpl
+import com.clerodri.binnacle.authentication.data.LocalityRepositoryImpl
 import com.clerodri.binnacle.authentication.data.datasource.local.LocalDataSource
+import com.clerodri.binnacle.authentication.data.datasource.network.LocalityClient
 import com.clerodri.binnacle.authentication.data.datasource.network.LoginClient
 import com.clerodri.binnacle.authentication.data.datasource.network.LoginService
 import com.clerodri.binnacle.authentication.data.storage.AuthInformation
 import com.clerodri.binnacle.authentication.domain.model.IdentificationValidator
 import com.clerodri.binnacle.authentication.domain.repository.AuthRepository
+import com.clerodri.binnacle.authentication.domain.repository.LocalityRepository
 import com.clerodri.binnacle.core.AuthManager
 import dagger.Module
 import dagger.Provides
@@ -33,6 +36,20 @@ object AuthModule {
     @Singleton
     fun provideLoginClient(retrofit: Retrofit): LoginClient {
         return retrofit.create(LoginClient::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalityClient(retrofit: Retrofit): LocalityClient {
+        return retrofit.create(LocalityClient::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalityRepository(
+        localityRepositoryImpl: LocalityRepositoryImpl
+    ): LocalityRepository {
+        return localityRepositoryImpl
     }
 
     @Provides

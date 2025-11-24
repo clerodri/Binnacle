@@ -26,7 +26,7 @@ interface HomeRepository {
 
     suspend fun validateCheckIn(id: Int): Result<ECheckIn, DataError.CheckError>
 
-    suspend fun startRound(guardId: String): Result<Round, DataError.Network>
+    suspend fun startRound(guardId: String?, localityId: String?): Result<Round, DataError.Network>
 
     suspend fun stopRound(roundId: Long): Result<Unit, DataError.Network>
 

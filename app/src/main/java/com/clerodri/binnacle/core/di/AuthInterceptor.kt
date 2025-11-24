@@ -19,7 +19,7 @@ class AuthInterceptor(
         }
         Log.d("RR", "token $token")
         val request = chain.request().newBuilder()
-            .addHeader("Authorization", "Bearer $token")
+           .addHeader("Authorization", "Bearer $token")
             .build()
         return chain.proceed(request)
     }
