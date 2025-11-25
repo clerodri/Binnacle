@@ -1,5 +1,7 @@
 package com.clerodri.binnacle.home.data.datasource.network
 
+import com.clerodri.binnacle.core.di.ApiRutas
+import com.clerodri.binnacle.core.domain.ApiResponse
 import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInDto
 import com.clerodri.binnacle.home.data.datasource.network.dto.CheckInResponse
 import com.clerodri.binnacle.home.data.datasource.network.dto.RoundDto
@@ -16,25 +18,31 @@ import retrofit2.http.Path
 
 interface HomeClient {
 
-    @GET("api/v1/route")
-    suspend fun getRoutes(): Response<List<RouteResponse>>
 
-    @POST("api/v1/check")
-    suspend fun makeCheckIn(@Body checkInDto: CheckInDto): Response<CheckInResponse>
-
-    @PATCH("api/v1/check/{id}")
-    suspend fun makeCheckOut(@Path("id") id: Int): Response<Unit>
-
-    @GET("api/v1/check/{id}")
-    suspend fun validateCheckStatus(@Path("id") id: Int): Response<ECheckIn>
+    @GET(ApiRutas.HOME.ROUTES)
+    suspend fun getRoutes(): Response<ApiResponse<List<RouteResponse>>>
 
 
-    @POST("api/v1/round")
-    suspend fun startRound(@Body roundDto: RoundDto): Response<RoundResponse>
+    @POST(ApiRutas.HOME.CHECK_IN)
+    suspend fun makeCheckIn(@Body checkInDto: CheckInDto): Response<ApiResponse<CheckInResponse>>
 
-    @PUT("api/v1/round/{id}/finish")
-    suspend fun stopRound(@Path("id") id: Long): Response<Unit>
 
-    @GET("api/v1/auth/ping")
-    suspend fun pingServer(): Response<Unit>
+    @PATCH(ApiRutas.HOME.CHECK_OUT)
+    suspend fun makeCheckOut(@Path("id") id: Int): Response<ApiResponse<String>>
+
+
+    @GET(ApiRutas.HOME.VALIDATE_CHECK)
+    suspend fun validateCheckStatus(@Path("id") id: Int): Response<ApiResponse<ECheckIn>>
+
+
+    @POST(ApiRutas.HOME.START_ROUND)
+    suspend fun startRound(@Body roundDto: RoundDto): Response<ApiResponse<RoundResponse>>
+
+
+    @PUT(ApiRutas.HOME.STOP_ROUND)
+    suspend fun stopRound(@Path("id") id: Long): Response<ApiResponse<String>>
+
+
+    @GET(ApiRutas.HOME.PING_SERVER)
+    suspend fun pingServer(): Response<ApiResponse<String>>
 }

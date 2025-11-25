@@ -31,6 +31,12 @@ sealed interface DataError : Error {
     enum class Report : DataError {
         REQUEST_TIMEOUT,
         NO_INTERNET,
-        SERVICE_UNAVAILABLE
+        SERVICE_UNAVAILABLE,
+        S3_DISABLE,
+        S3_INVALID_CREDENTIALS,
+        BUCKET_NOT_EXISTS,
+        S3_UNKNOWN_ERROR,
+        PHOTO_UPLOAD_FAILED,
+        S3_REQUEST_FAILED
     }
 }

@@ -1,5 +1,8 @@
 package com.clerodri.binnacle.home.data.datasource.network
 
+import android.util.Log
+import com.clerodri.binnacle.core.di.ApiRutas.extractDataOrThrow
+import com.clerodri.binnacle.core.domain.ApiResponse
 import com.clerodri.binnacle.home.data.datasource.local.RouteDao
 import com.clerodri.binnacle.home.data.datasource.local.toDomain
 import com.clerodri.binnacle.home.data.datasource.local.toEntity
@@ -27,52 +30,95 @@ class HomeService @Inject constructor(
             return@withContext cached.map { it.toDomain() }
         }
 
-        val response = homeClient.getRoutes().body()
-            ?: throw IllegalStateException("Response body is null")
+        try {
+            val response = homeClient.getRoutes()
 
-        val routes = response.map { it.toDomain() }
 
-        routeDao.insertAll(routes.map { it.toEntity() })
-        routes
+            val routeResponses = extractDataOrThrow(response, "fetchRoutes")
+
+            val routes = routeResponses.map { it.toDomain() }
+            routeDao.insertAll(routes.map { it.toEntity() })
+            routes
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
 
     suspend fun makeCheckIn(id: Int): CheckIn {
         return withContext(Dispatchers.IO) {
-            val response = homeClient.makeCheckIn(CheckInDto(id, "test", "test")).body()
-            CheckIn(response?.id!!, response.status)
+            try {
+                val response = homeClient.makeCheckIn(CheckInDto(id, "test", "test"))
+
+                val checkInResponse = extractDataOrThrow(response, "makeCheckIn")
+
+                CheckIn(checkInResponse.id, checkInResponse.status)
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 
     suspend fun validateCheckStatus(id: Int): ECheckIn {
         return withContext(Dispatchers.IO) {
-            val response = homeClient.validateCheckStatus(id).body()
-            response!!
+            try {
+                val response = homeClient.validateCheckStatus(id)
+
+                val eCheckIn = extractDataOrThrow(response, "validateCheckStatus")
+
+                eCheckIn
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 
     suspend fun makeCheckOut(id: Int) {
         withContext(Dispatchers.IO) {
-            homeClient.makeCheckOut(id)
+            try {
+                val response = homeClient.makeCheckOut(id)
+                extractDataOrThrow(response, "makeCheckOut")
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 
     suspend fun startRound(guardId: String?, localityId: String?): Round {
         return withContext(Dispatchers.IO) {
-            val response = homeClient.startRound(RoundDto(guardId, localityId)).body()
-            Round(response?.id!!)
+            try {
+                val response = homeClient.startRound(RoundDto(guardId, localityId))
+
+                val roundResponse = extractDataOrThrow(response, "startRound")
+
+                Round(roundResponse.id)
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 
     suspend fun stopRound(roundId: Long) {
         withContext(Dispatchers.IO) {
-            homeClient.stopRound(roundId)
+            try {
+                val response = homeClient.stopRound(roundId)
+
+                val message = extractDataOrThrow(response, "stopRound")
+                Log.d("stopRound", "✅ Ronda detenida: $message")
+                message
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 
-    suspend fun pingServer(): Response<Unit> {
+    suspend fun pingServer(): Response<ApiResponse<String>> {
         return withContext(Dispatchers.IO) {
-            homeClient.pingServer()
+            val response = homeClient.pingServer()
+            response
         }
     }
+
+
 }
+

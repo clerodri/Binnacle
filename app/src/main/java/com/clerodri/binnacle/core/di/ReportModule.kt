@@ -9,6 +9,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -26,9 +27,10 @@ object ReportModule {
     @Singleton
     fun provideReportRepository(
         reportService: ReportService,
-        application: Application
+        application: Application,
+        @S3OkHttpClient okHttpClient: OkHttpClient
     ): ReportRepository {
-        return ReportRepositoryImpl(reportService, application)
+        return ReportRepositoryImpl(reportService, application, okHttpClient)
     }
 
 

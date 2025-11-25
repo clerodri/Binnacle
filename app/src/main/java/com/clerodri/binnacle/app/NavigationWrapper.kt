@@ -12,8 +12,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.clerodri.binnacle.addreport.ui.AddReportScreen
-import com.clerodri.binnacle.addreport.ui.AddReportViewModel
+import com.clerodri.binnacle.addreport.presentation.AddReportScreen
+import com.clerodri.binnacle.addreport.presentation.AddReportViewModel
 import com.clerodri.binnacle.authentication.presentation.admin.AdminViewModel
 import com.clerodri.binnacle.authentication.presentation.admin.LoginAdminScreen
 import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModel

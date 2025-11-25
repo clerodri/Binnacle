@@ -1,4 +1,4 @@
-package com.clerodri.binnacle.addreport.ui
+package com.clerodri.binnacle.addreport.presentation
 
 import com.clerodri.binnacle.core.components.SnackBarType
 

@@ -13,15 +13,16 @@ class AuthInterceptor(
 
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        Log.d("RR", "token RR")
         val token = runBlocking {
             localDataSource.getAuthData().first()?.accessToken ?: ""
         }
-        Log.d("RR", "token $token")
-        val request = chain.request().newBuilder()
+        val originalRequest = chain.request()
+        val newRequest = originalRequest.newBuilder()
            .addHeader("Authorization", "Bearer $token")
-            .build()
-        return chain.proceed(request)
+           .addHeader("Content-Type", "application/json")
+           .build()
+        Log.d("AuthInterceptor", "Added JWT to request: ${originalRequest.url}")
+        return chain.proceed(newRequest)
     }
 
 }

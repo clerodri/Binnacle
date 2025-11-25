@@ -8,12 +8,13 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.core.content.ContextCompat
 import com.clerodri.binnacle.addreport.data.datasource.network.ReportService
+import com.clerodri.binnacle.addreport.data.datasource.network.dto.AddReportResponse
 import com.clerodri.binnacle.addreport.data.datasource.network.dto.EventDto
-import com.clerodri.binnacle.addreport.domain.AddReportResponse
 import com.clerodri.binnacle.addreport.domain.Report
 import com.clerodri.binnacle.addreport.domain.ReportRepository
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
+import com.clerodri.binnacle.core.di.S3OkHttpClient
 import com.clerodri.binnacle.util.rotate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -31,8 +32,13 @@ import kotlin.coroutines.resume
 
 class ReportRepositoryImpl @Inject constructor(
     private val reportService: ReportService,
-    private val application: Application
+    private val application: Application,
+    @S3OkHttpClient private val s3OkHttpClient: OkHttpClient
 ) : ReportRepository {
+
+    companion object {
+        const val TAG = "ReportPhotoRepository"
+    }
 
     override suspend fun addReport(report: Report): Result<AddReportResponse, DataError.Report> {
 
@@ -46,12 +52,12 @@ class ReportRepositoryImpl @Inject constructor(
             )
             val response = reportService.addReport(eventDto)
 
-
-            Result.Success(AddReportResponse(response.eventId))
+            Result.Success(response)
         } catch (e: HttpException) {
             when (e.code()) {
+                101 -> Result.Failure(DataError.Report.S3_DISABLE)
                 408 -> Result.Failure(DataError.Report.REQUEST_TIMEOUT)
-                else -> Result.Failure(DataError.Report.NO_INTERNET)
+                else -> Result.Failure(DataError.Report.SERVICE_UNAVAILABLE)
             }
         } catch (e: java.net.SocketTimeoutException) {
             Result.Failure(DataError.Report.SERVICE_UNAVAILABLE)
@@ -67,55 +73,64 @@ class ReportRepositoryImpl @Inject constructor(
                 ContextCompat.getMainExecutor(application),
                 object : ImageCapture.OnImageCapturedCallback() {
                     override fun onCaptureSuccess(image: ImageProxy) {
-                        Log.d("CameraX", "Capture successful")
-                        val bitmap =
-                            image.toBitmap().rotate(image.imageInfo.rotationDegrees.toFloat())
+                        val bitmap = image.toBitmap().rotate(
+                                image.imageInfo.rotationDegrees.toFloat())
                         image.close()
                         if (continuation.isActive) continuation.resume(bitmap)
                     }
 
                     override fun onError(exception: ImageCaptureException) {
-                        Log.d("CameraX", "Photo capture failed: ${exception.message}", exception)
+                        Log.e(TAG, "Photo capture failed: ${exception.message}")
                         if (continuation.isActive) continuation.resume(null)
                     }
-
                 }
             )
         }
     }
 
     override suspend fun uploadPhoto(
-        response: AddReportResponse,
+        preSignedUrl: String?,
         bitmap: Bitmap
     ): Result<Unit, DataError.Report> = withContext(Dispatchers.IO) {
-
         try {
-            val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-            val byteArray = stream.toByteArray()
+            val request = reportService.prepareS3UploadRequest(preSignedUrl, bitmap)
+            if (request == null) {
+                Log.e(TAG, "No se pudo preparar request para S3")
+                return@withContext Result.Failure(DataError.Report.S3_REQUEST_FAILED)
+            }
 
-            val mediaType = "image/jpeg".toMediaType()
-            val requestBody = byteArray.toRequestBody(mediaType)
-            val request = Request.Builder()
-                .url(response.eventId!!)
-                .put(requestBody)
-                .addHeader("Content-Type", "image/jpeg")
-                .build()
+            Log.d(TAG, "Iniciando upload a S3...")
+            val response = s3OkHttpClient.newCall(request).execute()
+            when {
+                response.isSuccessful -> {
+                    Log.d(TAG, "Upload exitoso a S3")
+                    response.close()
+                    Result.Success(Unit)
+                }
+                response.code == 403 -> {
+                    val errorBody = response.body?.string() ?: "No body"
+                    Log.e(TAG, "403 Forbidden - Signature mismatch")
+                    Log.e(TAG, "Error body: $errorBody")
+                    response.close()
+                    Result.Failure(DataError.Report.S3_INVALID_CREDENTIALS)
+                }
 
-
-            val response = OkHttpClient().newCall(request).execute()
-
-            if (response.isSuccessful) {
-                Log.d("CameraX", "Upload successful")
-                Result.Success(Unit)
-            } else {
-                val errorBody = response.body?.string()
-                Log.e("CameraX", "Upload failed: ${response.code} - $errorBody")
-                Result.Failure(DataError.Report.REQUEST_TIMEOUT)
+                response.code == 404 -> {
+                    Log.e(TAG, "404 Not Found - Bucket no existe")
+                    response.close()
+                    Result.Failure(DataError.Report.BUCKET_NOT_EXISTS)
+                }
+                else -> {
+                    val errorBody = response.body?.string() ?: "No body"
+                    Log.e(TAG, "Upload falló: ${response.code}")
+                    Log.e(TAG, "Error body: $errorBody")
+                    response.close()
+                    Result.Failure(DataError.Report.S3_UNKNOWN_ERROR)
+                }
             }
         } catch (e: Exception) {
-            Log.e("CameraX", "Exception: ${e.localizedMessage}", e)
-            Result.Failure(DataError.Report.REQUEST_TIMEOUT)
+            Log.e(TAG, "Exception durante upload: ${e.message}", e)
+            Result.Failure(DataError.Report.PHOTO_UPLOAD_FAILED)
         }
     }
 

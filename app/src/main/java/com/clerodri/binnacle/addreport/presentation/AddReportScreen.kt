@@ -1,15 +1,13 @@
-package com.clerodri.binnacle.addreport.ui
+package com.clerodri.binnacle.addreport.presentation
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -40,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -52,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clerodri.binnacle.R
-import com.clerodri.binnacle.authentication.presentation.components.componentShapes
 import com.clerodri.binnacle.core.components.PrimaryButton
 import com.clerodri.binnacle.core.components.SnackBarComponent
 import com.clerodri.binnacle.core.components.SnackBarType
@@ -85,43 +81,52 @@ fun AddReportScreen(
             addReportViewModel = viewModel
         )
     } else {
-        Scaffold(modifier = modifier.fillMaxSize().imePadding(), snackbarHost = {
-            SnackBarComponent(
-                snackHostState,
-                modifier = Modifier.padding(bottom = 0.dp),
-                type = state.snackBarType ?: SnackBarType.Error
-            )
-        }, topBar = {
-            AddReportTopAppBar(
-                R.string.report_screen_name,
-                onBack = {
-                    viewModel.onReportEvent(AddReportEvent.ClearFields)
-                    onBack(false)
-                }, openCamera = {
-                    if (cameraPermissionState.status.isGranted) {
-                        viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
-                    } else {
-                        viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
-                    }
-
-                }
-            )
-        }, floatingActionButton = {
-            if (!state.hideFloatingActionButton) {
-                PrimaryButton(
-                    text = "Notificar",
-                    onClick = {
-                        viewModel.onReportEvent(
-                            AddReportEvent.OnAddReport(state.title, state.description, roundId)
-                        )
-                        // onBack()
-                    },
-                    modifier = Modifier.padding(16.dp).navigationBarsPadding()
+        Scaffold(
+            modifier = modifier
+                .fillMaxSize()
+                .imePadding(),
+            snackbarHost = {
+                SnackBarComponent(
+                    snackHostState,
+                    modifier = Modifier.padding(bottom = 0.dp),
+                    type = state.snackBarType ?: SnackBarType.Error
                 )
-            }
-        }, floatingActionButtonPosition = FabPosition.Center,
+            },
+            topBar = {
+                AddReportTopAppBar(
+                    R.string.report_screen_name,
+                    onBack = {
+                        viewModel.onReportEvent(AddReportEvent.ClearFields)
+                        onBack(false)
+                    }, openCamera = {
+                        if (cameraPermissionState.status.isGranted) {
+                            viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
+                        } else {
+                            viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
+                        }
 
-        ) { paddingValues ->
+                    }
+                )
+            },
+            floatingActionButton = {
+                if (!state.hideFloatingActionButton) {
+                    PrimaryButton(
+                        text = "Notificar",
+                        onClick = {
+                            viewModel.onReportEvent(
+                                AddReportEvent.OnAddReport(state.title, state.description, roundId)
+                            )
+                            // onBack()
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .navigationBarsPadding()
+                    )
+                }
+            },
+            floatingActionButtonPosition = FabPosition.Center,
+
+            ) { paddingValues ->
 
             Box(
                 modifier = Modifier
@@ -232,7 +237,10 @@ private fun AddReportContent(
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light)
                 )
             },
-            textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black),
+            textStyle = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            ),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Next
@@ -254,7 +262,10 @@ private fun AddReportContent(
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Light)
                 )
             },
-            textStyle = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold,color = Color.Black.copy(0.5f)),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = Color.Black.copy(0.5f)
+            ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
             ),
@@ -269,27 +280,27 @@ private fun AddReportContent(
 fun AddReportTopAppBar(@StringRes title: Int, onBack: () -> Unit, openCamera: () -> Unit) {
     TopAppBar(
         title = { Text(text = stringResource(title)) }, navigationIcon = {
-        IconButton(onClick = onBack) {
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(40.dp),
-            )
-        }
-    }, actions = {
-        IconButton(onClick = { openCamera() }) {
-            Icon(
-                imageVector = Icons.Filled.CameraAlt,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .size(40.dp),
-                tint = BackGroundAppColor
-            )
-        }
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack, stringResource(id = R.string.menu_back),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(40.dp),
+                )
+            }
+        }, actions = {
+            IconButton(onClick = { openCamera() }) {
+                Icon(
+                    imageVector = Icons.Filled.CameraAlt,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(40.dp),
+                    tint = BackGroundAppColor
+                )
+            }
 
-    }, modifier = Modifier.fillMaxWidth()
+        }, modifier = Modifier.fillMaxWidth()
     )
 }
 

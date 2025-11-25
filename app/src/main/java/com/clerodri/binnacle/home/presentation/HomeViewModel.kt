@@ -120,20 +120,10 @@ class HomeViewModel @Inject constructor(
             }
 
             HomeViewModelEvent.UpdateIndex -> {
-
                 viewModelScope.launch {
-//                    if (_state.value.currentIndex == _routes.value.size - 1) {
-//
-//                        _state.value =
-//                            _state.value.copy(currentIndex = _state.value.currentIndex + 1)
-//                    } else {
-//
-//                    }
-                    _state.value =
-                        _state.value.copy(currentIndex = _state.value.currentIndex + 1)
+                    _state.update { it.copy(currentIndex = _state.value.currentIndex + 1) }
                     saveHomeState()
                 }
-
             }
 
             HomeViewModelEvent.OnLogOutRequested -> sendScreenEvent(

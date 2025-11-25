@@ -10,7 +10,7 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.clerodri.binnacle.addreport.ui.AddReportViewModel
+import com.clerodri.binnacle.addreport.presentation.AddReportViewModel
 import com.clerodri.binnacle.app.BinnacleApp
 import com.clerodri.binnacle.authentication.presentation.admin.AdminViewModel
 import com.clerodri.binnacle.authentication.presentation.guard.GuardViewModel

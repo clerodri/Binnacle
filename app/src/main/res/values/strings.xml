@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BINNACLE</string>
+    <string name="app_name">Binnacle</string>
     <string name="title_guard">Hey there,</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
