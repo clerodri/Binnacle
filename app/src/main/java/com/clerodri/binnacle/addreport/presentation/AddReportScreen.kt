@@ -34,8 +34,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.clerodri.binnacle.R
+import com.clerodri.binnacle.addreport.presentation.components.ImagePreviewScreen
+import com.clerodri.binnacle.addreport.presentation.components.ImagesHorizontalScroll
 import com.clerodri.binnacle.core.components.PrimaryButton
 import com.clerodri.binnacle.core.components.SnackBarComponent
 import com.clerodri.binnacle.core.components.SnackBarType
@@ -72,6 +76,10 @@ fun AddReportScreen(
     val snackHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+
+    var showPreview by remember { mutableStateOf(false) }
+    var previewFilename by remember { mutableStateOf("") }
+
     if (state.openCamera) {
         CameraScreen(
             Modifier
@@ -81,85 +89,109 @@ fun AddReportScreen(
             addReportViewModel = viewModel
         )
     } else {
-        Scaffold(
-            modifier = modifier
-                .fillMaxSize()
-                .imePadding(),
-            snackbarHost = {
-                SnackBarComponent(
-                    snackHostState,
-                    modifier = Modifier.padding(bottom = 0.dp),
-                    type = state.snackBarType ?: SnackBarType.Error
-                )
-            },
-            topBar = {
-                AddReportTopAppBar(
-                    R.string.report_screen_name,
-                    onBack = {
-                        viewModel.onReportEvent(AddReportEvent.ClearFields)
-                        onBack(false)
-                    }, openCamera = {
-                        if (cameraPermissionState.status.isGranted) {
-                            viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
-                        } else {
-                            viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
-                        }
 
-                    }
-                )
-            },
-            floatingActionButton = {
-                if (!state.hideFloatingActionButton) {
-                    PrimaryButton(
-                        text = "Notificar",
-                        onClick = {
-                            viewModel.onReportEvent(
-                                AddReportEvent.OnAddReport(state.title, state.description, roundId)
-                            )
-                            // onBack()
-                        },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .navigationBarsPadding()
-                    )
+        if (showPreview && previewFilename.isNotEmpty()) {
+            ImagePreviewScreen(
+                images = state.images,
+                initialFilename = previewFilename,
+                onBack = { showPreview = false },
+                onDeleteImage = { filename ->
+                    viewModel.onReportEvent(AddReportEvent.OnRemoveImage(filename))
                 }
-            },
-            floatingActionButtonPosition = FabPosition.Center,
-
-            ) { paddingValues ->
-
-            Box(
-                modifier = Modifier
+            )
+        } else {
+            Scaffold(
+                modifier = modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                AddReportContent(
-                    modifier = Modifier.fillMaxSize(),
-                    title = state.title,
-                    titleError = state.titleError,
-                    description = state.description,
-                    onTitleChanged = {
-                        viewModel.onReportEvent(AddReportEvent.OnUpdateTitle(it))
-                    },
-                    onDescriptionChanged = {
-                        viewModel.onReportEvent(AddReportEvent.OnUpdateDescription(it))
-                    }
-                )
+                    .imePadding(),
+                snackbarHost = {
+                    SnackBarComponent(
+                        snackHostState,
+                        modifier = Modifier.padding(bottom = 0.dp),
+                        type = state.snackBarType ?: SnackBarType.Error
+                    )
+                },
+                topBar = {
+                    AddReportTopAppBar(
+                        R.string.report_screen_name,
+                        onBack = {
+                            viewModel.onReportEvent(AddReportEvent.ClearFields)
+                            onBack(false)
+                        }, openCamera = {
+                            if (cameraPermissionState.status.isGranted) {
+                                viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
+                            } else {
+                                viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
+                            }
 
-                // Overlay loading spinner when isLoading is true
-                if (state.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.3f))
-                            .align(Alignment.Center)
-                    ) {
-                        CircularProgressIndicator(
+                        }
+                    )
+                },
+                floatingActionButton = {
+                    if (!state.hideFloatingActionButton) {
+                        PrimaryButton(
+                            text = "Notificar",
+                            onClick = {
+                                viewModel.onReportEvent(
+                                    AddReportEvent.OnAddReport(
+                                        state.title,
+                                        state.description,
+                                        roundId
+                                    )
+                                )
+                                // onBack()
+                            },
                             modifier = Modifier
-                                .size(60.dp)
-                                .align(Alignment.Center),
-                            color = Color.White
+                                .padding(16.dp)
+                                .navigationBarsPadding()
                         )
+                    }
+                },
+                floatingActionButtonPosition = FabPosition.Center,
+
+                ) { paddingValues ->
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    AddReportContent(
+                        modifier = Modifier.fillMaxSize(),
+                        title = state.title,
+                        titleError = state.titleError,
+                        description = state.description,
+                        images = state.images,
+                        onTitleChanged = {
+                            viewModel.onReportEvent(AddReportEvent.OnUpdateTitle(it))
+                        },
+                        onDescriptionChanged = {
+                            viewModel.onReportEvent(AddReportEvent.OnUpdateDescription(it))
+                        },
+                        onRemoveImage = {
+                            viewModel.onReportEvent(AddReportEvent.OnRemoveImage(it))
+                        },
+                        onPreviewImage = {
+                            previewFilename = it
+                            showPreview = true
+                        }
+                    )
+
+                    // Overlay loading spinner when isLoading is true
+                    if (state.isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f))
+                                .align(Alignment.Center)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .align(Alignment.Center),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -189,6 +221,11 @@ fun AddReportScreen(
                         )
                     }
                 }
+
+                is ReportUiEvent.OnShowImagePreview -> {
+                    previewFilename = event.filename
+                    showPreview = true
+                }
             }
         }
     }
@@ -199,8 +236,11 @@ private fun AddReportContent(
     title: String,
     titleError: String?,
     description: String,
+    images: List<ImageUiState> = emptyList(),
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
+    onRemoveImage: (String) -> Unit = {},
+    onPreviewImage: (String) -> Unit = {},
     modifier: Modifier = Modifier
 
 ) {
@@ -271,6 +311,16 @@ private fun AddReportContent(
             ),
             colors = textFieldColors,
         )
+
+
+        if (images.isNotEmpty()) {
+            ImagesHorizontalScroll(
+                images = images,
+                onRemoveImage = onRemoveImage,
+                onPreviewImage = onPreviewImage,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 

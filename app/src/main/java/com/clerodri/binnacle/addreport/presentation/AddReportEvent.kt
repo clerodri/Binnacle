@@ -11,4 +11,5 @@ sealed interface AddReportEvent {
     data object OnCloseCamera : AddReportEvent
     data object NoCameraAllowed : AddReportEvent
     data class OnRemoveImage(val filename: String) : AddReportEvent
+    data class OnImagePreview(val filename: String) : AddReportEvent
 }

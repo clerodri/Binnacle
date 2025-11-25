@@ -133,6 +133,8 @@ class AddReportViewModel @Inject constructor(
                 "No tiene permisos para usar la CÁMARA",
                 SnackBarType.Warning
             )
+
+            is AddReportEvent.OnImagePreview -> previewImage(event.filename)
         }
     }
 
@@ -305,6 +307,15 @@ class AddReportViewModel @Inject constructor(
             )
         }
         Log.d(TAG, "Imagen removida: $filename")
+    }
+
+    private fun previewImage(filename: String) {
+        Log.d(TAG, "Preview image: $filename")
+        // Find the image in state and emit event
+        val imageState = _uiState.value.images.find { it.filename == filename }
+        if (imageState != null) {
+            sendScreenEvent(ReportUiEvent.OnShowImagePreview(filename))
+        }
     }
 
     private fun generateImageFilename(): String {
