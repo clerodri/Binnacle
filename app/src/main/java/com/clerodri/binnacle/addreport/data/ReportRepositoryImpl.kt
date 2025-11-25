@@ -19,12 +19,8 @@ import com.clerodri.binnacle.util.rotate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
-import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -74,7 +70,8 @@ class ReportRepositoryImpl @Inject constructor(
                 object : ImageCapture.OnImageCapturedCallback() {
                     override fun onCaptureSuccess(image: ImageProxy) {
                         val bitmap = image.toBitmap().rotate(
-                                image.imageInfo.rotationDegrees.toFloat())
+                            image.imageInfo.rotationDegrees.toFloat()
+                        )
                         image.close()
                         if (continuation.isActive) continuation.resume(bitmap)
                     }
@@ -107,6 +104,7 @@ class ReportRepositoryImpl @Inject constructor(
                     response.close()
                     Result.Success(Unit)
                 }
+
                 response.code == 403 -> {
                     val errorBody = response.body?.string() ?: "No body"
                     Log.e(TAG, "403 Forbidden - Signature mismatch")
@@ -120,6 +118,7 @@ class ReportRepositoryImpl @Inject constructor(
                     response.close()
                     Result.Failure(DataError.Report.BUCKET_NOT_EXISTS)
                 }
+
                 else -> {
                     val errorBody = response.body?.string() ?: "No body"
                     Log.e(TAG, "Upload falló: ${response.code}")

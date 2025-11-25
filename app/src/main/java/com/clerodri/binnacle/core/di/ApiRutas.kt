@@ -9,7 +9,7 @@ import retrofit2.Response
  * Date:  11/24/2025
  * Description:
  **/
-object ApiRutas{
+object ApiRutas {
     object HOME {
         const val ROUTES = "api/v1/route"
         const val CHECK_IN = "api/v1/check"

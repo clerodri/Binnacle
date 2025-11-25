@@ -172,10 +172,10 @@ class AddReportViewModel @Inject constructor(
         }
 
         // Validar imágenes
-        if (!_uiState.value.hasImages) {
-            sendError("Debes capturar al menos una imagen", SnackBarType.Warning)
-            return
-        }
+//        if (!_uiState.value.hasImages) {
+//            sendError("Debes capturar al menos una imagen", SnackBarType.Warning)
+//            return
+//        }
 
         sendScreenEvent(ReportUiEvent.OnSendingReport)
         createReport(event)
@@ -200,7 +200,7 @@ class AddReportViewModel @Inject constructor(
                 is Result.Success -> {
                     val signedUrls = result.data.signedImages
                     Log.d(TAG, "Reporte creado: $signedUrls")
-                    uploadAllImagesToS3(result.data)
+                    if( report.images.isNotEmpty()) uploadAllImagesToS3(result.data)
                     handleReportSuccess()
                 }
 

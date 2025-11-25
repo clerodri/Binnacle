@@ -102,9 +102,7 @@ class HomeService @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val response = homeClient.stopRound(roundId)
-
                 val message = extractDataOrThrow(response, "stopRound")
-                Log.d("stopRound", "✅ Ronda detenida: $message")
                 message
             } catch (e: Exception) {
                 throw e

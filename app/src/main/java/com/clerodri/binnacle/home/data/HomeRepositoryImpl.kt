@@ -2,7 +2,6 @@ package com.clerodri.binnacle.home.data
 
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
-import com.clerodri.binnacle.core.di.ApiRutas
 import com.clerodri.binnacle.home.data.datasource.local.HomeDataSource
 import com.clerodri.binnacle.home.data.datasource.network.HomeService
 import com.clerodri.binnacle.home.domain.model.CheckIn
@@ -33,12 +32,6 @@ class HomeRepositoryImpl @Inject constructor(
         return try {
             val result = homeService.fetchRoutes()
             Result.Success(result)
-        } catch (e: ApiRutas.ApiErrorException) {
-            when (e.code) {
-                400 -> Result.Failure(DataError.LocalityError.ROUTES_NOT_FOUND)
-                408 -> Result.Failure(DataError.LocalityError.SERVICE_UNAVAILABLE)
-                else -> Result.Failure(DataError.LocalityError.SERVICE_UNAVAILABLE)
-            }
         } catch (e: HttpException) {
             when (e.code()) {
                 404 -> Result.Failure(DataError.LocalityError.ROUTES_NOT_FOUND)
@@ -56,12 +49,6 @@ class HomeRepositoryImpl @Inject constructor(
     override suspend fun makeCheckIn(id: Int): Result<CheckIn, DataError.CheckError> {
         return try {
             Result.Success(homeService.makeCheckIn(id))
-        } catch (e: ApiRutas.ApiErrorException) {
-            when (e.code) {
-                409 -> Result.Failure(DataError.CheckError.GUARD_NOT_FOUND)
-                408 -> Result.Failure(DataError.CheckError.REQUEST_TIMEOUT)
-                else -> Result.Failure(DataError.CheckError.NO_INTERNET)
-            }
         } catch (e: HttpException) {
             when (e.code()) {
                 409 -> Result.Failure(DataError.CheckError.GUARD_NOT_FOUND)
@@ -75,12 +62,6 @@ class HomeRepositoryImpl @Inject constructor(
     override suspend fun makeCheckOut(id: Int): Result<Unit, DataError.CheckError> {
         return try {
             Result.Success(homeService.makeCheckOut(id))
-        } catch (e: ApiRutas.ApiErrorException) {
-            when (e.code) {
-                409 -> Result.Failure(DataError.CheckError.GUARD_NOT_FOUND)
-                408 -> Result.Failure(DataError.CheckError.REQUEST_TIMEOUT)
-                else -> Result.Failure(DataError.CheckError.NO_INTERNET)
-            }
         } catch (e: HttpException) {
             when (e.code()) {
                 409 -> Result.Failure(DataError.CheckError.GUARD_NOT_FOUND)
@@ -94,12 +75,6 @@ class HomeRepositoryImpl @Inject constructor(
     override suspend fun validateCheckIn(id: Int): Result<ECheckIn, DataError.CheckError> {
         return try {
             Result.Success(homeService.validateCheckStatus(id))
-        } catch (e: ApiRutas.ApiErrorException) {
-            when (e.code) {
-                409 -> Result.Failure(DataError.CheckError.GUARD_NOT_FOUND)
-                408 -> Result.Failure(DataError.CheckError.REQUEST_TIMEOUT)
-                else -> Result.Failure(DataError.CheckError.NO_INTERNET)
-            }
         } catch (e: HttpException) {
             when (e.code()) {
                 409 -> Result.Failure(DataError.CheckError.GUARD_NOT_FOUND)
@@ -109,16 +84,12 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun startRound(guardId: String?, localityId: String?): Result<Round, DataError.Network> {
+    override suspend fun startRound(
+        guardId: String?,
+        localityId: String?
+    ): Result<Round, DataError.Network> {
         return try {
             Result.Success(homeService.startRound(guardId, localityId))
-        } catch (e: ApiRutas.ApiErrorException) {
-            when (e.code) {
-                404 -> Result.Failure(DataError.Network.GUARD_NOT_FOUND)
-                408 -> Result.Failure(DataError.Network.REQUEST_TIMEOUT)
-                409 -> Result.Failure(DataError.Network.CONFLICT)
-                else -> Result.Failure(DataError.Network.NO_INTERNET)
-            }
         } catch (e: HttpException) {
             when (e.code()) {
                 404 -> Result.Failure(DataError.Network.GUARD_NOT_FOUND)
@@ -133,12 +104,6 @@ class HomeRepositoryImpl @Inject constructor(
         return try {
             homeService.stopRound(roundId)
             Result.Success(Unit)
-        } catch (e: ApiRutas.ApiErrorException) {
-            when (e.code) {
-                404 -> Result.Failure(DataError.Network.ROUND_NOT_FOUND)
-                408 -> Result.Failure(DataError.Network.REQUEST_TIMEOUT)
-                else -> Result.Failure(DataError.Network.NO_INTERNET)
-            }
         } catch (e: HttpException) {
             when (e.code()) {
                 404 -> Result.Failure(DataError.Network.ROUND_NOT_FOUND)

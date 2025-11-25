@@ -31,7 +31,7 @@ class ReportService @Inject constructor(
                 val response = reportClient.addReport(event)
 
                 val message = extractDataOrThrow(response, ApiRutas.REPORT.ADD_REPORT)
-                Log.d("addReport", "Ronda detenida: $message")
+                Log.d(TAG, "addReport: $message")
                 message
             } catch (e: Exception) {
                 throw e
