@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -212,7 +213,8 @@ fun HomeBottomBar(
     onItemSelected: (HomeType) -> Unit,
     onLogOut: () -> Unit,
     onCheck: () -> Unit,
-    isCheckEnabled: Boolean = true
+    isCheckEnabled: Boolean = true,
+    onAddReport: () -> Unit
 ) {
     val isCheckIn = checkInStatus == ECheckIn.STARTED
     var openDialog by remember { mutableStateOf(false) }
@@ -275,6 +277,26 @@ fun HomeBottomBar(
                 )
             }, enabled = enabled
 
+            )
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 0.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        FloatingActionButton(
+            onClick = { onAddReport() },
+            modifier = Modifier.offset(y = (-30).dp),
+            containerColor = BackGroundAppColor,
+            contentColor = Color.White
+        ) {
+            Icon(
+                Icons.Filled.AddCircle,
+                contentDescription = stringResource(id = R.string.add_report),
+                modifier = Modifier.size(28.dp)
             )
         }
     }

@@ -80,7 +80,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(Unit) {
-       homeViewModel.onEnterHomeScreen()
+        homeViewModel.onEnterHomeScreen()
     }
 
     LaunchedEffect(reportSuccess) {
@@ -156,14 +156,19 @@ private fun Screen(
             onCheck = {
                 homeViewModel.onEvent(HomeViewModelEvent.OnCheck)
             },
-            isCheckEnabled = false
+            isCheckEnabled = false,
+            onAddReport = {
+                val roundId = state.roundId
+                val routeId = routes[state.currentIndex].order
+                navigateToReportScreen(routeId, roundId.toInt())
+            }
         )
     }, floatingActionButton = {
-        AddReportButton(state.isStarted) {
-            val roundId = state.roundId
-            val routeId = routes[state.currentIndex].order
-            navigateToReportScreen(routeId, roundId.toInt())
-        }
+//        AddReportButton(state.isStarted) {
+//            val roundId = state.roundId
+//            val routeId = routes[state.currentIndex].order
+//            navigateToReportScreen(routeId, roundId.toInt())
+//        }
     }) { paddingValue ->
         Box(
             modifier = Modifier
@@ -208,7 +213,8 @@ private fun HomeScreenContent(
             .fillMaxSize()
             .padding(top = contentPadding.calculateTopPadding()),
         horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    )
+    {
 
         val info = if (!isStarted) stringResource(R.string.press_comenzar_to_start_ronda)
         else stringResource(R.string.complete_all_rounds_for_finish_round)
@@ -253,6 +259,25 @@ private fun HomeScreenContent(
             }
         }
     }
+
+//    val redBoundaryPoints = listOf(
+//        LatLng(-2.139500, -79.863200),  // Top-left
+//        LatLng(-2.140100, -79.856200),  // Top-right
+//        LatLng(-2.142400, -79.856200),  // Bottom-right
+//        LatLng(-2.141900, -79.863200),  // Bottom-left
+//        LatLng(-2.139500, -79.863200),   // Close polygon
+//    )
+//
+//    UrbanizationMapScreen(
+//        latitude = -2.140910,
+//        longitude = -79.859712,
+//        title = "Urb. Laguna Dorada",
+//        boundaryPoints = redBoundaryPoints,
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(500.dp)
+//            .aspectRatio(1f)
+//    )
 }
 
 

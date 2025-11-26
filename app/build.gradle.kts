@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.hilt.android.gradle)
     alias(libs.plugins.jetbrainsKotlinSerialization)
-
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
@@ -44,6 +43,17 @@ android {
     if (localPropertiesFile.exists() && localPropertiesFile.isFile) {
         localProperties.load(localPropertiesFile.inputStream())
     }
+    secrets {
+        // To add your Maps API key to this project:
+        // 1. If the secrets.properties file does not exist, create it in the same folder as the local.properties file.
+        // 2. Add this line, where YOUR_API_KEY is your API key:
+        //        MAPS_API_KEY=YOUR_API_KEY
+        propertiesFileName = "secret.properties"
+
+        // A properties file containing default secret values. This file can be
+        // checked in version control.
+        defaultPropertiesFileName = "local.defaults.properties"
+    }
 
     buildTypes {
         release {
@@ -62,7 +72,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-           // buildConfigField("String", "BASE_URL", "\"http://192.168.100.70:8080/\"")
             buildConfigField("String", "BASE_URL", localProperties.getProperty("BASE_URL"))
             buildConfigField("String","GMP_KEY", localPropertiesSecret.getProperty("GMP_KEY"))
         }
@@ -148,8 +157,12 @@ dependencies {
     implementation(libs.androidx.core.ktx)
 
     // MAPS GOOGLE
-    implementation("com.google.maps.android:maps-compose:1.0.0")
-    implementation("com.google.android.gms:play-services-maps:18.0.2")
+//    implementation(libs.maps.compose.v100)
+//    implementation(libs.play.services.maps.v1802)
+    // Google Maps Compose library
+    implementation(libs.maps.compose)
+    implementation(libs.maps.compose.utils)
+    implementation(libs.maps.compose.widgets)
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
