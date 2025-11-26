@@ -53,7 +53,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://binnacle-4bb55064e6f7.herokuapp.com/\"")
+            buildConfigField("String", "BASE_URL_PROD", localProperties.getProperty("BASE_URL_PROD"))
             signingConfig = signingConfigs.getByName("release")
         }
         debug {
