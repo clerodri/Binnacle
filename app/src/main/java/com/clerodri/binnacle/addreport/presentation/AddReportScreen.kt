@@ -226,6 +226,15 @@ fun AddReportScreen(
                     previewFilename = event.filename
                     showPreview = true
                 }
+
+                is ReportUiEvent.OnUploadComplete -> {
+                    coroutineScope.launch {
+                        snackHostState.showSnackbar(
+                            message = event.message,
+                            duration = SnackbarDuration.Long
+                        )
+                    }
+                }
             }
         }
     }

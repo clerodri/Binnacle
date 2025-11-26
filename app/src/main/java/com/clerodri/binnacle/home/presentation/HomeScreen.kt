@@ -85,10 +85,9 @@ fun HomeScreen(
 
     LaunchedEffect(reportSuccess) {
         if (reportSuccess) {
-            coroutineScope.launch {
-                homeViewModel.onEvent(HomeViewModelEvent.OnReportSuccess)
-            }
-            onClearSuccessReport()
+            snackState.showSnackbar(
+                "¡Reporte enviado exitosamente!", duration = SnackbarDuration.Short
+            )
         }
     }
 

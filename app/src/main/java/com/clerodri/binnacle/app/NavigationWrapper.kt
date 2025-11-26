@@ -122,17 +122,21 @@ fun NavigationWrapper(
             val savedStateHandle = backStackEntry.savedStateHandle
             val reportSuccess = savedStateHandle.get<Boolean>("report_success") ?: false
             HomeScreen(navigateToReportScreen = { routeId, roundId ->
-                navController.navigate(
-                    ReportScreen(
-                        routeId = routeId, roundId = roundId
-                    )
-                )
-            }, homeViewModel = homeViewModel, onLogOut = {
-                navController.navigate(LoginGuard) {
-                    popUpTo(HomeScreen) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }, reportSuccess = reportSuccess, onClearSuccessReport = {
+                        navController.navigate(
+                            ReportScreen(
+                                routeId = routeId, roundId = roundId
+                            )
+                        )
+                 },
+                homeViewModel = homeViewModel,
+                onLogOut = {
+                        navController.navigate(LoginGuard) {
+                            popUpTo(HomeScreen) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                },
+                reportSuccess = reportSuccess,
+                onClearSuccessReport = {
                 savedStateHandle["report_success"] = false
             }
 
@@ -143,7 +147,8 @@ fun NavigationWrapper(
 
             val details = backStackEntry.toRoute<ReportScreen>()
             AddReportScreen(
-                viewModel = addReportViewModel, onBack = { isSuccess ->
+                viewModel = addReportViewModel,
+                onBack = { isSuccess ->
                     if (isSuccess) {
                         navController.previousBackStackEntry?.savedStateHandle?.set(
                             "report_success",

@@ -7,4 +7,5 @@ sealed interface ReportUiEvent {
     data class OnError(val message:String, val type: SnackBarType): ReportUiEvent
     data object OnSendingReport : ReportUiEvent
     data class OnShowImagePreview(val filename: String) : ReportUiEvent
+    data class OnUploadComplete(val message: String) : ReportUiEvent
 }

@@ -197,7 +197,7 @@ class HomeViewModel @Inject constructor(
 
                 is Result.Success -> {
                     _state.value = _state.value.copy(roundId = result.data.id, isStarted = true)
-                    delay(500)
+                    //delay(300)
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
                             "Iniciando ronda....", SnackBarType.Success

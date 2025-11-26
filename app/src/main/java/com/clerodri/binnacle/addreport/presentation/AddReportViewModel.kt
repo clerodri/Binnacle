@@ -16,16 +16,21 @@ import androidx.camera.lifecycle.awaitInstance
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.BackoffPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.clerodri.binnacle.addreport.data.datasource.network.dto.AddReportResponse
+import com.clerodri.binnacle.addreport.data.work.ImageUploadWorker
 import com.clerodri.binnacle.addreport.domain.AddReportUseCase
 import com.clerodri.binnacle.addreport.domain.Report
 import com.clerodri.binnacle.addreport.domain.TakePhotoUseCase
-import com.clerodri.binnacle.addreport.domain.UploadPhotoUseCase
 import com.clerodri.binnacle.addreport.presentation.ReportUiEvent.OnError
 import com.clerodri.binnacle.addreport.presentation.ReportUiEvent.OnSendingReport
 import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.components.SnackBarType
+import com.clerodri.binnacle.core.di.WorkManagerSerializer
 import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,6 +46,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
@@ -79,13 +85,12 @@ data class AddReportUiState(
 class AddReportViewModel @Inject constructor(
     private val addReportUseCase: AddReportUseCase,
     private val photoUseCase: TakePhotoUseCase,
-    private val uploadPhotoUseCase: UploadPhotoUseCase,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
         private const val TAG = "AddReportViewModel"
-        private const val REPORT_SUCCESS_DELAY = 4000L
+        private const val REPORT_SUCCESS_DELAY = 2000L
     }
 
     private val _uiState = MutableStateFlow(AddReportUiState())
@@ -138,7 +143,6 @@ class AddReportViewModel @Inject constructor(
         }
     }
 
-
     suspend fun bindToCamera(
         applicationContext: Context,
         lifecycleOwner: LifecycleOwner,
@@ -161,35 +165,21 @@ class AddReportViewModel @Inject constructor(
 
 
     private fun submitReport(event: AddReportEvent.OnAddReport) {
-        // Validar conexión
         if (!hasInternetConnection(context)) {
             sendError("No hay conexión a internet", SnackBarType.Error)
             return
         }
-
-        // Validar título
         if (_uiState.value.title.isBlank()) {
             _uiState.update { it.copy(titleError = "El título es requerido") }
             return
         }
-
-        // Validar imágenes
-//        if (!_uiState.value.hasImages) {
-//            sendError("Debes capturar al menos una imagen", SnackBarType.Warning)
-//            return
-//        }
-
-        sendScreenEvent(ReportUiEvent.OnSendingReport)
         createReport(event)
     }
 
     private fun createReport(event: AddReportEvent.OnAddReport) {
         viewModelScope.launch {
             setLoadingState(true)
-
-            // Obtener nombres de archivos
             val imageFilenames = _uiState.value.images.map { it.filename }
-
             val report = Report(
                 title = event.title,
                 description = event.detail,
@@ -202,60 +192,60 @@ class AddReportViewModel @Inject constructor(
                 is Result.Success -> {
                     val signedUrls = result.data.signedImages
                     Log.d(TAG, "Reporte creado: $signedUrls")
-                    if( report.images.isNotEmpty()) uploadAllImagesToS3(result.data)
+
+                    delay(2000)
+                    setLoadingState(false)
+                    if (report.images.isNotEmpty()) {
+                        scheduleImageUpload(result.data)
+                        Log.d(TAG, "📋 Upload scheduled with WorkManager")
+                    }
                     handleReportSuccess()
                 }
 
                 is Result.Failure -> {
+                    setLoadingState(false)
                     handleReportError(result.error)
                 }
             }
-
-            setLoadingState(false)
         }
     }
 
-    private suspend fun uploadAllImagesToS3(reportResponse: AddReportResponse) {
-        val totalImages = _uiState.value.images.size
-        var uploadedCount = 0
-        _uiState.value.images.forEach { imageState ->
+    private fun scheduleImageUpload(reportResponse: AddReportResponse) {
+        try {
 
-            val presignedUrl = reportResponse.getSignedUrlFor(imageState.filename)
-            Log.d(TAG, "presignedUrl: $presignedUrl")
-            when {
-                presignedUrl == null -> {
-                    Log.w(TAG, "URL no disponible para: ${imageState.filename}")
-                }
+            val imagesJson = WorkManagerSerializer.serializeImages(_uiState.value.images, context)
+            val urlsJson = WorkManagerSerializer.serializeSignedUrls(reportResponse.signedImages)
 
-                imageState.bitmap == null -> {
-                    Log.w(TAG, "Bitmap no disponible para: ${imageState.filename}")
-                }
+            Log.d(TAG, "📦 Serialized images: $imagesJson")
 
-                else -> {
-                    when (val result = uploadPhotoUseCase(presignedUrl, imageState.bitmap)) {
-                        is Result.Success -> {
-                            uploadedCount++
-                            Log.d(
-                                TAG,
-                                "Imagen uploadada: ${imageState.filename} ($uploadedCount/$totalImages)"
-                            )
-                        }
+            // Create work request with backoff retry policy
+            val uploadWork = OneTimeWorkRequestBuilder<ImageUploadWorker>()
+                .setInputData(
+                    workDataOf(
+                        ImageUploadWorker.KEY_IMAGES_JSON to imagesJson,
+                        ImageUploadWorker.KEY_SIGNED_URLS_JSON to urlsJson
+                    )
+                ).setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    15,
+                    TimeUnit.SECONDS
+                )
+                .build()
 
-                        is Result.Failure -> {
-                            Log.e(
-                                TAG,
-                                "Error uploadAllImagesToS3 ${imageState.filename}: ${result.error}"
-                            )
-                            handleReportError(result.error)
-                        }
-                    }
-                }
-            }
+            // Enqueue work
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "image_upload_${System.currentTimeMillis()}",
+                androidx.work.ExistingWorkPolicy.KEEP,
+                uploadWork
+            )
+
+            Log.d(TAG, "✅ Upload work enqueued")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to schedule upload: ${e.message}", e)
         }
     }
 
-    private suspend fun handleReportSuccess() {
-        delay(REPORT_SUCCESS_DELAY)
+    private fun handleReportSuccess() {
         sendScreenEvent(ReportUiEvent.OnBackWithSuccess(true))
         clearFields()
     }
@@ -377,7 +367,6 @@ class AddReportViewModel @Inject constructor(
         }
     }
 
-
     private fun handleReportError(error: DataError.Report) {
         Log.d(TAG, "handleReportError: $error")
         val message = when (error) {
@@ -394,10 +383,8 @@ class AddReportViewModel @Inject constructor(
         sendError(message, SnackBarType.Error)
     }
 
-
     private fun sendError(message: String, type: SnackBarType) {
         sendScreenEvent(OnError(message, type))
     }
-
 
 }

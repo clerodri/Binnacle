@@ -129,8 +129,10 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.camera.extensions)
 
-    implementation("com.airbnb.android:lottie-compose:6.7.1")
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation(libs.lottie.compose)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
