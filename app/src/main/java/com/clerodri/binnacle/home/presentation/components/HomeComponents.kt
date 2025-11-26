@@ -3,7 +3,6 @@ package com.clerodri.binnacle.home.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -35,9 +32,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -68,12 +61,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.clerodri.binnacle.R
-import com.clerodri.binnacle.home.domain.model.ECheckIn
-import com.clerodri.binnacle.home.domain.model.HomeType
-import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.ui.theme.BackGroundAppColor
-import com.clerodri.binnacle.ui.theme.Primary
-import com.clerodri.binnacle.ui.theme.Secondary
 import com.clerodri.binnacle.ui.theme.TextColor
 import com.clerodri.binnacle.util.formatTime
 
@@ -108,7 +96,7 @@ fun TimerHomeComponent(timer: Long) {
                 isPlaying = true,
                 iterations = LottieConstants.IterateForever,
                 speed = 1f,
-                modifier = Modifier.size(50.dp),
+                modifier = Modifier.size(100.dp),
                 contentScale = ContentScale.Fit
             )
         }
@@ -118,7 +106,7 @@ fun TimerHomeComponent(timer: Long) {
                 .heightIn()
                 .align(Alignment.CenterVertically),
             style = TextStyle(
-                fontSize = 30.sp, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Normal
+                fontSize = 50.sp, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Normal
             ),
             color = Color.Black,
             textAlign = TextAlign.Start
@@ -157,12 +145,18 @@ fun HomeDividerTextComponent(modifier: Modifier) {
 
 @Composable
 fun StartButtonComponent(
-    value: String, isEnable: Boolean, isStarted: Boolean, onStart: () -> Unit, onStop: () -> Unit
+    isEnable: Boolean,
+    isStarted: Boolean,
+    onStart: () -> Unit,
+    onStop: () -> Unit
 ) {
+    val buttonText = if (isStarted) stringResource(R.string.btn_finalizar_text)
+    else stringResource(R.string.btn_start_text)
+
     var openDialog by remember { mutableStateOf(false) }
     ElevatedButton(
         modifier = Modifier
-            .width(175.dp)
+            .width(150.dp)
             .heightIn(50.dp), onClick = {
             openDialog = true
         }, enabled = isEnable, colors = ButtonColors(
@@ -173,11 +167,12 @@ fun StartButtonComponent(
         )
     ) {
         Text(
-            text = value, fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold
+            text = buttonText, fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold
         )
     }
     if (openDialog) {
-        CheckInDialogComponent(title = if (isStarted) "FINALIZAR RONDA" else "INICIAR RONDA",
+        CheckInDialogComponent(
+            title = if (isStarted) "FINALIZAR RONDA" else "INICIAR RONDA",
             message = if (isStarted) "Seguro que desea finalizar la ronda?" else "Seguro que desea iniciar la ronda?",
             onCancel = { openDialog = false },
             onConfirm = {
@@ -206,141 +201,18 @@ fun HeadingTextComponent(modifier: Modifier = Modifier, value: String, isActive:
 
 }
 
-@Composable
-fun HomeBottomBar(
-    checkInStatus: ECheckIn,
-    selectedScreen: HomeType,
-    onItemSelected: (HomeType) -> Unit,
-    onLogOut: () -> Unit,
-    onCheck: () -> Unit,
-    isCheckEnabled: Boolean = true,
-    onAddReport: () -> Unit
-) {
-    val isCheckIn = checkInStatus == ECheckIn.STARTED
-    var openDialog by remember { mutableStateOf(false) }
-    var title by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
-    var onConfirmAction by remember { mutableStateOf({ }) }
-    NavigationBar(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-            .shadow(
-                elevation = 20.dp, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-
-            ), containerColor = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-
-        HomeType.entries.forEach { item ->
-            val selected = selectedScreen == item
-            val enabled = if (item == HomeType.Check) isCheckEnabled else true
-            NavigationBarItem(selected = selected, onClick = {
-                if (enabled) {
-                    when (item) {
-                        HomeType.Check -> {
-                            title = if (isCheckIn) "Check-Out" else "Check-In"
-                            message =
-                                if (isCheckIn) "Esta seguro de registrar su Check-Out?" else "Esta seguro de registrar su Check-In?"
-                            if (checkInStatus == ECheckIn.DONE) onCheck()
-                            onConfirmAction = onCheck
-                            openDialog = checkInStatus != ECheckIn.DONE
-
-                        }
-
-                        HomeType.LogOut -> {
-                            title = "Cerrar Sesión"
-                            message = "Esta seguro de cerrar la sesión?"
-                            onConfirmAction = onLogOut
-                            openDialog = true
-
-                        }
-
-                        else -> onItemSelected(item)
-                    }
-                }
-
-
-            }, colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Primary,
-                unselectedIconColor = Color.Gray.copy(0.6f),
-                disabledIconColor = Color.Gray.copy(0.3f),
-                disabledTextColor = Color.Gray.copy(0.3f)
-            ), label = {
-                Text(
-                    text = if (item == HomeType.Check && isCheckIn) stringResource(R.string.checkout)
-                    else stringResource(id = item.title)
-                )
-            }, alwaysShowLabel = true, icon = {
-                Icon(
-                    imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-                    contentDescription = stringResource(id = item.title)
-                )
-            }, enabled = enabled
-
-            )
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 0.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        FloatingActionButton(
-            onClick = { onAddReport() },
-            modifier = Modifier.offset(y = (-30).dp),
-            containerColor = BackGroundAppColor,
-            contentColor = Color.White
-        ) {
-            Icon(
-                Icons.Filled.AddCircle,
-                contentDescription = stringResource(id = R.string.add_report),
-                modifier = Modifier.size(28.dp)
-            )
-        }
-    }
-    if (openDialog) {
-        CheckInDialogComponent(title = title,
-            message = message,
-            onCancel = { openDialog = false },
-            onConfirm = {
-                onConfirmAction()
-                openDialog = false
-
-            },
-            onDismissRequest = { openDialog = false })
-    }
-}
-
 
 @Composable
-fun Timer(
-    modifier: Modifier,
-    isTimerRunning: Boolean,
-    isEnable: Boolean,
-    timer: Long,
-    onStart: () -> Unit,
-    onStop: () -> Unit
-) {
-    val buttonText = if (isTimerRunning) stringResource(R.string.btn_finalizar_text)
-    else stringResource(R.string.btn_start_text)
-
+fun Timer(modifier: Modifier, timer: Long) {
     Row(
         modifier = modifier.padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.Center
     ) {
         TimerHomeComponent(timer = timer)
 
-        StartButtonComponent(value = buttonText,
-            isEnable = isEnable,
-            isStarted = isTimerRunning,
-            onStart = { onStart() },
-            onStop = { onStop() })
-
     }
-    HomeDividerTextComponent(modifier)
+//    HomeDividerTextComponent(modifier)
 }
 
 
@@ -353,7 +225,8 @@ fun CheckInDialogComponent(
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    BasicAlertDialog(onDismissRequest = { onDismissRequest() },
+    BasicAlertDialog(
+        onDismissRequest = { onDismissRequest() },
         modifier = Modifier.fillMaxSize(),
         properties = DialogProperties(),
         content = {
@@ -418,29 +291,30 @@ fun CheckInDialogComponent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopBar(modifier: Modifier, fullname: String?) {
-    TopAppBar(modifier = modifier
-        .padding(horizontal = 20.dp, vertical = 10.dp)
-        .clip(RoundedCornerShape(100.dp)), colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = Color.White
-    ), windowInsets = WindowInsets(0.dp), title = {
-        Text(
-            text = "$fullname",
-            color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
-            fontSize = 25.sp,
-            style = MaterialTheme.typography.titleLarge,
-            fontStyle = FontStyle.Italic
-        )
+    TopAppBar(
+        modifier = modifier
+            .padding(horizontal = 20.dp, vertical = 10.dp)
+            .clip(RoundedCornerShape(100.dp)), colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.White
+        ), windowInsets = WindowInsets(0.dp), title = {
+            Text(
+                text = "$fullname",
+                color = MaterialTheme.colorScheme.onBackground.copy(0.7f),
+                fontSize = 25.sp,
+                style = MaterialTheme.typography.titleLarge,
+                fontStyle = FontStyle.Italic
+            )
 
 
-    }, navigationIcon = {
-        Image(
-            painter = painterResource(id = R.drawable.guard_logo),
-            contentDescription = null,
-            modifier = Modifier
-                .padding(start = 12.dp, end = 8.dp)
-                .size(30.dp)
-        )
-    })
+        }, navigationIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.guard_logo),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 12.dp, end = 8.dp)
+                    .size(30.dp)
+            )
+        })
 
 }
 
@@ -457,108 +331,6 @@ fun AddReportButton(showFab: Boolean, addReport: () -> Unit) {
                 tint = BackGroundAppColor
             )
         }
-    }
-}
-
-
-@Composable
-fun RouteItem(
-    index: Int,
-    item: Route,
-    isActive: Boolean,
-    showArrow: Boolean,
-    isLastItem: Boolean,
-    onNextClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (showArrow) {
-            ArrowIndicator()
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .background(Color.Transparent),
-            horizontalArrangement = Arrangement.spacedBy(100.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .heightIn(100.dp)
-                    .border(
-                        1.dp,
-                        color = if (isActive) BackGroundAppColor.copy(0.3f) else Color.Transparent.copy(
-                            0.2f
-                        ),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .background(
-                        if (isActive) BackGroundAppColor.copy(0.3f) else Color.Transparent.copy(0.1f),
-                        shape = RoundedCornerShape(20.dp)
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                RouteContent(
-                    index = index,
-                    item = item,
-                    isActive = isActive,
-                    isLastItem = isLastItem,
-                    onNextClick = onNextClick
-                )
-            }
-        }
-
-    }
-
-}
-
-
-@Composable
-fun RouteContent(
-    index: Int, item: Route, isActive: Boolean, isLastItem: Boolean, onNextClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-
-    ) {
-        if (isActive && !isLastItem) {
-            ElevatedButton(
-                onClick = { onNextClick() }, colors = ButtonColors(
-                    containerColor = Color.White,
-                    contentColor = BackGroundAppColor,
-                    disabledContainerColor = Secondary.copy(0.8f),
-                    disabledContentColor = Color.Gray.copy(0.6f)
-                )
-            ) {
-                Text(
-                    stringResource(R.string.listo_text),
-                    fontSize = 16.sp,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.Normal
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .width(100.dp)
-                .padding(8.dp), contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "# ${(index + 1)}",
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isActive) BackGroundAppColor else Color.Transparent.copy(0.1f)
-            )
-        }
-        HeadingTextComponent(
-            value = item.name, isActive = isActive, modifier = Modifier.weight(1f)
-        )
     }
 }
 

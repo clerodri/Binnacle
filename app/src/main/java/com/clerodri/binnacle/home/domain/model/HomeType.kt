@@ -1,6 +1,8 @@
 package com.clerodri.binnacle.home.domain.model
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.VerifiedUser
@@ -27,8 +29,8 @@ enum class HomeType(
     ),
     LogOut(
         title = R.string.logout_label,
-        selectedIcon = Icons.Filled.Logout,
-        unselectedIcon = Icons.Outlined.Logout
+        selectedIcon = Icons.AutoMirrored.Filled.Logout,
+        unselectedIcon = Icons.AutoMirrored.Outlined.Logout
     )
 
 }

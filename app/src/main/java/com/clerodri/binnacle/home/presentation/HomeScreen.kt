@@ -1,27 +1,17 @@
 package com.clerodri.binnacle.home.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,12 +21,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.clerodri.binnacle.R
+import com.clerodri.binnacle.addreport.presentation.components.UrbanizationMapScreen
 import com.clerodri.binnacle.core.components.BigSpinner
 import com.clerodri.binnacle.core.components.SnackBarComponent
 import com.clerodri.binnacle.core.components.SnackBarType
@@ -44,9 +32,9 @@ import com.clerodri.binnacle.home.domain.model.HomeType
 import com.clerodri.binnacle.home.domain.model.Route
 import com.clerodri.binnacle.home.presentation.components.AddReportButton
 import com.clerodri.binnacle.home.presentation.components.HomeBottomBar
+import com.clerodri.binnacle.home.presentation.components.HomeScreenList
 import com.clerodri.binnacle.home.presentation.components.HomeTopBar
-import com.clerodri.binnacle.home.presentation.components.RouteItem
-import com.clerodri.binnacle.home.presentation.components.Timer
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 @Composable
@@ -143,6 +131,7 @@ private fun Screen(
         )
     }, bottomBar = {
         HomeBottomBar(
+            timer = timerValue,
             checkInStatus = state.checkStatus,
             selectedScreen = selectedHomeNav,
             onItemSelected = { selectedHomeNav = it },
@@ -157,128 +146,84 @@ private fun Screen(
                 homeViewModel.onEvent(HomeViewModelEvent.OnCheck)
             },
             isCheckEnabled = false,
-            onAddReport = {
-                val roundId = state.roundId
-                val routeId = routes[state.currentIndex].order
-                navigateToReportScreen(routeId, roundId.toInt())
-            }
+            isEnable = !state.isStarted || state.currentIndex == routes.size - 1,
+            onStart = { homeViewModel.onEvent(HomeViewModelEvent.StartRound) },
+            onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) },
+            isStarted = state.isStarted
         )
     }, floatingActionButton = {
-//        AddReportButton(state.isStarted) {
-//            val roundId = state.roundId
-//            val routeId = routes[state.currentIndex].order
-//            navigateToReportScreen(routeId, roundId.toInt())
-//        }
+        AddReportButton(state.isStarted) {
+            val roundId = state.roundId
+            val routeId = routes[state.currentIndex].order
+            navigateToReportScreen(routeId, roundId.toInt())
+        }
     }) { paddingValue ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = paddingValue.calculateTopPadding())
         ) {
-            Timer(
-                modifier = Modifier.fillMaxWidth(),
-                isTimerRunning = state.isStarted,
-                isEnable = !state.isStarted || state.currentIndex == routes.size - 1,
-                onStart = { homeViewModel.onEvent(HomeViewModelEvent.StartRound) },
-                onStop = { homeViewModel.onEvent(HomeViewModelEvent.StopRound) },
-                timer = timerValue
-            )
             if (state.isLoading) {
                 BigSpinner(paddingValue)
             } else {
                 HomeScreenContent(
+                    timer = timerValue,
+                    state = state,
                     contentPadding = paddingValue,
-                    isStarted = state.isStarted,
-                    currentIndex = state.currentIndex,
                     routes = routes,
                     updateIndex = { homeViewModel.onEvent(HomeViewModelEvent.UpdateIndex) },
                 )
             }
-
         }
     }
 }
+
 
 @Composable
 private fun HomeScreenContent(
     contentPadding: PaddingValues,
-    isStarted: Boolean,
+    state: HomeUiState,
     routes: List<Route>,
-    currentIndex: Int,
     updateIndex: () -> Unit,
+    timer: Long,
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = contentPadding.calculateTopPadding()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
+            .background(Color.White),
+    ) {
+        val redBoundaryPoints = listOf(
+            LatLng(-2.139500, -79.863200),  // Top-left
+            LatLng(-2.140100, -79.856200),  // Top-right
+            LatLng(-2.142400, -79.856200),  // Bottom-right
+            LatLng(-2.141900, -79.863200),  // Bottom-left
+            LatLng(-2.139500, -79.863200),   // Close polygon
+        )
+        val currentSectionName = if (routes.isNotEmpty() && state.currentIndex < routes.size) {
+            routes[state.currentIndex].name
+        } else {
+            "Urbanización"
+        }
+        UrbanizationMapScreen(
+            latitude = -2.140910,
+            longitude = -79.859712,
+            title = "Urb. Laguna Dorada - $currentSectionName",
+            boundaryPoints = redBoundaryPoints,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.3f)
 
-        val info = if (!isStarted) stringResource(R.string.press_comenzar_to_start_ronda)
-        else stringResource(R.string.complete_all_rounds_for_finish_round)
-
-        Text(
-            info, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.error
         )
 
-        routes.forEachIndexed { index, item ->
-            AnimatedVisibility(
-                visible = index >= currentIndex && index <= currentIndex + 1,
-                enter = fadeIn(
-                    animationSpec = tween(
-                        durationMillis = 1000, easing = LinearEasing
-                    )
-                ) + slideInVertically(),
-                exit = fadeOut(
-                    animationSpec = tween(
-                        durationMillis = 1000, easing = FastOutSlowInEasing
-                    )
-                ) + slideOutVertically(),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-
-                ) {
-                    RouteItem(index = index,
-                        item = item,
-                        isActive = index == currentIndex && isStarted,
-                        showArrow = index != currentIndex,
-                        isLastItem = currentIndex == routes.size - 1,
-                        onNextClick = {
-                            if (currentIndex < routes.size - 1) {
-                                updateIndex()
-                            }
-                        })
-
-                }
-
-            }
-        }
+        HomeScreenList(
+            state = state,
+            routes = routes,
+            updateIndex =  updateIndex
+        )
     }
-
-//    val redBoundaryPoints = listOf(
-//        LatLng(-2.139500, -79.863200),  // Top-left
-//        LatLng(-2.140100, -79.856200),  // Top-right
-//        LatLng(-2.142400, -79.856200),  // Bottom-right
-//        LatLng(-2.141900, -79.863200),  // Bottom-left
-//        LatLng(-2.139500, -79.863200),   // Close polygon
-//    )
-//
-//    UrbanizationMapScreen(
-//        latitude = -2.140910,
-//        longitude = -79.859712,
-//        title = "Urb. Laguna Dorada",
-//        boundaryPoints = redBoundaryPoints,
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(500.dp)
-//            .aspectRatio(1f)
-//    )
 }
+
+
 
 
 

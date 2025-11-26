@@ -1,6 +1,7 @@
 package com.clerodri.binnacle.addreport.presentation.components
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -114,7 +115,6 @@ fun UrbanizationMapWithBoundary(
             title = title
         )
 
-        // ✅ Draw boundary polygon if points provided
         if (boundaryPoints.isNotEmpty()) {
             Polyline(
                 points = boundaryPoints,
@@ -142,15 +142,14 @@ fun UrbanizationMapScreen(
         position = CameraPosition.fromLatLngZoom(bounds.center, 16f)
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
-        // Title section
+    Column(modifier = modifier.fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp, top = 0.dp))
+    {
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+                .fillMaxWidth(),
             color = Color.White,
-            shape = RoundedCornerShape(8.dp),
-            shadowElevation = 4.dp
+            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
@@ -171,12 +170,11 @@ fun UrbanizationMapScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .padding(8.dp),
+                .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)),
             cameraPositionState = cameraPositionState,
             properties = MapProperties(
                 mapType = MapType.NORMAL,
-                isBuildingEnabled = false,  // ✅ No houses
+                isBuildingEnabled = false,
                 isIndoorEnabled = false,
                 isTrafficEnabled = false
             )

@@ -17,7 +17,7 @@
     <string name="checkin_label">Check-In</string>
     <string name="logout_label">Cerrar Sesión</string>
     <string name="report_label">Report</string>
-    <string name="rondas_label">Rondas</string>
+    <string name="rondas_label">Inicio</string>
     <string name="login_administrator_label">Administrator</string>
     <string name="guard_title_label">Guardia</string>
     <string name="add_report">Publicar</string>
