@@ -100,7 +100,7 @@ fun SelectionScreen(
                 modifier = Modifier.padding(top = 24.dp, bottom = 16.dp)
             )
             Text(
-                text = "Elige la urbanización donde prestarás guardia",
+                text = "Seleccione una localidad para continuar",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 textAlign = TextAlign.Center,

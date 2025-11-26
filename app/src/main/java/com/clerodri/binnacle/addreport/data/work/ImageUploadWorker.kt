@@ -67,7 +67,6 @@ class ImageUploadWorker @AssistedInject constructor(
                         return@forEach
                     }
 
-                    // ✅ Call the repository/usecase directly
                     // Assuming you have access to the app context
                     val uploadResult = performUpload(presignedUrl, bitmap)
 
@@ -92,8 +91,7 @@ class ImageUploadWorker @AssistedInject constructor(
         }
     }
 
-    // ✅ Simple HTTP upload without UseCase
-    private suspend fun performUpload(presignedUrl: String, bitmap: Bitmap): Boolean {
+    private  fun performUpload(presignedUrl: String, bitmap: Bitmap): Boolean {
         return try {
             val byteArray = ByteArrayOutputStream().apply {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, this)

@@ -150,7 +150,6 @@ fun AddReportScreen(
                 floatingActionButtonPosition = FabPosition.Center,
 
                 ) { paddingValues ->
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -177,7 +176,7 @@ fun AddReportScreen(
                         }
                     )
 
-                    // Overlay loading spinner when isLoading is true
+                    //
                     if (state.isLoading) {
                         Box(
                             modifier = Modifier
@@ -197,7 +196,6 @@ fun AddReportScreen(
             }
         }
     }
-
 
     LaunchedEffect(Unit) {
         viewModel.getEventChannel().collect { event ->

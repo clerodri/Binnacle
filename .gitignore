@@ -26,6 +26,8 @@ Thumbs.db
 # Dependency caches
 **/.gradle/
 **/local.properties
+local.properties
+secret.properties
 # Ignore secret configuration files
 secrets.properties
 local.defaults.properties

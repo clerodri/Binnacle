@@ -1,4 +1,5 @@
 import org.apache.commons.logging.LogFactory.release
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -33,6 +34,16 @@ android {
         }
     }
 
+    val localPropertiesSecret  = Properties()
+    val localProperties = Properties()
+    val localPropertiesFileSecret = rootProject.file("secret.properties")
+    val localPropertiesFile = rootProject.file("local.properties")
+    if( localPropertiesFileSecret.exists() && localPropertiesFileSecret.isFile){
+        localPropertiesSecret.load(localPropertiesFileSecret.inputStream())
+    }
+    if (localPropertiesFile.exists() && localPropertiesFile.isFile) {
+        localProperties.load(localPropertiesFile.inputStream())
+    }
 
     buildTypes {
         release {
@@ -51,8 +62,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"http://192.168.100.70:8080/\"")
-
+           // buildConfigField("String", "BASE_URL", "\"http://192.168.100.70:8080/\"")
+            buildConfigField("String", "BASE_URL", localProperties.getProperty("BASE_URL"))
+            buildConfigField("String","GMP_KEY", localPropertiesSecret.getProperty("GMP_KEY"))
         }
     }
     compileOptions {
@@ -134,6 +146,11 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
     implementation(libs.androidx.core.ktx)
+
+    // MAPS GOOGLE
+    implementation("com.google.maps.android:maps-compose:1.0.0")
+    implementation("com.google.android.gms:play-services-maps:18.0.2")
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))

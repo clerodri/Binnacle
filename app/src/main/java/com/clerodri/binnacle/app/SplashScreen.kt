@@ -50,7 +50,7 @@ fun SplashScreen(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Bienvenido",
+            text = "Binnacle",
             color = Color.White,
             style = MaterialTheme.typography.displayLarge,
             textAlign = TextAlign.Center
