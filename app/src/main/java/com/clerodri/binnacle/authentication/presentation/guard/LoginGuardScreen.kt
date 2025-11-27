@@ -179,7 +179,7 @@ fun LoginGuardContent(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Volver"
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text("Volver")
         }
         Box(
@@ -232,7 +232,7 @@ fun LoginGuardContent(
             Spacer(modifier = Modifier.height(20.dp))
             ClickableAdminTextComponent(Modifier.align(Alignment.CenterHorizontally),
                 onClick = {
-                    //navigateToLoginAdmin()
+                    navigateToLoginAdmin()
                 }
             )
         }

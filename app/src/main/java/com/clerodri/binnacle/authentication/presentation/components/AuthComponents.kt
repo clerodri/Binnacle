@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -27,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +43,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +61,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieConstants
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.ui.theme.BgColor
 import com.clerodri.binnacle.ui.theme.Primary
@@ -127,32 +134,42 @@ fun TitleGuard() {
 }
 
 @Composable
-fun TitleAdmin(comeBack: () -> Unit) {
+fun TitleAdmin(comeBack: () -> Unit, composition: LottieComposition?) {
+    TextButton(
+        onClick = comeBack,
+        modifier = Modifier.padding(bottom = 8.dp),
+        colors = ButtonDefaults.textButtonColors(
+            contentColor =  Color(0xFF2973B2)
+        )
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Volver"
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Volver")
+    }
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = stringResource(R.string.login_administrator_label),
-            color = Color.Black,
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.CenterVertically)
-        )
-
-        IconButton(
-            onClick = {
-                comeBack()
-            },
-            modifier = Modifier.align(Alignment.CenterVertically)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Transparent)
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = Color.Black,
+
+            LottieAnimation(
+                composition = composition,
+                isPlaying = true,
+                iterations = LottieConstants.IterateForever,
+                speed = 1f,
+                modifier = Modifier.size(80.dp),
+                contentScale = ContentScale.Fit
             )
         }
     }

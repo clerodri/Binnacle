@@ -66,7 +66,7 @@ fun HomeScreen(
 
 
     LaunchedEffect(Unit) {
-        //homeViewModel.onEnterHomeScreen()
+        homeViewModel.onEnterHomeScreen()
     }
 
     LaunchedEffect(Unit) {

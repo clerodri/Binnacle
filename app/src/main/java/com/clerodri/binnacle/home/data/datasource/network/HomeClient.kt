@@ -19,7 +19,7 @@ import retrofit2.http.Path
 interface HomeClient {
 
 
-    @GET(ApiRutas.HOME.ROUTES)
+    @GET( "api/v1/route")
     suspend fun getRoutes(): Response<ApiResponse<List<RouteResponse>>>
 
 

@@ -13,6 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,11 +21,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.clerodri.binnacle.R
 import com.clerodri.binnacle.authentication.presentation.LoginScreenEvent
 import com.clerodri.binnacle.authentication.presentation.components.ButtonComponent
 import com.clerodri.binnacle.authentication.presentation.components.EmailTextComponent
-import com.clerodri.binnacle.authentication.presentation.components.LogoApp
 import com.clerodri.binnacle.authentication.presentation.components.PasswordFieldComponent
 import com.clerodri.binnacle.authentication.presentation.components.TitleAdmin
 import com.clerodri.binnacle.authentication.presentation.components.TitleApp
@@ -50,8 +52,8 @@ fun LoginAdminScreen(
                 value = stringResource(R.string.app_name),
                 version = stringResource(R.string.version_app)
             )
-            LogoApp(Modifier.align(Alignment.CenterHorizontally))
-            Spacer(modifier = Modifier.height(40.dp))
+//            LogoApp(Modifier.align(Alignment.CenterHorizontally))
+            Spacer(modifier = Modifier.height(20.dp))
             Column(
                 Modifier
                     .fillMaxSize()
@@ -102,6 +104,9 @@ fun AdminScreenContent(
     onPasswordChange: (String) -> Unit,
     onLoginAdmin: () -> Unit
 ) {
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.admin)
+    )
     Column(
         Modifier
             .fillMaxSize()
@@ -120,9 +125,10 @@ fun AdminScreenContent(
                 )
             }
         } else {
-            TitleAdmin {
-                onClickArrowBack()
-            }
+            TitleAdmin(
+                composition = composition,
+                comeBack = onClickArrowBack
+            )
             EmailTextComponent(
                 value = state.email,
                 emailError = state.emailError,

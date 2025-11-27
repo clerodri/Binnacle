@@ -22,7 +22,6 @@ import com.clerodri.binnacle.home.domain.usecase.RouteUseCase
 import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -65,7 +64,8 @@ class HomeViewModel @Inject constructor(
 
     private val _eventChannel = Channel<HomeUiEvent>()
     internal fun getEventChannel() = _eventChannel.receiveAsFlow()
-//    private var hasFetchedRoutes = false
+
+    //    private var hasFetchedRoutes = false
     var hasShownLoginSuccess = false
         private set
 
@@ -76,7 +76,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHomeState()
-        onEnterHomeScreen()
+        //onEnterHomeScreen()
     }
 
     fun onEnterHomeScreen() {
@@ -87,6 +87,7 @@ class HomeViewModel @Inject constructor(
             }else{
                 fetchRoutes()
             }
+
         }
     }
 
@@ -187,7 +188,8 @@ class HomeViewModel @Inject constructor(
             Log.d("HomeViewModel", "Guard id: ${guardData.value?.localityId}")
             when (val result = createRoundUseCase.invoke(
                 guardId = guardData.value?.guardId,
-                localityId = guardData.value?.localityId)) {
+                localityId = guardData.value?.localityId
+            )) {
                 is Result.Failure -> {
                     sendScreenEvent(
                         event = HomeUiEvent.ShowAlert(
@@ -356,22 +358,22 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun fetchRoutes() {
-            _state.value = _state.value.copy(isLoading = true)
-            when (val result = routeUseCase.invoke()) {
-                is Result.Failure -> {
-                    val message = when (result.error) {
-                        DataError.LocalityError.ROUTES_NOT_FOUND -> "No se encontraron rutas para la localidad."
-                        DataError.LocalityError.SERVICE_UNAVAILABLE -> "Error de conexión. Intenta nuevamente."
-                    }
-                    sendScreenEvent(HomeUiEvent.ShowAlert(message, SnackBarType.Error))
+        _state.value = _state.value.copy(isLoading = true)
+        when (val result = routeUseCase.invoke()) {
+            is Result.Failure -> {
+                val message = when (result.error) {
+                    DataError.LocalityError.ROUTES_NOT_FOUND -> "No se encontraron rutas para la localidad."
+                    DataError.LocalityError.SERVICE_UNAVAILABLE -> "Error de conexión. Intenta nuevamente."
                 }
-
-                is Result.Success -> {
-                    _routes.update { result.data.sortedBy { it.order } }
-
-                }
+                sendScreenEvent(HomeUiEvent.ShowAlert(message, SnackBarType.Error))
             }
-            _state.value = _state.value.copy(isLoading = false)
+
+            is Result.Success -> {
+                 _routes.update { result.data.sortedBy { it.order } }
+
+            }
+        }
+        _state.value = _state.value.copy(isLoading = false)
 
     }
 

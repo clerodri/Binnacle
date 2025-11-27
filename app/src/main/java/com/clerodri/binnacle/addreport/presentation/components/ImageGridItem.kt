@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,7 +40,8 @@ fun ImageGridItem(
         modifier = modifier
             .size(120.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color.Gray.copy(alpha = 0.2f)).shadow(16.dp)
+            .background(Color.Gray.copy(alpha = 0.2f))
+            .shadow(16.dp)
     ) {
 
         AsyncImage(
@@ -58,7 +58,8 @@ fun ImageGridItem(
                 .background(
                     Color.Transparent,
                     shape = CircleShape
-                ).padding(2.dp)
+                )
+                .padding(2.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Visibility,
