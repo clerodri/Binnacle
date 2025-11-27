@@ -22,6 +22,42 @@ Binnacle optimiza la gestión de seguridad en comunidades residenciales mediante
 - **Gestión de Personal**: Consulta los registros de entrada y salida del personal de seguridad
 - **Historial de Eventos**: Accede al registro completo de incidentes reportados
 
+## Capturas de Pantalla
+
+### Autenticación
+<p align="center">
+  <img src="screenshots/login_guard.png" width="250" alt="Login Guardia"/>
+  <img src="screenshots/login_admin.png" width="250" alt="Login Administrador"/>
+</p>
+
+### Panel Principal
+<p align="center">
+  <img src="screenshots/home_guard.png" width="250" alt="Home Guardia"/>
+  <img src="screenshots/check_in.png" width="250" alt="Check-in"/>
+  <img src="screenshots/check_out.png" width="250" alt="Check-out"/>
+</p>
+
+### Rondas y Seguimiento
+<p align="center">
+  <img src="screenshots/start_round.png" width="250" alt="Iniciar Ronda"/>
+  <img src="screenshots/active_round_map.png" width="250" alt="Ronda Activa"/>
+  <img src="screenshots/round_history.png" width="250" alt="Historial de Rondas"/>
+</p>
+
+### Reporte de Eventos
+<p align="center">
+  <img src="screenshots/add_report.png" width="250" alt="Agregar Reporte"/>
+  <img src="screenshots/report_photo.png" width="250" alt="Fotografía de Reporte"/>
+  <img src="screenshots/report_success.png" width="250" alt="Reporte Exitoso"/>
+</p>
+
+### Panel de Administrador
+<p align="center">
+  <img src="screenshots/admin_dashboard.png" width="250" alt="Dashboard Admin"/>
+  <img src="screenshots/admin_notifications.png" width="250" alt="Notificaciones"/>
+  <img src="screenshots/admin_reports.png" width="250" alt="Historial de Reportes"/>
+</p>
+
 ## Tecnologías Utilizadas
 
 | Categoría | Tecnología |
@@ -40,7 +76,6 @@ Binnacle optimiza la gestión de seguridad en comunidades residenciales mediante
 ## Estructura del Proyecto
 
 El proyecto sigue los principios de Clean Architecture con separación clara de responsabilidades:
-
 ```
 app/src/main/java/com/clerodri/binnacle/
 ├── addreport/              # Módulo de reportes de eventos
@@ -85,7 +120,6 @@ Cada módulo funcional sigue Clean Architecture:
 ## Instalación
 
 ### 1. Clonar el Repositorio
-
 ```bash
 git clone https://github.com/tu-usuario/binnacle.git
 cd binnacle_kotlin
@@ -97,14 +131,12 @@ Crea o edita los siguientes archivos en la raíz del proyecto:
 
 #### `local.properties`
 ```properties
-sdk.dir=C\:\\Users\\TuUsuario\\AppData\\Local\\Android\\Sdk
-MAPS_API_KEY=tu_google_maps_api_key_aqui
+BASE_URL=https://tu-backend-url.com/api/
 ```
 
 #### `secret.properties`
 ```properties
-API_KEY=tu_api_key_backend_aqui
-BASE_URL=https://tu-backend-url.com/api/
+MAPS_API_KEY=tu-google-api-key
 ```
 
 **Importante**: Estos archivos están en `.gitignore` y no se deben versionar por seguridad.
@@ -130,33 +162,6 @@ Contacta al administrador del backend para obtener las credenciales de acceso.
 3. Conecta un dispositivo Android o inicia un emulador
 4. Ejecuta la aplicación presionando Run (▶️) o usando `Shift + F10`
 
-## Configuración de Desarrollo
-
-### Build Variants
-
-El proyecto incluye dos variantes de construcción:
-
-- **debug**: Para desarrollo, incluye logs y debugging habilitado
-- **release**: Para producción, optimizada y ofuscada con ProGuard
-
-```bash
-# Compilar debug
-./gradlew assembleDebug
-
-# Compilar release
-./gradlew assembleRelease
-```
-
-### Ejecutar Tests
-
-```bash
-# Tests unitarios
-./gradlew test
-
-# Tests instrumentados
-./gradlew connectedAndroidTest
-```
-
 ## Características Técnicas Destacadas
 
 ### Gestión de Estado
@@ -179,34 +184,6 @@ El proyecto incluye dos variantes de construcción:
 - Compresión y optimización automática
 - Upload asíncrono con WorkManager
 - Cache eficiente con Coil
-
-## Contribuir
-
-Si deseas contribuir al proyecto:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
-### Estándares de Código
-
-- Seguir las convenciones de código Kotlin oficial
-- Usar nombres descriptivos en inglés para clases, métodos y variables
-- Documentar funciones públicas complejas con KDoc
-- Ejecutar `./gradlew ktlintCheck` antes de hacer commit
-
-## Troubleshooting
-
-### Error: "Maps SDK not initialized"
-Verifica que `MAPS_API_KEY` esté correctamente configurada en `local.properties` y que la API esté habilitada en Google Cloud Console.
-
-### Error de compilación con Hilt
-Ejecuta `./gradlew clean` y luego `./gradlew build`. Asegúrate de tener la versión correcta del plugin de Kotlin.
-
-### Problemas con permisos de ubicación
-Verifica que los permisos estén declarados en `AndroidManifest.xml` y que se soliciten en tiempo de ejecución para Android 6.0+.
 
 ## Licencia
 
