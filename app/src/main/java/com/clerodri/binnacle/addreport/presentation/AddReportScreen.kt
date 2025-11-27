@@ -86,7 +86,8 @@ fun AddReportScreen(
                 .fillMaxSize()
                 .background(Color.Black),
             onCloseCamara = { viewModel.onReportEvent(AddReportEvent.OnCloseCamera) },
-            addReportViewModel = viewModel
+            addReportViewModel = viewModel,
+            isFrontCamera = state.isFrontCamera
         )
     } else {
 
@@ -119,7 +120,7 @@ fun AddReportScreen(
                             onBack(false)
                         }, openCamera = {
                             if (cameraPermissionState.status.isGranted) {
-                                viewModel.onReportEvent(AddReportEvent.OnOpenCamera)
+                                viewModel.onReportEvent(AddReportEvent.OnOpenCamera(false))
                             } else {
                                 viewModel.onReportEvent(AddReportEvent.NoCameraAllowed)
                             }

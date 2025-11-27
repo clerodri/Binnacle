@@ -7,9 +7,10 @@ sealed interface AddReportEvent {
     data class OnUpdateDescription(val description: String) : AddReportEvent
     data object ClearFields : AddReportEvent
     data object OnTakePhoto : AddReportEvent
-    data object OnOpenCamera : AddReportEvent
+    data class OnOpenCamera(val isFrontCamera: Boolean) : AddReportEvent
     data object OnCloseCamera : AddReportEvent
     data object NoCameraAllowed : AddReportEvent
     data class OnRemoveImage(val filename: String) : AddReportEvent
     data class OnImagePreview(val filename: String) : AddReportEvent
+    data object OnSwitchCamera : AddReportEvent
 }

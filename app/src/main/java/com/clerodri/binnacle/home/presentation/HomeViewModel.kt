@@ -76,6 +76,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHomeState()
+        onEnterHomeScreen()
     }
 
     fun onEnterHomeScreen() {
@@ -216,7 +217,6 @@ class HomeViewModel @Inject constructor(
             authManager.clearUserData()
             homeUseCase.clearHomeData()
             delay(500)
-//            hasFetchedRoutes = false
             sendScreenEvent(event = HomeUiEvent.LogOut)
             delay(500)
             _state.value = _state.value.copy(isLoading = false)

@@ -8,6 +8,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -135,10 +137,10 @@ fun NavigationWrapper(
                             launchSingleTop = true
                         }
                 },
-                reportSuccess = reportSuccess,
-                onClearSuccessReport = {
-                savedStateHandle["report_success"] = false
-            }
+//                reportSuccess = reportSuccess,
+//                onClearSuccessReport = {
+//                savedStateHandle["report_success"] = false
+//            }
 
             )
         }

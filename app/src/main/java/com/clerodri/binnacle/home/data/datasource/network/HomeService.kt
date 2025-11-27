@@ -1,6 +1,6 @@
 package com.clerodri.binnacle.home.data.datasource.network
 
-import android.util.Log
+
 import com.clerodri.binnacle.core.di.ApiRutas.extractDataOrThrow
 import com.clerodri.binnacle.core.domain.ApiResponse
 import com.clerodri.binnacle.home.data.datasource.local.RouteDao

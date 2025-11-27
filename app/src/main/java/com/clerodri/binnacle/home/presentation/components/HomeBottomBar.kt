@@ -2,7 +2,6 @@ package com.clerodri.binnacle.home.presentation.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,11 +62,11 @@ fun HomeBottomBar(
             ), containerColor = MaterialTheme.colorScheme.surfaceVariant
     )
     {
-
         HomeType.entries.forEach { item ->
             val selected = selectedScreen == item
             val enabled = if (item == HomeType.Check) isCheckEnabled else true
-            NavigationBarItem(selected = selected, onClick = {
+            NavigationBarItem(
+                selected = selected, onClick = {
                 if (enabled) {
                     when (item) {
                         HomeType.Check -> {
@@ -114,7 +113,8 @@ fun HomeBottomBar(
 
     Box(
         modifier = Modifier
-            .fillMaxWidth().offset(y = (-150).dp),
+            .fillMaxWidth()
+            .offset(y = (-150).dp),
         contentAlignment = Alignment.Center
     ) {
         Timer(modifier = Modifier.fillMaxWidth(), timer = timer)
@@ -123,7 +123,8 @@ fun HomeBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 0.dp).offset(y = (-60).dp),
+            .padding(top = 0.dp)
+            .offset(y = (-60).dp),
         contentAlignment = Alignment.Center
     ) {
         StartButtonComponent(
@@ -134,7 +135,8 @@ fun HomeBottomBar(
         )
     }
     if (openDialog) {
-        CheckInDialogComponent(title = title,
+        CheckInDialogComponent(
+            title = title,
             message = message,
             onCancel = { openDialog = false },
             onConfirm = {
@@ -145,4 +147,3 @@ fun HomeBottomBar(
             onDismissRequest = { openDialog = false })
     }
 }
-

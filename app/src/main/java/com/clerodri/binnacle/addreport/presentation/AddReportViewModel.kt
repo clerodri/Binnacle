@@ -31,6 +31,7 @@ import com.clerodri.binnacle.core.DataError
 import com.clerodri.binnacle.core.Result
 import com.clerodri.binnacle.core.components.SnackBarType
 import com.clerodri.binnacle.core.di.WorkManagerSerializer
+import com.clerodri.binnacle.util.flip
 import com.clerodri.binnacle.util.hasInternetConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -65,6 +66,7 @@ data class AddReportUiState(
     val description: String = "",
     val isLoading: Boolean = false,
     val openCamera: Boolean = false,
+    val isFrontCamera: Boolean = false,
     val btnCameraEnable: Boolean = false,
     val titleError: String? = null,
     val snackBarType: SnackBarType? = null,
@@ -130,7 +132,7 @@ class AddReportViewModel @Inject constructor(
             is AddReportEvent.OnUpdateTitle -> updateTitle(event.title)
             is AddReportEvent.OnUpdateDescription -> updateDescription(event.description)
             is AddReportEvent.OnTakePhoto -> capturePhoto()
-            is AddReportEvent.OnOpenCamera -> openCamera()
+            is AddReportEvent.OnOpenCamera -> openCamera(event.isFrontCamera)
             is AddReportEvent.OnCloseCamera -> closeCamera()
             is AddReportEvent.OnRemoveImage -> removeImage(event.filename)
             AddReportEvent.ClearFields -> clearFields()
@@ -140,6 +142,7 @@ class AddReportViewModel @Inject constructor(
             )
 
             is AddReportEvent.OnImagePreview -> previewImage(event.filename)
+            AddReportEvent.OnSwitchCamera -> switchCamera()
         }
     }
 
@@ -148,19 +151,22 @@ class AddReportViewModel @Inject constructor(
         lifecycleOwner: LifecycleOwner,
         cameraSelector: CameraSelector
     ) {
-        val processCameraProvider = ProcessCameraProvider.awaitInstance(applicationContext)
-
-        processCameraProvider.bindToLifecycle(
-            lifecycleOwner, cameraSelector, imageCapture, cameraPreviewUseCase
-        )
-
-        // Cancellation signals we're done with the camera
         try {
-            awaitCancellation()
-        } finally {
-            processCameraProvider.unbindAll()
-        }
+            val processCameraProvider = ProcessCameraProvider.awaitInstance(applicationContext)
 
+            processCameraProvider.bindToLifecycle(
+                lifecycleOwner, cameraSelector, imageCapture, cameraPreviewUseCase
+            )
+            Log.d("CameraVM", "✅ Camera bound successfully")
+            // Cancellation signals we're done with the camera
+            try {
+                awaitCancellation()
+            } finally {
+                processCameraProvider.unbindAll()
+            }
+        } catch (e: Exception) {
+            Log.e("CameraVM", "❌ Camera binding failed: ${e.message}", e)
+        }
     }
 
 
@@ -264,8 +270,11 @@ class AddReportViewModel @Inject constructor(
         viewModelScope.launch {
             setLoadingState(true)
 
-            val bitmap = photoUseCase(imageCapture)
+            var bitmap = photoUseCase(imageCapture)
             if (bitmap != null) {
+                if (_uiState.value.isFrontCamera) {
+                    bitmap = bitmap.flip(-1f, 1f, bitmap.width / 2f, bitmap.height / 2f)
+                }
                 addImageToState(bitmap)
             } else {
                 sendError("Error al capturar la foto", SnackBarType.Error)
@@ -326,12 +335,17 @@ class AddReportViewModel @Inject constructor(
         }
     }
 
-    private fun openCamera() {
-        _uiState.update { it.copy(openCamera = true) }
+    private fun openCamera(isFrontCamera: Boolean) {
+        _uiState.update { it.copy(openCamera = true, isFrontCamera = isFrontCamera) }
     }
 
     private fun closeCamera() {
         _uiState.update { it.copy(openCamera = false) }
+    }
+
+    private fun switchCamera() {
+        Log.d(TAG, "Switching camera")
+        _uiState.update { it.copy(isFrontCamera = !it.isFrontCamera) }
     }
 
     private fun clearFields() {
