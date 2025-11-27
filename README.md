@@ -24,39 +24,18 @@ Binnacle optimiza la gestión de seguridad en comunidades residenciales mediante
 
 ## Capturas de Pantalla
 
-### Autenticación
 <p align="center">
-  <img src="screenshots/login_guard.png" width="250" alt="Login Guardia"/>
-  <img src="screenshots/login_admin.png" width="250" alt="Login Administrador"/>
+  <img src="capturas/images.png" alt="Binnacle App Screenshots" width="100%"/>
 </p>
 
-### Panel Principal
-<p align="center">
-  <img src="screenshots/home_guard.png" width="250" alt="Home Guardia"/>
-  <img src="screenshots/check_in.png" width="250" alt="Check-in"/>
-  <img src="screenshots/check_out.png" width="250" alt="Check-out"/>
-</p>
+La aplicación incluye:
+- **Splash Screen & Onboarding**: Pantalla de bienvenida con animación de logo y selección de urbanización
+- **Autenticación**: Login para guardias (cédula) y administradores (email/password)
+- **Panel Principal**: Navegación intuitiva con acceso a todas las funcionalidades
+- **Rondas con GPS**: Sistema de rutas con seguimiento en tiempo real y cronómetro
+- **Reportes de Eventos**: Creación de reportes con descripción, fotografías y verificación
+- **Gestión de Sesión**: Diálogos de confirmación para finalizar rondas y cerrar sesión
 
-### Rondas y Seguimiento
-<p align="center">
-  <img src="screenshots/start_round.png" width="250" alt="Iniciar Ronda"/>
-  <img src="screenshots/active_round_map.png" width="250" alt="Ronda Activa"/>
-  <img src="screenshots/round_history.png" width="250" alt="Historial de Rondas"/>
-</p>
-
-### Reporte de Eventos
-<p align="center">
-  <img src="screenshots/add_report.png" width="250" alt="Agregar Reporte"/>
-  <img src="screenshots/report_photo.png" width="250" alt="Fotografía de Reporte"/>
-  <img src="screenshots/report_success.png" width="250" alt="Reporte Exitoso"/>
-</p>
-
-### Panel de Administrador
-<p align="center">
-  <img src="screenshots/admin_dashboard.png" width="250" alt="Dashboard Admin"/>
-  <img src="screenshots/admin_notifications.png" width="250" alt="Notificaciones"/>
-  <img src="screenshots/admin_reports.png" width="250" alt="Historial de Reportes"/>
-</p>
 
 ## Tecnologías Utilizadas
 
